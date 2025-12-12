@@ -1,16 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { SignUpInput } from '@repo/api-contract';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class AuthService {
-  users: SignUpInput[] = [];
+  constructor(private readonly prisma: PrismaService) {}
 
-  create(user: SignUpInput) {
-    const newUser: SignUpInput = {
-      ...user,
-    };
-    this.users.push(newUser);
-    console.log(user);
-    return newUser;
+  async create(user: SignUpInput) {
+    const { id, avatar, password, ...rest } = await this.prisma.user.create({
+      data: {
+        fullname: user.fullname,
+        email: user.email,
+        password: user.password,
+      },
+    });
+
+    return rest;
   }
 }

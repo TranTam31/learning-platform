@@ -26,7 +26,7 @@ export const authContract = c.router(
       path: "/signup",
       body: SignUpSchema,
       responses: {
-        201: SignUpSchema,
+        201: SignUpSchema.omit({ password: true }),
       },
     },
     // signin: {

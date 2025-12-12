@@ -13,7 +13,7 @@ export class AuthController {
       signup: async ({ body }) => {
         return {
           status: 201,
-          body: this.authService.create(body),
+          body: await this.authService.create(body),
         };
       },
       // signin:
