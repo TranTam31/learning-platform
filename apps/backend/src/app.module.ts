@@ -1,9 +1,21 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
 import { PrismaService } from './prisma.service';
+import { AuthModule } from '@thallesp/nestjs-better-auth';
+import auth from './lib/auth';
+// import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [AuthModule],
+  imports: [
+    AuthModule.forRoot({
+      auth,
+      middleware: (req, _res, next) => {
+        req.url = req.originalUrl;
+        req.baseUrl = '';
+        next();
+      },
+    }),
+  ],
+  // imports: [AuthModule],
   controllers: [],
   providers: [PrismaService],
 })

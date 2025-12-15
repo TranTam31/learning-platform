@@ -22,12 +22,11 @@ import { useEffect, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import z from "zod";
 import { SignUpSchema } from "@repo/api-contract";
-import { useQueryClient } from "@tanstack/react-query";
-import client from "@/app/api-client";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 const Signup = () => {
-  const queryClient = useQueryClient();
-  const [submitError, setSubmitError] = useState("");
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof SignUpSchema>>({
     mode: "onChange",
@@ -38,19 +37,33 @@ const Signup = () => {
   /**
    * React Query Mutation
    */
-  const signupMutation = client.auth.signup.useMutation({
-    onSuccess: () => {
-      queryClient.invalidateQueries();
-    },
-    onError: (error: any) => {
-      setSubmitError(error.message);
-      form.reset();
-    },
-  });
+  // const signupMutation = client.auth.signup.useMutation({
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries();
+  //   },
+  //   onError: (error: any) => {
+  //     setSubmitError(error.message);
+  //     form.reset();
+  //   },
+  // });
 
-  const onSubmit: SubmitHandler<z.infer<typeof SignUpSchema>> = (formData) => {
-    console.log("click");
-    signupMutation.mutate({ body: formData });
+  const onSubmit: SubmitHandler<z.infer<typeof SignUpSchema>> = async (
+    formData
+  ) => {
+    setSubmitError(null);
+    // signupMutation.mutate({ body: formData });
+    const { error } = await authClient.signUp.email({
+      email: formData.email,
+      password: formData.password,
+      name: formData.fullname,
+    });
+
+    if (error) {
+      setSubmitError(error.message || "Something went wrong");
+    } else {
+      toast.success("Signed up successfully");
+      // router.push("/dashboard");
+    }
   };
 
   useEffect(() => {

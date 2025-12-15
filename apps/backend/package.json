@@ -27,7 +27,9 @@
     "@prisma/adapter-better-sqlite3": "^7.1.0",
     "@prisma/client": "^7.1.0",
     "@repo/api-contract": "*",
+    "@thallesp/nestjs-better-auth": "^2.2.0",
     "@ts-rest/nest": "^3.52.1",
+    "better-auth": "^1.4.6",
     "dotenv": "^17.2.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
