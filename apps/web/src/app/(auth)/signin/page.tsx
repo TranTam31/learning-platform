@@ -29,6 +29,9 @@ const SigninPage = () => {
   const router = useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const { data: session } = authClient.useSession();
+  console.log(session);
+
   const form = useForm<z.infer<typeof SignInSchema>>({
     mode: "onChange",
     resolver: zodResolver(SignInSchema),
@@ -50,15 +53,14 @@ const SigninPage = () => {
       setSubmitError(error.message || "Something went wrong");
     } else {
       toast.success("Signed in successfully");
-      // router.push("/dashboard");
+      router.push("/dashboard");
     }
-    // router.replace("/dashboard");
   };
 
   return (
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>Bug Report</CardTitle>
+        <CardTitle>Sign In</CardTitle>
       </CardHeader>
       <CardContent>
         <form id="form-rhf" onSubmit={form.handleSubmit(onSubmit)}>
@@ -119,7 +121,7 @@ const SigninPage = () => {
             {!isLoading ? "Login" : <Loader />}
           </Button>
           <span className="self-container">
-            Dont have an account?{" "}
+            Don't have an account?{" "}
             <Link href="/signup" className="text-primary">
               Sign Up
             </Link>

@@ -1,17 +1,23 @@
-"use client";
+// "use client";
 
 import { authClient } from "@/lib/auth-client";
+import { headers } from "next/headers";
 
-export default function Home() {
-  const { data: session, isPending: isLoading } = authClient.useSession();
+export default async function Home() {
+  const { data: session, error } = await authClient.getSession({
+    fetchOptions: {
+      headers: await headers(),
+    },
+  });
+  console.log(session);
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        Loading...
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex justify-center items-center min-h-screen">
+  //       Loading...
+  //     </div>
+  //   );
+  // }
 
   if (session) {
     return (
@@ -20,7 +26,7 @@ export default function Home() {
           <h1 className="text-3xl font-bold mb-4">Welcome!</h1>
           <p className="mb-4">You are signed in as: {session.user?.email}</p>
           <button
-            onClick={() => authClient.signOut()}
+            // onClick={() => authClient.signOut()}
             className="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700"
           >
             Sign Out
