@@ -77,7 +77,7 @@ const Signup = () => {
   return (
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>Signup</CardTitle>
+        <CardTitle>Sign Up</CardTitle>
       </CardHeader>
       <CardContent>
         <form id="form-rhf" onSubmit={form.handleSubmit(onSubmit)}>

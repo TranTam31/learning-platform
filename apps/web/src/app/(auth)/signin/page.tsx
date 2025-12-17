@@ -96,7 +96,7 @@ const SigninPage = () => {
                     {...field}
                     id="form-rhf-password"
                     aria-invalid={fieldState.invalid}
-                    placeholder="Email here"
+                    placeholder="Password here"
                     disabled={isLoading}
                   />
                   {fieldState.invalid && (

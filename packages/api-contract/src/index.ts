@@ -14,3 +14,4 @@ export const contract = c.router(
 );
 
 export * from "./auth.contract";
+export * from "./user.contract";
