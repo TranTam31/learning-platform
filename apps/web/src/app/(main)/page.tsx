@@ -1,13 +1,12 @@
 // "use client";
 
 import { authClient } from "@/lib/auth-client";
+import { auth } from "@/lib/auth-server";
 import { headers } from "next/headers";
 
 export default async function Home() {
-  const { data: session, error } = await authClient.getSession({
-    fetchOptions: {
-      headers: await headers(),
-    },
+  const session = await auth.api.getSession({
+    headers: await headers(),
   });
   console.log(session);
 

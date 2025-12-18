@@ -9,8 +9,8 @@
  * 🟢 You can import this file directly.
  */
 import type * as runtime from "@prisma/client/runtime/client"
-import type * as $Enums from "../enums.js"
-import type * as Prisma from "../internal/prismaNamespace.js"
+import type * as $Enums from "../enums"
+import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model Verification
@@ -1011,6 +1011,7 @@ export type VerificationCreateManyArgs<ExtArgs extends runtime.Types.Extensions.
    * The data used to create many Verifications.
    */
   data: Prisma.VerificationCreateManyInput | Prisma.VerificationCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1029,6 +1030,7 @@ export type VerificationCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Ex
    * The data used to create many Verifications.
    */
   data: Prisma.VerificationCreateManyInput | Prisma.VerificationCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

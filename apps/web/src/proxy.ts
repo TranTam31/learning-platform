@@ -43,7 +43,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { authClient } from "./lib/auth-client";
+import { auth } from "./lib/auth-server";
 
 // 1. Chỉ định các route công khai
 // Các route KHÔNG nằm trong danh sách này sẽ mặc định được bảo vệ
@@ -58,10 +58,8 @@ export default async function proxy(req: NextRequest) {
   const isProtectedRoute = !isPublicRoute;
 
   // 3. Giải mã session từ cookie
-  const { data: session } = await authClient.getSession({
-    fetchOptions: {
-      headers: await headers(),
-    },
+  const session = await auth.api.getSession({
+    headers: await headers(),
   });
 
   // 4. Chuyển hướng đến /signin nếu route được bảo vệ VÀ người dùng chưa xác thực

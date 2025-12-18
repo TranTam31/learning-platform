@@ -9,8 +9,8 @@
  * 🟢 You can import this file directly.
  */
 import type * as runtime from "@prisma/client/runtime/client"
-import type * as $Enums from "../enums.js"
-import type * as Prisma from "../internal/prismaNamespace.js"
+import type * as $Enums from "../enums"
+import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model Account
@@ -576,6 +576,7 @@ export type AccountCreateOrConnectWithoutUserInput = {
 
 export type AccountCreateManyUserInputEnvelope = {
   data: Prisma.AccountCreateManyUserInput | Prisma.AccountCreateManyUserInput[]
+  skipDuplicates?: boolean
 }
 
 export type AccountUpsertWithWhereUniqueWithoutUserInput = {
@@ -1438,6 +1439,7 @@ export type AccountCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * The data used to create many Accounts.
    */
   data: Prisma.AccountCreateManyInput | Prisma.AccountCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1456,6 +1458,7 @@ export type AccountCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensi
    * The data used to create many Accounts.
    */
   data: Prisma.AccountCreateManyInput | Prisma.AccountCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

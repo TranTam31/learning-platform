@@ -8,7 +8,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @Get('/test')
   testGet() {
-    return 'oke';
+    return this.authService.hello();
   }
 
   // @TsRestHandler(contract.auth)
