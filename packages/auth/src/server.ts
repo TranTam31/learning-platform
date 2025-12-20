@@ -3,6 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { organization } from "better-auth/plugins";
 import type { PrismaClient } from "@prisma/client";
 import type { BetterAuthPlugin } from "better-auth";
+import { ac, admin, member, owner } from "./plugins/permission.js";
 
 export type CreateAuthOptions = {
   trustedOrigins?: string[];
@@ -18,6 +19,16 @@ export function createAuth(prisma: PrismaClient, options?: CreateAuthOptions) {
       enabled: true,
     },
     trustedOrigins: options?.trustedOrigins,
-    plugins: [organization(), ...(options?.plugins ?? [])],
+    plugins: [
+      organization({
+        ac: ac,
+        roles: {
+          owner,
+          admin,
+          member,
+        },
+      }),
+      ...(options?.plugins ?? []),
+    ],
   });
 }

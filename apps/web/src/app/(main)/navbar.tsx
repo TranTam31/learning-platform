@@ -2,10 +2,15 @@ import codingInFlowLogo from "@/assets/coding_in_flow_logo.jpg";
 // import { ModeToggle } from "@/components/mode-toggle";
 import Image from "next/image";
 import Link from "next/link";
-import session from "../get-session";
+// import session from "../get-session";
 import { UserDropdown } from "@/components/user-dropdown";
+import { auth } from "@/lib/auth-server";
+import { headers } from "next/headers";
 
 export async function Navbar() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
   const user = session?.user;
 
   if (!user) return null;
