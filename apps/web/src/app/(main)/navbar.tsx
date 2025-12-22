@@ -6,6 +6,7 @@ import Link from "next/link";
 import { UserDropdown } from "@/components/user-dropdown";
 import { auth } from "@/lib/auth-server";
 import { headers } from "next/headers";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export async function Navbar() {
   const session = await auth.api.getSession({
@@ -32,7 +33,7 @@ export async function Navbar() {
           Learning Platform
         </Link>
         <div className="flex items-center gap-2">
-          {/* <ModeToggle /> */}
+          <ModeToggle />
           <UserDropdown user={user} />
         </div>
       </div>

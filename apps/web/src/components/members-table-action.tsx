@@ -14,19 +14,13 @@ export default function MembersTableAction({ memberId }: { memberId: string }) {
   const handleRemoveMember = async () => {
     try {
       setIsLoading(true);
-      const { success, error } = await removeMember(memberId);
-
-      if (!success) {
-        toast.error(error || "Failed to remove member");
-        return;
-      }
-
+      await removeMember(memberId);
       setIsLoading(false);
-      toast.success("Member removed from organization");
+      toast.success("Success");
       router.refresh();
     } catch (error) {
       console.error(error);
-      toast.error("Failed to remove member from organization");
+      toast.error("Fail");
     } finally {
       setIsLoading(false);
     }

@@ -77,7 +77,6 @@ export default function SearchUser({
     });
   };
 
-  // Hàm giả định để xử lý việc thêm user
   const handleAddUser = async (userId: string, role: Role, orgId: string) => {
     try {
       setIsLoading(true);
