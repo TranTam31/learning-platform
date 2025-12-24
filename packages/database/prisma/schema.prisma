@@ -95,6 +95,7 @@ model Organization {
   metadata    String?
   members     Member[]
   invitations Invitation[]
+  courses     Course[]
 
   @@unique([slug])
   @@map("organization")
@@ -129,4 +130,21 @@ model Invitation {
   @@index([organizationId])
   @@index([email])
   @@map("invitation")
+}
+
+model Course {
+  id             String  @id @default(cuid())
+  organizationId String
+  slug           String
+  name           String
+  description    String?
+
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, slug])
+  @@map("course")
 }
