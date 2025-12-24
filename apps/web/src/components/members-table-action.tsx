@@ -4,26 +4,26 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { removeMember } from "@/server/members";
 import { Button } from "./ui/button";
+import { authClient } from "@/lib/auth-client";
 
 export default function MembersTableAction({ memberId }: { memberId: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleRemoveMember = async () => {
-    try {
-      setIsLoading(true);
-      await removeMember(memberId);
+    setIsLoading(true);
+    const { data, error } = await authClient.organization.removeMember({
+      memberIdOrEmail: memberId, // required
+    });
+    if (error) {
+      toast.error(error.code);
       setIsLoading(false);
-      toast.success("Success");
-      router.refresh();
-    } catch (error) {
-      console.error(error);
-      toast.error("Fail");
-    } finally {
-      setIsLoading(false);
+      return;
     }
+    setIsLoading(false);
+    toast.success("Successfully removed member");
+    router.refresh();
   };
 
   return (
