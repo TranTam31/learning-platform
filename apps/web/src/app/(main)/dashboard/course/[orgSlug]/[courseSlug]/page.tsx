@@ -15,11 +15,7 @@ export default async function CoursePage({ params }: PageProps) {
 
   let course;
   try {
-    await auth.api.setActiveOrganization({
-      body: { organizationSlug: orgSlug },
-      headers: await headers(),
-    });
-    course = await getCourseBySlug(courseSlug);
+    course = await getCourseBySlug(orgSlug, courseSlug);
   } catch {
     redirect("/dashboard");
   }

@@ -38,7 +38,11 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function CreateCourseForm() {
+export function CreateCourseForm({
+  organizationId,
+}: {
+  organizationId: string;
+}) {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
@@ -68,7 +72,12 @@ export function CreateCourseForm() {
   const onSubmit: SubmitHandler<FormValues> = async (formData) => {
     setSubmitError(null);
     try {
-      await createCourse(formData.name, formData.slug, formData.description);
+      await createCourse(
+        formData.name,
+        formData.slug,
+        organizationId,
+        formData.description
+      );
       toast.success("Course created successfully");
       form.reset();
     } catch (err: any) {

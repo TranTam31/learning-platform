@@ -1,6 +1,7 @@
 import { OrgNav } from "@/components/organization/organization-nav";
 import { OrganizationProvider } from "@/components/providers/org-provider";
 import { auth } from "@/lib/auth-server";
+import { checkUserInOrg } from "@/server/members";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
@@ -16,11 +17,12 @@ export default async function OrgLayout({
   const { slug } = await params;
   let organization;
   try {
-    await auth.api.setActiveOrganization({
-      body: { organizationSlug: slug },
-      headers: await headers(),
-    });
+    await checkUserInOrg({ orgSlug: slug });
     organization = await auth.api.getFullOrganization({
+      query: {
+        organizationSlug: slug,
+        membersLimit: 100,
+      },
       headers: await headers(),
     });
   } catch {

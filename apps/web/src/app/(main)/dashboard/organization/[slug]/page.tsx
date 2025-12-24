@@ -25,7 +25,7 @@ export default function OrganizationPage() {
     error,
   } = useQuery({
     queryKey: ["courses"],
-    queryFn: () => getCourses(),
+    queryFn: () => getCourses(organization?.id),
   });
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function OrganizationPage() {
                 Create a new course to get started.
               </DialogDescription>
             </DialogHeader>
-            <CreateCourseForm />
+            <CreateCourseForm organizationId={organization?.id} />
           </DialogContent>
         </Dialog>
       )}
