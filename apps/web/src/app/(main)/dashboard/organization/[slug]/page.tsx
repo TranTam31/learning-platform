@@ -30,7 +30,7 @@ export default function OrganizationPage() {
 
   useEffect(() => {
     async function check() {
-      const result = await canCreateCourse();
+      const result = await canCreateCourse(organization?.id);
       setHasPermission(result.success);
     }
     check();
@@ -38,30 +38,38 @@ export default function OrganizationPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="font-bold text-2xl">Courses</h1>
-      {hasPermission && (
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline">Create Course</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create Course</DialogTitle>
-              <DialogDescription>
-                Create a new course to get started.
-              </DialogDescription>
-            </DialogHeader>
-            <CreateCourseForm organizationId={organization?.id} />
-          </DialogContent>
-        </Dialog>
-      )}
-      {courses?.map((course) => (
-        <Button asChild key={course.id} variant="outline">
-          <Link href={`/dashboard/course/${organization?.slug}/${course.slug}`}>
-            {course.name}
-          </Link>
-        </Button>
-      ))}
+      <div className="flex items-center justify-between">
+        <h1 className="font-bold text-2xl">Courses</h1>
+        {hasPermission && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="bg-primary hover:bg-primary/90">
+                Create Course
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create Course</DialogTitle>
+                <DialogDescription>
+                  Create a new course to get started.
+                </DialogDescription>
+              </DialogHeader>
+              <CreateCourseForm organizationId={organization?.id} />
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {courses?.map((course) => (
+          <Button asChild key={course.id} variant="outline">
+            <Link
+              href={`/dashboard/course/${organization?.slug}/${course.slug}`}
+            >
+              {course.name}
+            </Link>
+          </Button>
+        ))}
+      </div>
     </div>
   );
 }

@@ -139,6 +139,11 @@ model Course {
   name           String
   description    String?
 
+  rootLessonNodeId String?     @unique
+  rootLessonNode   LessonNode? @relation("CourseRoot", fields: [rootLessonNodeId], references: [id])
+
+  lessonNodes LessonNode[] @relation("CourseToLessons")
+
   createdBy String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -147,4 +152,28 @@ model Course {
 
   @@unique([organizationId, slug])
   @@map("course")
+}
+
+model LessonNode {
+  id String @id @default(cuid())
+
+  parentId String?
+  parent   LessonNode?  @relation("Tree", fields: [parentId], references: [id])
+  children LessonNode[] @relation("Tree")
+
+  courseId String
+  course   Course @relation("CourseToLessons", fields: [courseId], references: [id])
+
+  rootOfCourse Course? @relation("CourseRoot")
+
+  type    String
+  content Json?
+
+  order Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parentId])
+  @@map("lesson_node")
 }

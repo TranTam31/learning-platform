@@ -57,3 +57,8 @@ export type Invitation = Prisma.InvitationModel
  * 
  */
 export type Course = Prisma.CourseModel
+/**
+ * Model LessonNode
+ * 
+ */
+export type LessonNode = Prisma.LessonNodeModel

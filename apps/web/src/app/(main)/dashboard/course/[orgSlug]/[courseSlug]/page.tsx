@@ -1,23 +1,8 @@
-import { auth } from "@/lib/auth-server";
-import { getCourseBySlug } from "@/server/courses";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+"use client";
 
-interface PageProps {
-  params: Promise<{
-    orgSlug: string;
-    courseSlug: string;
-  }>;
-}
+import { useCourse } from "@/components/providers/course-context";
 
-export default async function CoursePage({ params }: PageProps) {
-  const { orgSlug, courseSlug } = await params;
-
-  let course;
-  try {
-    course = await getCourseBySlug(orgSlug, courseSlug);
-  } catch {
-    redirect("/dashboard");
-  }
-  return <div>Course</div>;
+export default function CoursePage() {
+  const course = useCourse();
+  return <div>{course.rootLessonNodeId}</div>;
 }

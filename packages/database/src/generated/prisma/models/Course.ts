@@ -30,6 +30,7 @@ export type CourseMinAggregateOutputType = {
   slug: string | null
   name: string | null
   description: string | null
+  rootLessonNodeId: string | null
   createdBy: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -41,6 +42,7 @@ export type CourseMaxAggregateOutputType = {
   slug: string | null
   name: string | null
   description: string | null
+  rootLessonNodeId: string | null
   createdBy: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -52,6 +54,7 @@ export type CourseCountAggregateOutputType = {
   slug: number
   name: number
   description: number
+  rootLessonNodeId: number
   createdBy: number
   createdAt: number
   updatedAt: number
@@ -65,6 +68,7 @@ export type CourseMinAggregateInputType = {
   slug?: true
   name?: true
   description?: true
+  rootLessonNodeId?: true
   createdBy?: true
   createdAt?: true
   updatedAt?: true
@@ -76,6 +80,7 @@ export type CourseMaxAggregateInputType = {
   slug?: true
   name?: true
   description?: true
+  rootLessonNodeId?: true
   createdBy?: true
   createdAt?: true
   updatedAt?: true
@@ -87,6 +92,7 @@ export type CourseCountAggregateInputType = {
   slug?: true
   name?: true
   description?: true
+  rootLessonNodeId?: true
   createdBy?: true
   createdAt?: true
   updatedAt?: true
@@ -171,6 +177,7 @@ export type CourseGroupByOutputType = {
   slug: string
   name: string
   description: string | null
+  rootLessonNodeId: string | null
   createdBy: string
   createdAt: Date
   updatedAt: Date
@@ -203,9 +210,12 @@ export type CourseWhereInput = {
   slug?: Prisma.StringFilter<"Course"> | string
   name?: Prisma.StringFilter<"Course"> | string
   description?: Prisma.StringNullableFilter<"Course"> | string | null
+  rootLessonNodeId?: Prisma.StringNullableFilter<"Course"> | string | null
   createdBy?: Prisma.StringFilter<"Course"> | string
   createdAt?: Prisma.DateTimeFilter<"Course"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Course"> | Date | string
+  rootLessonNode?: Prisma.XOR<Prisma.LessonNodeNullableScalarRelationFilter, Prisma.LessonNodeWhereInput> | null
+  lessonNodes?: Prisma.LessonNodeListRelationFilter
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
 }
 
@@ -215,14 +225,18 @@ export type CourseOrderByWithRelationInput = {
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
+  rootLessonNodeId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  rootLessonNode?: Prisma.LessonNodeOrderByWithRelationInput
+  lessonNodes?: Prisma.LessonNodeOrderByRelationAggregateInput
   organization?: Prisma.OrganizationOrderByWithRelationInput
 }
 
 export type CourseWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  rootLessonNodeId?: string
   organizationId_slug?: Prisma.CourseOrganizationIdSlugCompoundUniqueInput
   AND?: Prisma.CourseWhereInput | Prisma.CourseWhereInput[]
   OR?: Prisma.CourseWhereInput[]
@@ -234,8 +248,10 @@ export type CourseWhereUniqueInput = Prisma.AtLeast<{
   createdBy?: Prisma.StringFilter<"Course"> | string
   createdAt?: Prisma.DateTimeFilter<"Course"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Course"> | Date | string
+  rootLessonNode?: Prisma.XOR<Prisma.LessonNodeNullableScalarRelationFilter, Prisma.LessonNodeWhereInput> | null
+  lessonNodes?: Prisma.LessonNodeListRelationFilter
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
-}, "id" | "organizationId_slug">
+}, "id" | "rootLessonNodeId" | "organizationId_slug">
 
 export type CourseOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -243,6 +259,7 @@ export type CourseOrderByWithAggregationInput = {
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
+  rootLessonNodeId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -260,6 +277,7 @@ export type CourseScalarWhereWithAggregatesInput = {
   slug?: Prisma.StringWithAggregatesFilter<"Course"> | string
   name?: Prisma.StringWithAggregatesFilter<"Course"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"Course"> | string | null
+  rootLessonNodeId?: Prisma.StringNullableWithAggregatesFilter<"Course"> | string | null
   createdBy?: Prisma.StringWithAggregatesFilter<"Course"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Course"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Course"> | Date | string
@@ -273,6 +291,8 @@ export type CourseCreateInput = {
   createdBy: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  rootLessonNode?: Prisma.LessonNodeCreateNestedOneWithoutRootOfCourseInput
+  lessonNodes?: Prisma.LessonNodeCreateNestedManyWithoutCourseInput
   organization: Prisma.OrganizationCreateNestedOneWithoutCoursesInput
 }
 
@@ -282,9 +302,11 @@ export type CourseUncheckedCreateInput = {
   slug: string
   name: string
   description?: string | null
+  rootLessonNodeId?: string | null
   createdBy: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  lessonNodes?: Prisma.LessonNodeUncheckedCreateNestedManyWithoutCourseInput
 }
 
 export type CourseUpdateInput = {
@@ -295,6 +317,8 @@ export type CourseUpdateInput = {
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  rootLessonNode?: Prisma.LessonNodeUpdateOneWithoutRootOfCourseNestedInput
+  lessonNodes?: Prisma.LessonNodeUpdateManyWithoutCourseNestedInput
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutCoursesNestedInput
 }
 
@@ -304,9 +328,11 @@ export type CourseUncheckedUpdateInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rootLessonNodeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lessonNodes?: Prisma.LessonNodeUncheckedUpdateManyWithoutCourseNestedInput
 }
 
 export type CourseCreateManyInput = {
@@ -315,6 +341,7 @@ export type CourseCreateManyInput = {
   slug: string
   name: string
   description?: string | null
+  rootLessonNodeId?: string | null
   createdBy: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -336,6 +363,7 @@ export type CourseUncheckedUpdateManyInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rootLessonNodeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -362,6 +390,7 @@ export type CourseCountOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  rootLessonNodeId?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -373,6 +402,7 @@ export type CourseMaxOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  rootLessonNodeId?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -384,9 +414,20 @@ export type CourseMinOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  rootLessonNodeId?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type CourseScalarRelationFilter = {
+  is?: Prisma.CourseWhereInput
+  isNot?: Prisma.CourseWhereInput
+}
+
+export type CourseNullableScalarRelationFilter = {
+  is?: Prisma.CourseWhereInput | null
+  isNot?: Prisma.CourseWhereInput | null
 }
 
 export type CourseCreateNestedManyWithoutOrganizationInput = {
@@ -431,6 +472,52 @@ export type CourseUncheckedUpdateManyWithoutOrganizationNestedInput = {
   deleteMany?: Prisma.CourseScalarWhereInput | Prisma.CourseScalarWhereInput[]
 }
 
+export type CourseCreateNestedOneWithoutLessonNodesInput = {
+  create?: Prisma.XOR<Prisma.CourseCreateWithoutLessonNodesInput, Prisma.CourseUncheckedCreateWithoutLessonNodesInput>
+  connectOrCreate?: Prisma.CourseCreateOrConnectWithoutLessonNodesInput
+  connect?: Prisma.CourseWhereUniqueInput
+}
+
+export type CourseCreateNestedOneWithoutRootLessonNodeInput = {
+  create?: Prisma.XOR<Prisma.CourseCreateWithoutRootLessonNodeInput, Prisma.CourseUncheckedCreateWithoutRootLessonNodeInput>
+  connectOrCreate?: Prisma.CourseCreateOrConnectWithoutRootLessonNodeInput
+  connect?: Prisma.CourseWhereUniqueInput
+}
+
+export type CourseUncheckedCreateNestedOneWithoutRootLessonNodeInput = {
+  create?: Prisma.XOR<Prisma.CourseCreateWithoutRootLessonNodeInput, Prisma.CourseUncheckedCreateWithoutRootLessonNodeInput>
+  connectOrCreate?: Prisma.CourseCreateOrConnectWithoutRootLessonNodeInput
+  connect?: Prisma.CourseWhereUniqueInput
+}
+
+export type CourseUpdateOneRequiredWithoutLessonNodesNestedInput = {
+  create?: Prisma.XOR<Prisma.CourseCreateWithoutLessonNodesInput, Prisma.CourseUncheckedCreateWithoutLessonNodesInput>
+  connectOrCreate?: Prisma.CourseCreateOrConnectWithoutLessonNodesInput
+  upsert?: Prisma.CourseUpsertWithoutLessonNodesInput
+  connect?: Prisma.CourseWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CourseUpdateToOneWithWhereWithoutLessonNodesInput, Prisma.CourseUpdateWithoutLessonNodesInput>, Prisma.CourseUncheckedUpdateWithoutLessonNodesInput>
+}
+
+export type CourseUpdateOneWithoutRootLessonNodeNestedInput = {
+  create?: Prisma.XOR<Prisma.CourseCreateWithoutRootLessonNodeInput, Prisma.CourseUncheckedCreateWithoutRootLessonNodeInput>
+  connectOrCreate?: Prisma.CourseCreateOrConnectWithoutRootLessonNodeInput
+  upsert?: Prisma.CourseUpsertWithoutRootLessonNodeInput
+  disconnect?: Prisma.CourseWhereInput | boolean
+  delete?: Prisma.CourseWhereInput | boolean
+  connect?: Prisma.CourseWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CourseUpdateToOneWithWhereWithoutRootLessonNodeInput, Prisma.CourseUpdateWithoutRootLessonNodeInput>, Prisma.CourseUncheckedUpdateWithoutRootLessonNodeInput>
+}
+
+export type CourseUncheckedUpdateOneWithoutRootLessonNodeNestedInput = {
+  create?: Prisma.XOR<Prisma.CourseCreateWithoutRootLessonNodeInput, Prisma.CourseUncheckedCreateWithoutRootLessonNodeInput>
+  connectOrCreate?: Prisma.CourseCreateOrConnectWithoutRootLessonNodeInput
+  upsert?: Prisma.CourseUpsertWithoutRootLessonNodeInput
+  disconnect?: Prisma.CourseWhereInput | boolean
+  delete?: Prisma.CourseWhereInput | boolean
+  connect?: Prisma.CourseWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CourseUpdateToOneWithWhereWithoutRootLessonNodeInput, Prisma.CourseUpdateWithoutRootLessonNodeInput>, Prisma.CourseUncheckedUpdateWithoutRootLessonNodeInput>
+}
+
 export type CourseCreateWithoutOrganizationInput = {
   id?: string
   slug: string
@@ -439,6 +526,8 @@ export type CourseCreateWithoutOrganizationInput = {
   createdBy: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  rootLessonNode?: Prisma.LessonNodeCreateNestedOneWithoutRootOfCourseInput
+  lessonNodes?: Prisma.LessonNodeCreateNestedManyWithoutCourseInput
 }
 
 export type CourseUncheckedCreateWithoutOrganizationInput = {
@@ -446,9 +535,11 @@ export type CourseUncheckedCreateWithoutOrganizationInput = {
   slug: string
   name: string
   description?: string | null
+  rootLessonNodeId?: string | null
   createdBy: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  lessonNodes?: Prisma.LessonNodeUncheckedCreateNestedManyWithoutCourseInput
 }
 
 export type CourseCreateOrConnectWithoutOrganizationInput = {
@@ -486,9 +577,138 @@ export type CourseScalarWhereInput = {
   slug?: Prisma.StringFilter<"Course"> | string
   name?: Prisma.StringFilter<"Course"> | string
   description?: Prisma.StringNullableFilter<"Course"> | string | null
+  rootLessonNodeId?: Prisma.StringNullableFilter<"Course"> | string | null
   createdBy?: Prisma.StringFilter<"Course"> | string
   createdAt?: Prisma.DateTimeFilter<"Course"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Course"> | Date | string
+}
+
+export type CourseCreateWithoutLessonNodesInput = {
+  id?: string
+  slug: string
+  name: string
+  description?: string | null
+  createdBy: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  rootLessonNode?: Prisma.LessonNodeCreateNestedOneWithoutRootOfCourseInput
+  organization: Prisma.OrganizationCreateNestedOneWithoutCoursesInput
+}
+
+export type CourseUncheckedCreateWithoutLessonNodesInput = {
+  id?: string
+  organizationId: string
+  slug: string
+  name: string
+  description?: string | null
+  rootLessonNodeId?: string | null
+  createdBy: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type CourseCreateOrConnectWithoutLessonNodesInput = {
+  where: Prisma.CourseWhereUniqueInput
+  create: Prisma.XOR<Prisma.CourseCreateWithoutLessonNodesInput, Prisma.CourseUncheckedCreateWithoutLessonNodesInput>
+}
+
+export type CourseCreateWithoutRootLessonNodeInput = {
+  id?: string
+  slug: string
+  name: string
+  description?: string | null
+  createdBy: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  lessonNodes?: Prisma.LessonNodeCreateNestedManyWithoutCourseInput
+  organization: Prisma.OrganizationCreateNestedOneWithoutCoursesInput
+}
+
+export type CourseUncheckedCreateWithoutRootLessonNodeInput = {
+  id?: string
+  organizationId: string
+  slug: string
+  name: string
+  description?: string | null
+  createdBy: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  lessonNodes?: Prisma.LessonNodeUncheckedCreateNestedManyWithoutCourseInput
+}
+
+export type CourseCreateOrConnectWithoutRootLessonNodeInput = {
+  where: Prisma.CourseWhereUniqueInput
+  create: Prisma.XOR<Prisma.CourseCreateWithoutRootLessonNodeInput, Prisma.CourseUncheckedCreateWithoutRootLessonNodeInput>
+}
+
+export type CourseUpsertWithoutLessonNodesInput = {
+  update: Prisma.XOR<Prisma.CourseUpdateWithoutLessonNodesInput, Prisma.CourseUncheckedUpdateWithoutLessonNodesInput>
+  create: Prisma.XOR<Prisma.CourseCreateWithoutLessonNodesInput, Prisma.CourseUncheckedCreateWithoutLessonNodesInput>
+  where?: Prisma.CourseWhereInput
+}
+
+export type CourseUpdateToOneWithWhereWithoutLessonNodesInput = {
+  where?: Prisma.CourseWhereInput
+  data: Prisma.XOR<Prisma.CourseUpdateWithoutLessonNodesInput, Prisma.CourseUncheckedUpdateWithoutLessonNodesInput>
+}
+
+export type CourseUpdateWithoutLessonNodesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdBy?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  rootLessonNode?: Prisma.LessonNodeUpdateOneWithoutRootOfCourseNestedInput
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutCoursesNestedInput
+}
+
+export type CourseUncheckedUpdateWithoutLessonNodesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rootLessonNodeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdBy?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type CourseUpsertWithoutRootLessonNodeInput = {
+  update: Prisma.XOR<Prisma.CourseUpdateWithoutRootLessonNodeInput, Prisma.CourseUncheckedUpdateWithoutRootLessonNodeInput>
+  create: Prisma.XOR<Prisma.CourseCreateWithoutRootLessonNodeInput, Prisma.CourseUncheckedCreateWithoutRootLessonNodeInput>
+  where?: Prisma.CourseWhereInput
+}
+
+export type CourseUpdateToOneWithWhereWithoutRootLessonNodeInput = {
+  where?: Prisma.CourseWhereInput
+  data: Prisma.XOR<Prisma.CourseUpdateWithoutRootLessonNodeInput, Prisma.CourseUncheckedUpdateWithoutRootLessonNodeInput>
+}
+
+export type CourseUpdateWithoutRootLessonNodeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdBy?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lessonNodes?: Prisma.LessonNodeUpdateManyWithoutCourseNestedInput
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutCoursesNestedInput
+}
+
+export type CourseUncheckedUpdateWithoutRootLessonNodeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdBy?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lessonNodes?: Prisma.LessonNodeUncheckedUpdateManyWithoutCourseNestedInput
 }
 
 export type CourseCreateManyOrganizationInput = {
@@ -496,6 +716,7 @@ export type CourseCreateManyOrganizationInput = {
   slug: string
   name: string
   description?: string | null
+  rootLessonNodeId?: string | null
   createdBy: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -509,6 +730,8 @@ export type CourseUpdateWithoutOrganizationInput = {
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  rootLessonNode?: Prisma.LessonNodeUpdateOneWithoutRootOfCourseNestedInput
+  lessonNodes?: Prisma.LessonNodeUpdateManyWithoutCourseNestedInput
 }
 
 export type CourseUncheckedUpdateWithoutOrganizationInput = {
@@ -516,9 +739,11 @@ export type CourseUncheckedUpdateWithoutOrganizationInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rootLessonNodeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lessonNodes?: Prisma.LessonNodeUncheckedUpdateManyWithoutCourseNestedInput
 }
 
 export type CourseUncheckedUpdateManyWithoutOrganizationInput = {
@@ -526,11 +751,41 @@ export type CourseUncheckedUpdateManyWithoutOrganizationInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rootLessonNodeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+
+/**
+ * Count Type CourseCountOutputType
+ */
+
+export type CourseCountOutputType = {
+  lessonNodes: number
+}
+
+export type CourseCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  lessonNodes?: boolean | CourseCountOutputTypeCountLessonNodesArgs
+}
+
+/**
+ * CourseCountOutputType without action
+ */
+export type CourseCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CourseCountOutputType
+   */
+  select?: Prisma.CourseCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * CourseCountOutputType without action
+ */
+export type CourseCountOutputTypeCountLessonNodesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.LessonNodeWhereInput
+}
 
 
 export type CourseSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -539,10 +794,14 @@ export type CourseSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   slug?: boolean
   name?: boolean
   description?: boolean
+  rootLessonNodeId?: boolean
   createdBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  rootLessonNode?: boolean | Prisma.Course$rootLessonNodeArgs<ExtArgs>
+  lessonNodes?: boolean | Prisma.Course$lessonNodesArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+  _count?: boolean | Prisma.CourseCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["course"]>
 
 export type CourseSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -551,9 +810,11 @@ export type CourseSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   slug?: boolean
   name?: boolean
   description?: boolean
+  rootLessonNodeId?: boolean
   createdBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  rootLessonNode?: boolean | Prisma.Course$rootLessonNodeArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["course"]>
 
@@ -563,9 +824,11 @@ export type CourseSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   slug?: boolean
   name?: boolean
   description?: boolean
+  rootLessonNodeId?: boolean
   createdBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  rootLessonNode?: boolean | Prisma.Course$rootLessonNodeArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["course"]>
 
@@ -575,25 +838,33 @@ export type CourseSelectScalar = {
   slug?: boolean
   name?: boolean
   description?: boolean
+  rootLessonNodeId?: boolean
   createdBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type CourseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "slug" | "name" | "description" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["course"]>
+export type CourseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "slug" | "name" | "description" | "rootLessonNodeId" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["course"]>
 export type CourseInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  rootLessonNode?: boolean | Prisma.Course$rootLessonNodeArgs<ExtArgs>
+  lessonNodes?: boolean | Prisma.Course$lessonNodesArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+  _count?: boolean | Prisma.CourseCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CourseIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  rootLessonNode?: boolean | Prisma.Course$rootLessonNodeArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }
 export type CourseIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  rootLessonNode?: boolean | Prisma.Course$rootLessonNodeArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }
 
 export type $CoursePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Course"
   objects: {
+    rootLessonNode: Prisma.$LessonNodePayload<ExtArgs> | null
+    lessonNodes: Prisma.$LessonNodePayload<ExtArgs>[]
     organization: Prisma.$OrganizationPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -602,6 +873,7 @@ export type $CoursePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     slug: string
     name: string
     description: string | null
+    rootLessonNodeId: string | null
     createdBy: string
     createdAt: Date
     updatedAt: Date
@@ -999,6 +1271,8 @@ readonly fields: CourseFieldRefs;
  */
 export interface Prisma__CourseClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  rootLessonNode<T extends Prisma.Course$rootLessonNodeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Course$rootLessonNodeArgs<ExtArgs>>): Prisma.Prisma__LessonNodeClient<runtime.Types.Result.GetResult<Prisma.$LessonNodePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  lessonNodes<T extends Prisma.Course$lessonNodesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Course$lessonNodesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LessonNodePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1034,6 +1308,7 @@ export interface CourseFieldRefs {
   readonly slug: Prisma.FieldRef<"Course", 'String'>
   readonly name: Prisma.FieldRef<"Course", 'String'>
   readonly description: Prisma.FieldRef<"Course", 'String'>
+  readonly rootLessonNodeId: Prisma.FieldRef<"Course", 'String'>
   readonly createdBy: Prisma.FieldRef<"Course", 'String'>
   readonly createdAt: Prisma.FieldRef<"Course", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Course", 'DateTime'>
@@ -1430,6 +1705,49 @@ export type CourseDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Limit how many Courses to delete.
    */
   limit?: number
+}
+
+/**
+ * Course.rootLessonNode
+ */
+export type Course$rootLessonNodeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the LessonNode
+   */
+  select?: Prisma.LessonNodeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the LessonNode
+   */
+  omit?: Prisma.LessonNodeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LessonNodeInclude<ExtArgs> | null
+  where?: Prisma.LessonNodeWhereInput
+}
+
+/**
+ * Course.lessonNodes
+ */
+export type Course$lessonNodesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the LessonNode
+   */
+  select?: Prisma.LessonNodeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the LessonNode
+   */
+  omit?: Prisma.LessonNodeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LessonNodeInclude<ExtArgs> | null
+  where?: Prisma.LessonNodeWhereInput
+  orderBy?: Prisma.LessonNodeOrderByWithRelationInput | Prisma.LessonNodeOrderByWithRelationInput[]
+  cursor?: Prisma.LessonNodeWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.LessonNodeScalarFieldEnum | Prisma.LessonNodeScalarFieldEnum[]
 }
 
 /**

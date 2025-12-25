@@ -1,4 +1,3 @@
-// components/organization/organization-provider.tsx
 "use client";
 
 import { OrganizationContext } from "./org-context";

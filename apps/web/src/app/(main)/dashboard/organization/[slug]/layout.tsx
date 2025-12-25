@@ -3,7 +3,7 @@ import { OrganizationProvider } from "@/components/providers/org-provider";
 import { auth } from "@/lib/auth-server";
 import { checkUserInOrg } from "@/server/members";
 import { headers } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 
 type Params = Promise<{ slug: string }>;
 
@@ -29,13 +29,13 @@ export default async function OrgLayout({
     redirect("/dashboard");
   }
 
-  if (!organization) notFound();
+  if (!organization) redirect("/dashboard");
 
   return (
     <OrganizationProvider organization={organization}>
       <div className="flex flex-col gap-4 py-6 px-4 max-w-4xl mx-auto w-full">
         <h1 className="font-bold text-2xl">{organization.name}</h1>
-        <OrgNav slug={slug} />
+        <OrgNav />
         <div className="mt-2">{children}</div>
       </div>
     </OrganizationProvider>

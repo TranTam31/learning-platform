@@ -5,20 +5,21 @@ import { usePathname, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-export function OrgNav() {
+export function CourseNav() {
   const pathname = usePathname();
   const params = useParams();
 
   // Lấy slug từ dynamic route [slug] hoặc [orgSlug]
   // Lưu ý: Tên biến phải khớp với tên thư mục [slug] của bạn
-  const slug = params.slug;
+  const orgSlug = params.orgSlug;
+  const courseSlug = params.courseSlug;
 
-  const basePath = `/dashboard/organization/${slug}`;
+  const basePath = `/dashboard/course/${orgSlug}/${courseSlug}`;
 
   // Tối ưu mảng tabs để code ngắn gọn hơn
   const tabs = [
-    { name: "Courses", href: basePath },
-    { name: "Members", href: `${basePath}/members` },
+    { name: "Manage", href: basePath },
+    // { name: "Members", href: `${basePath}` },
     { name: "Settings", href: `${basePath}/settings` },
   ];
 
