@@ -182,6 +182,13 @@ export type EnumRoleNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumRoleNullableFilter<$PrismaModel>
 }
 
+export type EnumLessonNodeTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.LessonNodeType | Prisma.EnumLessonNodeTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.LessonNodeType[] | Prisma.ListEnumLessonNodeTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.LessonNodeType[] | Prisma.ListEnumLessonNodeTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLessonNodeTypeFilter<$PrismaModel> | $Enums.LessonNodeType
+}
+
 export type JsonNullableFilter<$PrismaModel = never> =
 | Prisma.PatchUndefined<
     Prisma.Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -215,6 +222,16 @@ export type IntNullableFilter<$PrismaModel = never> = {
   gt?: number | Prisma.IntFieldRefInput<$PrismaModel>
   gte?: number | Prisma.IntFieldRefInput<$PrismaModel>
   not?: Prisma.NestedIntNullableFilter<$PrismaModel> | number | null
+}
+
+export type EnumLessonNodeTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.LessonNodeType | Prisma.EnumLessonNodeTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.LessonNodeType[] | Prisma.ListEnumLessonNodeTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.LessonNodeType[] | Prisma.ListEnumLessonNodeTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLessonNodeTypeWithAggregatesFilter<$PrismaModel> | $Enums.LessonNodeType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumLessonNodeTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumLessonNodeTypeFilter<$PrismaModel>
 }
 
 export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
@@ -258,6 +275,40 @@ export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _max?: Prisma.NestedIntNullableFilter<$PrismaModel>
+}
+
+export type EnumClassRoleFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClassRole | Prisma.EnumClassRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.ClassRole[] | Prisma.ListEnumClassRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClassRole[] | Prisma.ListEnumClassRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClassRoleFilter<$PrismaModel> | $Enums.ClassRole
+}
+
+export type EnumClassRoleWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClassRole | Prisma.EnumClassRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.ClassRole[] | Prisma.ListEnumClassRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClassRole[] | Prisma.ListEnumClassRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClassRoleWithAggregatesFilter<$PrismaModel> | $Enums.ClassRole
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumClassRoleFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumClassRoleFilter<$PrismaModel>
+}
+
+export type EnumClassAddonTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClassAddonType | Prisma.EnumClassAddonTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ClassAddonType[] | Prisma.ListEnumClassAddonTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClassAddonType[] | Prisma.ListEnumClassAddonTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClassAddonTypeFilter<$PrismaModel> | $Enums.ClassAddonType
+}
+
+export type EnumClassAddonTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClassAddonType | Prisma.EnumClassAddonTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ClassAddonType[] | Prisma.ListEnumClassAddonTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClassAddonType[] | Prisma.ListEnumClassAddonTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClassAddonTypeWithAggregatesFilter<$PrismaModel> | $Enums.ClassAddonType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumClassAddonTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumClassAddonTypeFilter<$PrismaModel>
 }
 
 export type NestedStringFilter<$PrismaModel = never> = {
@@ -441,6 +492,23 @@ export type NestedEnumRoleNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumRoleNullableFilter<$PrismaModel>
 }
 
+export type NestedEnumLessonNodeTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.LessonNodeType | Prisma.EnumLessonNodeTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.LessonNodeType[] | Prisma.ListEnumLessonNodeTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.LessonNodeType[] | Prisma.ListEnumLessonNodeTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLessonNodeTypeFilter<$PrismaModel> | $Enums.LessonNodeType
+}
+
+export type NestedEnumLessonNodeTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.LessonNodeType | Prisma.EnumLessonNodeTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.LessonNodeType[] | Prisma.ListEnumLessonNodeTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.LessonNodeType[] | Prisma.ListEnumLessonNodeTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLessonNodeTypeWithAggregatesFilter<$PrismaModel> | $Enums.LessonNodeType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumLessonNodeTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumLessonNodeTypeFilter<$PrismaModel>
+}
+
 export type NestedJsonNullableFilter<$PrismaModel = never> =
 | Prisma.PatchUndefined<
     Prisma.Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -490,6 +558,40 @@ export type NestedFloatNullableFilter<$PrismaModel = never> = {
   gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   not?: Prisma.NestedFloatNullableFilter<$PrismaModel> | number | null
+}
+
+export type NestedEnumClassRoleFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClassRole | Prisma.EnumClassRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.ClassRole[] | Prisma.ListEnumClassRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClassRole[] | Prisma.ListEnumClassRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClassRoleFilter<$PrismaModel> | $Enums.ClassRole
+}
+
+export type NestedEnumClassRoleWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClassRole | Prisma.EnumClassRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.ClassRole[] | Prisma.ListEnumClassRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClassRole[] | Prisma.ListEnumClassRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClassRoleWithAggregatesFilter<$PrismaModel> | $Enums.ClassRole
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumClassRoleFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumClassRoleFilter<$PrismaModel>
+}
+
+export type NestedEnumClassAddonTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClassAddonType | Prisma.EnumClassAddonTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ClassAddonType[] | Prisma.ListEnumClassAddonTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClassAddonType[] | Prisma.ListEnumClassAddonTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClassAddonTypeFilter<$PrismaModel> | $Enums.ClassAddonType
+}
+
+export type NestedEnumClassAddonTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClassAddonType | Prisma.EnumClassAddonTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ClassAddonType[] | Prisma.ListEnumClassAddonTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClassAddonType[] | Prisma.ListEnumClassAddonTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClassAddonTypeWithAggregatesFilter<$PrismaModel> | $Enums.ClassAddonType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumClassAddonTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumClassAddonTypeFilter<$PrismaModel>
 }
 
 

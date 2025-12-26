@@ -13,11 +13,14 @@ import {
 import {
   addLessonNode,
   deleteLessonNode,
+  loadLessonHomeworks,
   loadNodeChildren,
 } from "@/server/courses";
 import {
+  AddNodeInputType,
   CourseUI,
   CourseWithRootNode,
+  LessonNodeType,
   LessonNodeUI,
   LessonNodeWithCount,
 } from "@/types/course";
@@ -27,6 +30,51 @@ import {
 interface CourseStructureManagerProps {
   initialCourse: CourseUI;
 }
+
+// Đặt bên ngoài component chính
+const HomeworkList: React.FC<{
+  lessonNode: LessonNodeUI;
+  onDelete: (id: string) => void;
+}> = ({ lessonNode, onDelete }) => {
+  const [homeworks, setHomeworks] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const loadHomeworks = async () => {
+      setLoading(true);
+      const result = await loadLessonHomeworks(lessonNode.id);
+      if (result.success && result.data) {
+        setHomeworks(result.data);
+      }
+      setLoading(false);
+    };
+    loadHomeworks();
+  }, [lessonNode.id]);
+
+  if (loading) return <div className="text-sm text-gray-500">Loading...</div>;
+  if (homeworks.length === 0)
+    return <div className="text-sm text-gray-500">Chưa có homework</div>;
+
+  return (
+    <div className="space-y-2">
+      {homeworks.map((hw) => (
+        <div
+          key={hw.id}
+          className="flex items-center gap-2 p-2 bg-orange-50 rounded group"
+        >
+          <File className="w-4 h-4 text-orange-500" />
+          <span className="text-sm flex-1">{hw.title}</span>
+          <button
+            onClick={() => onDelete(hw.id)}
+            className="p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100"
+          >
+            <Trash2 className="w-3 h-3 text-red-500" />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
   initialCourse,
@@ -135,15 +183,25 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
   };
 
   // Add new node
-  const handleAddNode = async (type: "MODULE" | "LESSON") => {
+  const handleAddNode = async (type: AddNodeInputType) => {
     if (!selectedNode) {
       alert("Vui lòng chọn một node trước");
       return;
     }
 
-    if (selectedNode.type === "LESSON") {
-      alert("Không thể thêm node vào Lesson!");
-      return;
+    // Validation theo type
+    if (type === LessonNodeType.homework) {
+      // HOMEWORK chỉ thêm vào LESSON
+      if (selectedNode.type !== LessonNodeType.lesson) {
+        alert("Chỉ có thể thêm Homework vào Lesson!");
+        return;
+      }
+    } else {
+      // MODULE/LESSON không thêm vào LESSON
+      if (selectedNode.type === LessonNodeType.lesson) {
+        alert("Không thể thêm Module/Lesson vào Lesson!");
+        return;
+      }
     }
 
     setLoadingAction(`add-${type}`);
@@ -153,57 +211,69 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
         courseId: course.id,
         parentId: selectedNode.id,
         type: type,
-        title: type === "MODULE" ? "New Module" : "New Lesson",
+        title:
+          type === LessonNodeType.module
+            ? "New Module"
+            : type === LessonNodeType.lesson
+              ? "New Lesson"
+              : "New Homework",
       });
 
       if (result.success && result.data) {
         const newNode: LessonNodeUI = transformToUINode(result.data);
 
-        setCourse((prev) => {
-          const newCourse = { ...prev };
-          if (!newCourse.rootLessonNode) return prev;
+        // Chỉ update Course Structure tree nếu KHÔNG phải HOMEWORK
+        if (type !== LessonNodeType.homework) {
+          setCourse((prev) => {
+            const newCourse = { ...prev };
+            if (!newCourse.rootLessonNode) return prev;
 
-          const updateNode = (node: LessonNodeUI): LessonNodeUI => {
-            if (node.id === selectedNode.id) {
+            const updateNode = (node: LessonNodeUI): LessonNodeUI => {
+              if (node.id === selectedNode.id) {
+                return {
+                  ...node,
+                  children: [...node.children, newNode],
+                  _count: {
+                    children: node._count.children + 1,
+                  },
+                  childrenLoaded: true,
+                };
+              }
               return {
                 ...node,
-                children: [...node.children, newNode],
-                _count: {
-                  children: node._count.children + 1,
-                },
-                childrenLoaded: true,
+                children: node.children.map((child) => updateNode(child)),
               };
-            }
-            return {
-              ...node,
-              children: node.children.map((child) => updateNode(child)),
             };
-          };
 
-          const updatedRoot = updateNode(
-            newCourse.rootLessonNode as LessonNodeUI
-          );
-          return {
-            ...newCourse,
-            rootLessonNode: updatedRoot,
-          };
-        });
+            const updatedRoot = updateNode(
+              newCourse.rootLessonNode as LessonNodeUI
+            );
+            return {
+              ...newCourse,
+              rootLessonNode: updatedRoot,
+            };
+          });
 
-        // Update selectedNode
-        if (selectedNode) {
-          setSelectedNode((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  children: [...prev.children, newNode],
-                  _count: { children: prev._count.children + 1 },
-                  childrenLoaded: true,
-                }
-              : null
-          );
+          // Update selectedNode
+          if (selectedNode) {
+            setSelectedNode((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    children: [...prev.children, newNode],
+                    _count: { children: prev._count.children + 1 },
+                    childrenLoaded: true,
+                  }
+                : null
+            );
+          }
+
+          setExpandedNodes((prev) => new Set([...prev, selectedNode.id]));
+        } else {
+          // HOMEWORK thêm thành công - refresh homework list bằng cách trigger re-render
+          // HomeworkList component sẽ tự reload
+          alert("Thêm homework thành công!");
         }
-
-        setExpandedNodes((prev) => new Set([...prev, selectedNode.id]));
       } else {
         alert(result.error || "Có lỗi xảy ra khi thêm node");
       }
@@ -274,10 +344,10 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
 
   // Get icon for node type
   const getNodeIcon = (node: LessonNodeUI, isExpanded: boolean) => {
-    if (node.type === "LESSON") {
+    if (node.type === LessonNodeType.lesson) {
       return <File className="w-4 h-4 text-blue-500" />;
     }
-    if (node.type === "COURSE") {
+    if (node.type === LessonNodeType.course) {
       return <BookOpen className="w-4 h-4 text-purple-500" />;
     }
     return isExpanded ? (
@@ -290,6 +360,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
   // Render tree node
   const renderNode = (node: LessonNodeUI, level: number = 0) => {
     console.log(node);
+    if (node.type === LessonNodeType.homework) return null;
     const isExpanded = expandedNodes.has(node.id);
     const isSelected = selectedNode?.id === node.id;
     const hasChildren = node._count.children > 0;
@@ -306,7 +377,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
           onClick={() => setSelectedNode(node)}
         >
           <div className="flex items-center gap-1 flex-1">
-            {hasChildren ? (
+            {hasChildren && node.type !== LessonNodeType.lesson ? (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -334,7 +405,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
               </span>
             )}
           </div>
-          {node.type !== "COURSE" && (
+          {node.type !== LessonNodeType.course && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -362,7 +433,8 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
 
   const isAddingModule = loadingAction === "add-MODULE";
   const isAddingLesson = loadingAction === "add-LESSON";
-  const canAddToSelected = selectedNode && selectedNode.type !== "LESSON";
+  const canAddToSelected =
+    selectedNode && selectedNode.type !== LessonNodeType.lesson;
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -380,7 +452,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => handleAddNode("MODULE")}
+              onClick={() => handleAddNode(LessonNodeType.module)}
               disabled={!canAddToSelected || isPending}
               className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
@@ -392,7 +464,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
               Add Module
             </button>
             <button
-              onClick={() => handleAddNode("LESSON")}
+              onClick={() => handleAddNode(LessonNodeType.lesson)}
               disabled={!canAddToSelected || isPending}
               className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-green-500 text-white text-sm rounded hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
@@ -404,11 +476,6 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
               Add Lesson
             </button>
           </div>
-          {!canAddToSelected && selectedNode && (
-            <p className="text-xs text-red-500 mt-2">
-              Không thể thêm vào Lesson. Chọn Course hoặc Module.
-            </p>
-          )}
         </div>
         <div className="flex-1 overflow-y-auto">
           {course.rootLessonNode &&
@@ -480,6 +547,25 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
         ) : (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-500">Chọn một node để xem chi tiết</p>
+          </div>
+        )}
+        {/* Homework Section */}
+        {selectedNode?.type === LessonNodeType.lesson && (
+          <div className="border-t border-gray-200 mt-4 pt-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-gray-700">Homework</h3>
+              <button
+                onClick={() => handleAddNode(LessonNodeType.homework)}
+                disabled={isPending}
+                className="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 disabled:bg-gray-300"
+              >
+                + Add Homework
+              </button>
+            </div>
+            <HomeworkList
+              lessonNode={selectedNode}
+              onDelete={handleDeleteNode}
+            />
           </div>
         )}
       </div>

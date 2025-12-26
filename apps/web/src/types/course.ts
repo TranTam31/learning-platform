@@ -67,10 +67,22 @@ export type CourseWithRootNode = Prisma.CourseGetPayload<{
   };
 }>;
 
+export type AddNodeInputType = Extract<
+  LessonNodeType,
+  "homework" | "module" | "lesson"
+>;
+
+export enum LessonNodeType {
+  course = "course",
+  module = "module",
+  lesson = "lesson",
+  homework = "homework",
+}
+
 export interface AddNodeInput {
   courseId: string;
   parentId: string;
-  type: "MODULE" | "LESSON";
+  type: AddNodeInputType;
   title: string;
 }
 

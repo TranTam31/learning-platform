@@ -21,17 +21,19 @@ enum Role {
 }
 
 model User {
-  id            String       @id
-  name          String
-  email         String
-  emailVerified Boolean      @default(false)
-  image         String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  members       Member[]
-  invitations   Invitation[]
+  id             String        @id
+  name           String
+  email          String
+  emailVerified  Boolean       @default(false)
+  image          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  sessions       Session[]
+  accounts       Account[]
+  members        Member[]
+  createdClasses Class[]       @relation("ClassCreator")
+  classMembers   ClassMember[]
+  invitations    Invitation[]
 
   @@unique([email])
   @@map("user")
@@ -142,13 +144,15 @@ model Course {
   rootLessonNodeId String?     @unique
   rootLessonNode   LessonNode? @relation("CourseRoot", fields: [rootLessonNodeId], references: [id])
 
+  organization Organization @relation(fields: [organizationId], references: [id])
+
   lessonNodes LessonNode[] @relation("CourseToLessons")
 
   createdBy String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  organization Organization @relation(fields: [organizationId], references: [id])
+  classes Class[]
 
   @@unique([organizationId, slug])
   @@map("course")
@@ -167,14 +171,89 @@ model LessonNode {
 
   rootOfCourse Course? @relation("CourseRoot")
 
-  type    String
+  type    LessonNodeType
   content Json?
 
   order Int?
+
+  noteChildren ClassLessonNode[] @relation("NodeRoot")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([parentId])
   @@map("lesson_node")
+}
+
+enum LessonNodeType {
+  course
+  module
+  lesson
+  homework
+}
+
+model Class {
+  id   String @id @default(cuid())
+  name String
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id])
+
+  members ClassMember[]
+
+  createdById String
+  createdBy   User   @relation("ClassCreator", fields: [createdById], references: [id])
+
+  classLessonNodes ClassLessonNode[] @relation("ClassLessonNode")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("class")
+}
+
+model ClassMember {
+  id String @id @default(cuid())
+
+  classId String
+  class   Class  @relation(fields: [classId], references: [id])
+
+  role ClassRole
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  joinedAt DateTime @default(now())
+
+  @@unique([classId, userId])
+  @@map("class_member")
+}
+
+enum ClassRole {
+  teacher
+  student
+}
+
+model ClassLessonNode {
+  id String @id @default(cuid())
+
+  classId String
+  class   Class  @relation("ClassLessonNode", fields: [classId], references: [id])
+
+  type    ClassAddonType
+  content Json?
+
+  createdById String
+
+  lessonNodeId String
+  lessonNode   LessonNode @relation("NodeRoot", fields: [lessonNodeId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@map("class_lesson_node")
+}
+
+enum ClassAddonType {
+  lesson_note
+  homework
 }

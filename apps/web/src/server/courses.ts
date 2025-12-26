@@ -7,6 +7,7 @@ import prisma from "@/lib/prisma";
 import { checkUserInOrg } from "./members";
 import { revalidatePath } from "next/cache";
 import { AddNodeInput, DeleteNodeInput } from "@/types/course";
+import { LessonNodeType } from "@repo/db";
 
 export async function canCreateCourse(orgId: string) {
   return await auth.api.hasPermission({
@@ -47,7 +48,7 @@ export async function createCourse(
     // 2. Tạo LessonNode gốc cho Course đó
     const rootNode = await tx.lessonNode.create({
       data: {
-        type: "COURSE",
+        type: LessonNodeType.course,
         title: name,
         content: {},
         courseId: newCourse.id, // Đã có ID từ bước 1
@@ -71,7 +72,6 @@ export async function addLessonNode(input: AddNodeInput) {
   try {
     const { courseId, parentId, type, title } = input;
 
-    // Validate parent node
     const parentNode = await prisma.lessonNode.findUnique({
       where: { id: parentId },
       select: {
@@ -90,18 +90,27 @@ export async function addLessonNode(input: AddNodeInput) {
       };
     }
 
-    // Không cho phép thêm node vào LESSON
-    if (parentNode.type === "LESSON") {
-      return {
-        success: false,
-        error: "Không thể thêm node vào Lesson",
-      };
+    // Validation logic
+    if (type === LessonNodeType.homework) {
+      // HOMEWORK chỉ thêm vào LESSON
+      if (parentNode.type !== LessonNodeType.lesson) {
+        return {
+          success: false,
+          error: "Chỉ có thể thêm Homework vào Lesson",
+        };
+      }
+    } else {
+      // MODULE/LESSON không thêm vào LESSON
+      if (parentNode.type === LessonNodeType.lesson) {
+        return {
+          success: false,
+          error: "Không thể thêm node vào Lesson",
+        };
+      }
     }
 
-    // Tính order cho node mới
     const order = parentNode._count.children;
 
-    // Tạo node mới
     const newNode = await prisma.lessonNode.create({
       data: {
         title,
@@ -109,9 +118,7 @@ export async function addLessonNode(input: AddNodeInput) {
         courseId,
         parentId,
         order,
-        content: {
-          description: "",
-        },
+        content: {}, // Empty object cho tất cả
       },
       select: {
         id: true,
@@ -140,6 +147,41 @@ export async function addLessonNode(input: AddNodeInput) {
     return {
       success: false,
       error: "Có lỗi xảy ra khi thêm node",
+    };
+  }
+}
+
+// Function load homework
+export async function loadLessonHomeworks(lessonId: string) {
+  try {
+    const homeworks = await prisma.lessonNode.findMany({
+      where: {
+        parentId: lessonId,
+        type: LessonNodeType.homework,
+      },
+      orderBy: { order: "asc" },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        content: true,
+        order: true,
+        parentId: true,
+        courseId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return {
+      success: true,
+      data: homeworks,
+    };
+  } catch (error) {
+    console.error("Error loading lesson homeworks:", error);
+    return {
+      success: false,
+      error: "Có lỗi xảy ra khi load homework",
     };
   }
 }

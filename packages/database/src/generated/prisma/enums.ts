@@ -16,3 +16,29 @@ export const Role = {
 } as const
 
 export type Role = (typeof Role)[keyof typeof Role]
+
+
+export const LessonNodeType = {
+  course: 'course',
+  module: 'module',
+  lesson: 'lesson',
+  homework: 'homework'
+} as const
+
+export type LessonNodeType = (typeof LessonNodeType)[keyof typeof LessonNodeType]
+
+
+export const ClassRole = {
+  teacher: 'teacher',
+  student: 'student'
+} as const
+
+export type ClassRole = (typeof ClassRole)[keyof typeof ClassRole]
+
+
+export const ClassAddonType = {
+  lesson_note: 'lesson_note',
+  homework: 'homework'
+} as const
+
+export type ClassAddonType = (typeof ClassAddonType)[keyof typeof ClassAddonType]

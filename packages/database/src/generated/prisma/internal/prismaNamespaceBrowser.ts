@@ -59,7 +59,10 @@ export const ModelName = {
   Member: 'Member',
   Invitation: 'Invitation',
   Course: 'Course',
-  LessonNode: 'LessonNode'
+  LessonNode: 'LessonNode',
+  Class: 'Class',
+  ClassMember: 'ClassMember',
+  ClassLessonNode: 'ClassLessonNode'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -202,6 +205,42 @@ export const LessonNodeScalarFieldEnum = {
 } as const
 
 export type LessonNodeScalarFieldEnum = (typeof LessonNodeScalarFieldEnum)[keyof typeof LessonNodeScalarFieldEnum]
+
+
+export const ClassScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  courseId: 'courseId',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ClassScalarFieldEnum = (typeof ClassScalarFieldEnum)[keyof typeof ClassScalarFieldEnum]
+
+
+export const ClassMemberScalarFieldEnum = {
+  id: 'id',
+  classId: 'classId',
+  role: 'role',
+  userId: 'userId',
+  joinedAt: 'joinedAt'
+} as const
+
+export type ClassMemberScalarFieldEnum = (typeof ClassMemberScalarFieldEnum)[keyof typeof ClassMemberScalarFieldEnum]
+
+
+export const ClassLessonNodeScalarFieldEnum = {
+  id: 'id',
+  classId: 'classId',
+  type: 'type',
+  content: 'content',
+  createdById: 'createdById',
+  lessonNodeId: 'lessonNodeId',
+  createdAt: 'createdAt'
+} as const
+
+export type ClassLessonNodeScalarFieldEnum = (typeof ClassLessonNodeScalarFieldEnum)[keyof typeof ClassLessonNodeScalarFieldEnum]
 
 
 export const SortOrder = {

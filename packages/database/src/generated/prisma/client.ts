@@ -82,3 +82,18 @@ export type Course = Prisma.CourseModel
  * 
  */
 export type LessonNode = Prisma.LessonNodeModel
+/**
+ * Model Class
+ * 
+ */
+export type Class = Prisma.ClassModel
+/**
+ * Model ClassMember
+ * 
+ */
+export type ClassMember = Prisma.ClassMemberModel
+/**
+ * Model ClassLessonNode
+ * 
+ */
+export type ClassLessonNode = Prisma.ClassLessonNodeModel

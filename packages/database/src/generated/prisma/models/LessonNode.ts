@@ -39,7 +39,7 @@ export type LessonNodeMinAggregateOutputType = {
   title: string | null
   parentId: string | null
   courseId: string | null
-  type: string | null
+  type: $Enums.LessonNodeType | null
   order: number | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -50,7 +50,7 @@ export type LessonNodeMaxAggregateOutputType = {
   title: string | null
   parentId: string | null
   courseId: string | null
-  type: string | null
+  type: $Enums.LessonNodeType | null
   order: number | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -204,7 +204,7 @@ export type LessonNodeGroupByOutputType = {
   title: string
   parentId: string | null
   courseId: string
-  type: string
+  type: $Enums.LessonNodeType
   content: runtime.JsonValue | null
   order: number | null
   createdAt: Date
@@ -239,7 +239,7 @@ export type LessonNodeWhereInput = {
   title?: Prisma.StringFilter<"LessonNode"> | string
   parentId?: Prisma.StringNullableFilter<"LessonNode"> | string | null
   courseId?: Prisma.StringFilter<"LessonNode"> | string
-  type?: Prisma.StringFilter<"LessonNode"> | string
+  type?: Prisma.EnumLessonNodeTypeFilter<"LessonNode"> | $Enums.LessonNodeType
   content?: Prisma.JsonNullableFilter<"LessonNode">
   order?: Prisma.IntNullableFilter<"LessonNode"> | number | null
   createdAt?: Prisma.DateTimeFilter<"LessonNode"> | Date | string
@@ -248,6 +248,7 @@ export type LessonNodeWhereInput = {
   children?: Prisma.LessonNodeListRelationFilter
   course?: Prisma.XOR<Prisma.CourseScalarRelationFilter, Prisma.CourseWhereInput>
   rootOfCourse?: Prisma.XOR<Prisma.CourseNullableScalarRelationFilter, Prisma.CourseWhereInput> | null
+  noteChildren?: Prisma.ClassLessonNodeListRelationFilter
 }
 
 export type LessonNodeOrderByWithRelationInput = {
@@ -264,6 +265,7 @@ export type LessonNodeOrderByWithRelationInput = {
   children?: Prisma.LessonNodeOrderByRelationAggregateInput
   course?: Prisma.CourseOrderByWithRelationInput
   rootOfCourse?: Prisma.CourseOrderByWithRelationInput
+  noteChildren?: Prisma.ClassLessonNodeOrderByRelationAggregateInput
 }
 
 export type LessonNodeWhereUniqueInput = Prisma.AtLeast<{
@@ -274,7 +276,7 @@ export type LessonNodeWhereUniqueInput = Prisma.AtLeast<{
   title?: Prisma.StringFilter<"LessonNode"> | string
   parentId?: Prisma.StringNullableFilter<"LessonNode"> | string | null
   courseId?: Prisma.StringFilter<"LessonNode"> | string
-  type?: Prisma.StringFilter<"LessonNode"> | string
+  type?: Prisma.EnumLessonNodeTypeFilter<"LessonNode"> | $Enums.LessonNodeType
   content?: Prisma.JsonNullableFilter<"LessonNode">
   order?: Prisma.IntNullableFilter<"LessonNode"> | number | null
   createdAt?: Prisma.DateTimeFilter<"LessonNode"> | Date | string
@@ -283,6 +285,7 @@ export type LessonNodeWhereUniqueInput = Prisma.AtLeast<{
   children?: Prisma.LessonNodeListRelationFilter
   course?: Prisma.XOR<Prisma.CourseScalarRelationFilter, Prisma.CourseWhereInput>
   rootOfCourse?: Prisma.XOR<Prisma.CourseNullableScalarRelationFilter, Prisma.CourseWhereInput> | null
+  noteChildren?: Prisma.ClassLessonNodeListRelationFilter
 }, "id">
 
 export type LessonNodeOrderByWithAggregationInput = {
@@ -310,7 +313,7 @@ export type LessonNodeScalarWhereWithAggregatesInput = {
   title?: Prisma.StringWithAggregatesFilter<"LessonNode"> | string
   parentId?: Prisma.StringNullableWithAggregatesFilter<"LessonNode"> | string | null
   courseId?: Prisma.StringWithAggregatesFilter<"LessonNode"> | string
-  type?: Prisma.StringWithAggregatesFilter<"LessonNode"> | string
+  type?: Prisma.EnumLessonNodeTypeWithAggregatesFilter<"LessonNode"> | $Enums.LessonNodeType
   content?: Prisma.JsonNullableWithAggregatesFilter<"LessonNode">
   order?: Prisma.IntNullableWithAggregatesFilter<"LessonNode"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"LessonNode"> | Date | string
@@ -320,7 +323,7 @@ export type LessonNodeScalarWhereWithAggregatesInput = {
 export type LessonNodeCreateInput = {
   id?: string
   title: string
-  type: string
+  type: $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
   createdAt?: Date | string
@@ -329,6 +332,7 @@ export type LessonNodeCreateInput = {
   children?: Prisma.LessonNodeCreateNestedManyWithoutParentInput
   course: Prisma.CourseCreateNestedOneWithoutLessonNodesInput
   rootOfCourse?: Prisma.CourseCreateNestedOneWithoutRootLessonNodeInput
+  noteChildren?: Prisma.ClassLessonNodeCreateNestedManyWithoutLessonNodeInput
 }
 
 export type LessonNodeUncheckedCreateInput = {
@@ -336,19 +340,20 @@ export type LessonNodeUncheckedCreateInput = {
   title: string
   parentId?: string | null
   courseId: string
-  type: string
+  type: $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   children?: Prisma.LessonNodeUncheckedCreateNestedManyWithoutParentInput
   rootOfCourse?: Prisma.CourseUncheckedCreateNestedOneWithoutRootLessonNodeInput
+  noteChildren?: Prisma.ClassLessonNodeUncheckedCreateNestedManyWithoutLessonNodeInput
 }
 
 export type LessonNodeUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumLessonNodeTypeFieldUpdateOperationsInput | $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -357,6 +362,7 @@ export type LessonNodeUpdateInput = {
   children?: Prisma.LessonNodeUpdateManyWithoutParentNestedInput
   course?: Prisma.CourseUpdateOneRequiredWithoutLessonNodesNestedInput
   rootOfCourse?: Prisma.CourseUpdateOneWithoutRootLessonNodeNestedInput
+  noteChildren?: Prisma.ClassLessonNodeUpdateManyWithoutLessonNodeNestedInput
 }
 
 export type LessonNodeUncheckedUpdateInput = {
@@ -364,13 +370,14 @@ export type LessonNodeUncheckedUpdateInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courseId?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumLessonNodeTypeFieldUpdateOperationsInput | $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   children?: Prisma.LessonNodeUncheckedUpdateManyWithoutParentNestedInput
   rootOfCourse?: Prisma.CourseUncheckedUpdateOneWithoutRootLessonNodeNestedInput
+  noteChildren?: Prisma.ClassLessonNodeUncheckedUpdateManyWithoutLessonNodeNestedInput
 }
 
 export type LessonNodeCreateManyInput = {
@@ -378,7 +385,7 @@ export type LessonNodeCreateManyInput = {
   title: string
   parentId?: string | null
   courseId: string
-  type: string
+  type: $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
   createdAt?: Date | string
@@ -388,7 +395,7 @@ export type LessonNodeCreateManyInput = {
 export type LessonNodeUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumLessonNodeTypeFieldUpdateOperationsInput | $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -400,7 +407,7 @@ export type LessonNodeUncheckedUpdateManyInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courseId?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumLessonNodeTypeFieldUpdateOperationsInput | $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -462,6 +469,11 @@ export type LessonNodeMinOrderByAggregateInput = {
 
 export type LessonNodeSumOrderByAggregateInput = {
   order?: Prisma.SortOrder
+}
+
+export type LessonNodeScalarRelationFilter = {
+  is?: Prisma.LessonNodeWhereInput
+  isNot?: Prisma.LessonNodeWhereInput
 }
 
 export type LessonNodeCreateNestedOneWithoutRootOfCourseInput = {
@@ -542,6 +554,10 @@ export type LessonNodeUncheckedCreateNestedManyWithoutParentInput = {
   connect?: Prisma.LessonNodeWhereUniqueInput | Prisma.LessonNodeWhereUniqueInput[]
 }
 
+export type EnumLessonNodeTypeFieldUpdateOperationsInput = {
+  set?: $Enums.LessonNodeType
+}
+
 export type NullableIntFieldUpdateOperationsInput = {
   set?: number | null
   increment?: number
@@ -588,10 +604,24 @@ export type LessonNodeUncheckedUpdateManyWithoutParentNestedInput = {
   deleteMany?: Prisma.LessonNodeScalarWhereInput | Prisma.LessonNodeScalarWhereInput[]
 }
 
+export type LessonNodeCreateNestedOneWithoutNoteChildrenInput = {
+  create?: Prisma.XOR<Prisma.LessonNodeCreateWithoutNoteChildrenInput, Prisma.LessonNodeUncheckedCreateWithoutNoteChildrenInput>
+  connectOrCreate?: Prisma.LessonNodeCreateOrConnectWithoutNoteChildrenInput
+  connect?: Prisma.LessonNodeWhereUniqueInput
+}
+
+export type LessonNodeUpdateOneRequiredWithoutNoteChildrenNestedInput = {
+  create?: Prisma.XOR<Prisma.LessonNodeCreateWithoutNoteChildrenInput, Prisma.LessonNodeUncheckedCreateWithoutNoteChildrenInput>
+  connectOrCreate?: Prisma.LessonNodeCreateOrConnectWithoutNoteChildrenInput
+  upsert?: Prisma.LessonNodeUpsertWithoutNoteChildrenInput
+  connect?: Prisma.LessonNodeWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.LessonNodeUpdateToOneWithWhereWithoutNoteChildrenInput, Prisma.LessonNodeUpdateWithoutNoteChildrenInput>, Prisma.LessonNodeUncheckedUpdateWithoutNoteChildrenInput>
+}
+
 export type LessonNodeCreateWithoutRootOfCourseInput = {
   id?: string
   title: string
-  type: string
+  type: $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
   createdAt?: Date | string
@@ -599,6 +629,7 @@ export type LessonNodeCreateWithoutRootOfCourseInput = {
   parent?: Prisma.LessonNodeCreateNestedOneWithoutChildrenInput
   children?: Prisma.LessonNodeCreateNestedManyWithoutParentInput
   course: Prisma.CourseCreateNestedOneWithoutLessonNodesInput
+  noteChildren?: Prisma.ClassLessonNodeCreateNestedManyWithoutLessonNodeInput
 }
 
 export type LessonNodeUncheckedCreateWithoutRootOfCourseInput = {
@@ -606,12 +637,13 @@ export type LessonNodeUncheckedCreateWithoutRootOfCourseInput = {
   title: string
   parentId?: string | null
   courseId: string
-  type: string
+  type: $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   children?: Prisma.LessonNodeUncheckedCreateNestedManyWithoutParentInput
+  noteChildren?: Prisma.ClassLessonNodeUncheckedCreateNestedManyWithoutLessonNodeInput
 }
 
 export type LessonNodeCreateOrConnectWithoutRootOfCourseInput = {
@@ -622,7 +654,7 @@ export type LessonNodeCreateOrConnectWithoutRootOfCourseInput = {
 export type LessonNodeCreateWithoutCourseInput = {
   id?: string
   title: string
-  type: string
+  type: $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
   createdAt?: Date | string
@@ -630,19 +662,21 @@ export type LessonNodeCreateWithoutCourseInput = {
   parent?: Prisma.LessonNodeCreateNestedOneWithoutChildrenInput
   children?: Prisma.LessonNodeCreateNestedManyWithoutParentInput
   rootOfCourse?: Prisma.CourseCreateNestedOneWithoutRootLessonNodeInput
+  noteChildren?: Prisma.ClassLessonNodeCreateNestedManyWithoutLessonNodeInput
 }
 
 export type LessonNodeUncheckedCreateWithoutCourseInput = {
   id?: string
   title: string
   parentId?: string | null
-  type: string
+  type: $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   children?: Prisma.LessonNodeUncheckedCreateNestedManyWithoutParentInput
   rootOfCourse?: Prisma.CourseUncheckedCreateNestedOneWithoutRootLessonNodeInput
+  noteChildren?: Prisma.ClassLessonNodeUncheckedCreateNestedManyWithoutLessonNodeInput
 }
 
 export type LessonNodeCreateOrConnectWithoutCourseInput = {
@@ -669,7 +703,7 @@ export type LessonNodeUpdateToOneWithWhereWithoutRootOfCourseInput = {
 export type LessonNodeUpdateWithoutRootOfCourseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumLessonNodeTypeFieldUpdateOperationsInput | $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -677,6 +711,7 @@ export type LessonNodeUpdateWithoutRootOfCourseInput = {
   parent?: Prisma.LessonNodeUpdateOneWithoutChildrenNestedInput
   children?: Prisma.LessonNodeUpdateManyWithoutParentNestedInput
   course?: Prisma.CourseUpdateOneRequiredWithoutLessonNodesNestedInput
+  noteChildren?: Prisma.ClassLessonNodeUpdateManyWithoutLessonNodeNestedInput
 }
 
 export type LessonNodeUncheckedUpdateWithoutRootOfCourseInput = {
@@ -684,12 +719,13 @@ export type LessonNodeUncheckedUpdateWithoutRootOfCourseInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courseId?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumLessonNodeTypeFieldUpdateOperationsInput | $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   children?: Prisma.LessonNodeUncheckedUpdateManyWithoutParentNestedInput
+  noteChildren?: Prisma.ClassLessonNodeUncheckedUpdateManyWithoutLessonNodeNestedInput
 }
 
 export type LessonNodeUpsertWithWhereUniqueWithoutCourseInput = {
@@ -716,7 +752,7 @@ export type LessonNodeScalarWhereInput = {
   title?: Prisma.StringFilter<"LessonNode"> | string
   parentId?: Prisma.StringNullableFilter<"LessonNode"> | string | null
   courseId?: Prisma.StringFilter<"LessonNode"> | string
-  type?: Prisma.StringFilter<"LessonNode"> | string
+  type?: Prisma.EnumLessonNodeTypeFilter<"LessonNode"> | $Enums.LessonNodeType
   content?: Prisma.JsonNullableFilter<"LessonNode">
   order?: Prisma.IntNullableFilter<"LessonNode"> | number | null
   createdAt?: Prisma.DateTimeFilter<"LessonNode"> | Date | string
@@ -726,7 +762,7 @@ export type LessonNodeScalarWhereInput = {
 export type LessonNodeCreateWithoutChildrenInput = {
   id?: string
   title: string
-  type: string
+  type: $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
   createdAt?: Date | string
@@ -734,6 +770,7 @@ export type LessonNodeCreateWithoutChildrenInput = {
   parent?: Prisma.LessonNodeCreateNestedOneWithoutChildrenInput
   course: Prisma.CourseCreateNestedOneWithoutLessonNodesInput
   rootOfCourse?: Prisma.CourseCreateNestedOneWithoutRootLessonNodeInput
+  noteChildren?: Prisma.ClassLessonNodeCreateNestedManyWithoutLessonNodeInput
 }
 
 export type LessonNodeUncheckedCreateWithoutChildrenInput = {
@@ -741,12 +778,13 @@ export type LessonNodeUncheckedCreateWithoutChildrenInput = {
   title: string
   parentId?: string | null
   courseId: string
-  type: string
+  type: $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   rootOfCourse?: Prisma.CourseUncheckedCreateNestedOneWithoutRootLessonNodeInput
+  noteChildren?: Prisma.ClassLessonNodeUncheckedCreateNestedManyWithoutLessonNodeInput
 }
 
 export type LessonNodeCreateOrConnectWithoutChildrenInput = {
@@ -757,7 +795,7 @@ export type LessonNodeCreateOrConnectWithoutChildrenInput = {
 export type LessonNodeCreateWithoutParentInput = {
   id?: string
   title: string
-  type: string
+  type: $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
   createdAt?: Date | string
@@ -765,19 +803,21 @@ export type LessonNodeCreateWithoutParentInput = {
   children?: Prisma.LessonNodeCreateNestedManyWithoutParentInput
   course: Prisma.CourseCreateNestedOneWithoutLessonNodesInput
   rootOfCourse?: Prisma.CourseCreateNestedOneWithoutRootLessonNodeInput
+  noteChildren?: Prisma.ClassLessonNodeCreateNestedManyWithoutLessonNodeInput
 }
 
 export type LessonNodeUncheckedCreateWithoutParentInput = {
   id?: string
   title: string
   courseId: string
-  type: string
+  type: $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   children?: Prisma.LessonNodeUncheckedCreateNestedManyWithoutParentInput
   rootOfCourse?: Prisma.CourseUncheckedCreateNestedOneWithoutRootLessonNodeInput
+  noteChildren?: Prisma.ClassLessonNodeUncheckedCreateNestedManyWithoutLessonNodeInput
 }
 
 export type LessonNodeCreateOrConnectWithoutParentInput = {
@@ -804,7 +844,7 @@ export type LessonNodeUpdateToOneWithWhereWithoutChildrenInput = {
 export type LessonNodeUpdateWithoutChildrenInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumLessonNodeTypeFieldUpdateOperationsInput | $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -812,6 +852,7 @@ export type LessonNodeUpdateWithoutChildrenInput = {
   parent?: Prisma.LessonNodeUpdateOneWithoutChildrenNestedInput
   course?: Prisma.CourseUpdateOneRequiredWithoutLessonNodesNestedInput
   rootOfCourse?: Prisma.CourseUpdateOneWithoutRootLessonNodeNestedInput
+  noteChildren?: Prisma.ClassLessonNodeUpdateManyWithoutLessonNodeNestedInput
 }
 
 export type LessonNodeUncheckedUpdateWithoutChildrenInput = {
@@ -819,12 +860,13 @@ export type LessonNodeUncheckedUpdateWithoutChildrenInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courseId?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumLessonNodeTypeFieldUpdateOperationsInput | $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rootOfCourse?: Prisma.CourseUncheckedUpdateOneWithoutRootLessonNodeNestedInput
+  noteChildren?: Prisma.ClassLessonNodeUncheckedUpdateManyWithoutLessonNodeNestedInput
 }
 
 export type LessonNodeUpsertWithWhereUniqueWithoutParentInput = {
@@ -843,11 +885,83 @@ export type LessonNodeUpdateManyWithWhereWithoutParentInput = {
   data: Prisma.XOR<Prisma.LessonNodeUpdateManyMutationInput, Prisma.LessonNodeUncheckedUpdateManyWithoutParentInput>
 }
 
+export type LessonNodeCreateWithoutNoteChildrenInput = {
+  id?: string
+  title: string
+  type: $Enums.LessonNodeType
+  content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  order?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  parent?: Prisma.LessonNodeCreateNestedOneWithoutChildrenInput
+  children?: Prisma.LessonNodeCreateNestedManyWithoutParentInput
+  course: Prisma.CourseCreateNestedOneWithoutLessonNodesInput
+  rootOfCourse?: Prisma.CourseCreateNestedOneWithoutRootLessonNodeInput
+}
+
+export type LessonNodeUncheckedCreateWithoutNoteChildrenInput = {
+  id?: string
+  title: string
+  parentId?: string | null
+  courseId: string
+  type: $Enums.LessonNodeType
+  content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  order?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  children?: Prisma.LessonNodeUncheckedCreateNestedManyWithoutParentInput
+  rootOfCourse?: Prisma.CourseUncheckedCreateNestedOneWithoutRootLessonNodeInput
+}
+
+export type LessonNodeCreateOrConnectWithoutNoteChildrenInput = {
+  where: Prisma.LessonNodeWhereUniqueInput
+  create: Prisma.XOR<Prisma.LessonNodeCreateWithoutNoteChildrenInput, Prisma.LessonNodeUncheckedCreateWithoutNoteChildrenInput>
+}
+
+export type LessonNodeUpsertWithoutNoteChildrenInput = {
+  update: Prisma.XOR<Prisma.LessonNodeUpdateWithoutNoteChildrenInput, Prisma.LessonNodeUncheckedUpdateWithoutNoteChildrenInput>
+  create: Prisma.XOR<Prisma.LessonNodeCreateWithoutNoteChildrenInput, Prisma.LessonNodeUncheckedCreateWithoutNoteChildrenInput>
+  where?: Prisma.LessonNodeWhereInput
+}
+
+export type LessonNodeUpdateToOneWithWhereWithoutNoteChildrenInput = {
+  where?: Prisma.LessonNodeWhereInput
+  data: Prisma.XOR<Prisma.LessonNodeUpdateWithoutNoteChildrenInput, Prisma.LessonNodeUncheckedUpdateWithoutNoteChildrenInput>
+}
+
+export type LessonNodeUpdateWithoutNoteChildrenInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumLessonNodeTypeFieldUpdateOperationsInput | $Enums.LessonNodeType
+  content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  parent?: Prisma.LessonNodeUpdateOneWithoutChildrenNestedInput
+  children?: Prisma.LessonNodeUpdateManyWithoutParentNestedInput
+  course?: Prisma.CourseUpdateOneRequiredWithoutLessonNodesNestedInput
+  rootOfCourse?: Prisma.CourseUpdateOneWithoutRootLessonNodeNestedInput
+}
+
+export type LessonNodeUncheckedUpdateWithoutNoteChildrenInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courseId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumLessonNodeTypeFieldUpdateOperationsInput | $Enums.LessonNodeType
+  content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  children?: Prisma.LessonNodeUncheckedUpdateManyWithoutParentNestedInput
+  rootOfCourse?: Prisma.CourseUncheckedUpdateOneWithoutRootLessonNodeNestedInput
+}
+
 export type LessonNodeCreateManyCourseInput = {
   id?: string
   title: string
   parentId?: string | null
-  type: string
+  type: $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
   createdAt?: Date | string
@@ -857,7 +971,7 @@ export type LessonNodeCreateManyCourseInput = {
 export type LessonNodeUpdateWithoutCourseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumLessonNodeTypeFieldUpdateOperationsInput | $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -865,26 +979,28 @@ export type LessonNodeUpdateWithoutCourseInput = {
   parent?: Prisma.LessonNodeUpdateOneWithoutChildrenNestedInput
   children?: Prisma.LessonNodeUpdateManyWithoutParentNestedInput
   rootOfCourse?: Prisma.CourseUpdateOneWithoutRootLessonNodeNestedInput
+  noteChildren?: Prisma.ClassLessonNodeUpdateManyWithoutLessonNodeNestedInput
 }
 
 export type LessonNodeUncheckedUpdateWithoutCourseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  type?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumLessonNodeTypeFieldUpdateOperationsInput | $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   children?: Prisma.LessonNodeUncheckedUpdateManyWithoutParentNestedInput
   rootOfCourse?: Prisma.CourseUncheckedUpdateOneWithoutRootLessonNodeNestedInput
+  noteChildren?: Prisma.ClassLessonNodeUncheckedUpdateManyWithoutLessonNodeNestedInput
 }
 
 export type LessonNodeUncheckedUpdateManyWithoutCourseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  type?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumLessonNodeTypeFieldUpdateOperationsInput | $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -895,7 +1011,7 @@ export type LessonNodeCreateManyParentInput = {
   id?: string
   title: string
   courseId: string
-  type: string
+  type: $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
   createdAt?: Date | string
@@ -905,7 +1021,7 @@ export type LessonNodeCreateManyParentInput = {
 export type LessonNodeUpdateWithoutParentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumLessonNodeTypeFieldUpdateOperationsInput | $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -913,26 +1029,28 @@ export type LessonNodeUpdateWithoutParentInput = {
   children?: Prisma.LessonNodeUpdateManyWithoutParentNestedInput
   course?: Prisma.CourseUpdateOneRequiredWithoutLessonNodesNestedInput
   rootOfCourse?: Prisma.CourseUpdateOneWithoutRootLessonNodeNestedInput
+  noteChildren?: Prisma.ClassLessonNodeUpdateManyWithoutLessonNodeNestedInput
 }
 
 export type LessonNodeUncheckedUpdateWithoutParentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   courseId?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumLessonNodeTypeFieldUpdateOperationsInput | $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   children?: Prisma.LessonNodeUncheckedUpdateManyWithoutParentNestedInput
   rootOfCourse?: Prisma.CourseUncheckedUpdateOneWithoutRootLessonNodeNestedInput
+  noteChildren?: Prisma.ClassLessonNodeUncheckedUpdateManyWithoutLessonNodeNestedInput
 }
 
 export type LessonNodeUncheckedUpdateManyWithoutParentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   courseId?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumLessonNodeTypeFieldUpdateOperationsInput | $Enums.LessonNodeType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -946,10 +1064,12 @@ export type LessonNodeUncheckedUpdateManyWithoutParentInput = {
 
 export type LessonNodeCountOutputType = {
   children: number
+  noteChildren: number
 }
 
 export type LessonNodeCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   children?: boolean | LessonNodeCountOutputTypeCountChildrenArgs
+  noteChildren?: boolean | LessonNodeCountOutputTypeCountNoteChildrenArgs
 }
 
 /**
@@ -969,6 +1089,13 @@ export type LessonNodeCountOutputTypeCountChildrenArgs<ExtArgs extends runtime.T
   where?: Prisma.LessonNodeWhereInput
 }
 
+/**
+ * LessonNodeCountOutputType without action
+ */
+export type LessonNodeCountOutputTypeCountNoteChildrenArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ClassLessonNodeWhereInput
+}
+
 
 export type LessonNodeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -984,6 +1111,7 @@ export type LessonNodeSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   children?: boolean | Prisma.LessonNode$childrenArgs<ExtArgs>
   course?: boolean | Prisma.CourseDefaultArgs<ExtArgs>
   rootOfCourse?: boolean | Prisma.LessonNode$rootOfCourseArgs<ExtArgs>
+  noteChildren?: boolean | Prisma.LessonNode$noteChildrenArgs<ExtArgs>
   _count?: boolean | Prisma.LessonNodeCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["lessonNode"]>
 
@@ -1033,6 +1161,7 @@ export type LessonNodeInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   children?: boolean | Prisma.LessonNode$childrenArgs<ExtArgs>
   course?: boolean | Prisma.CourseDefaultArgs<ExtArgs>
   rootOfCourse?: boolean | Prisma.LessonNode$rootOfCourseArgs<ExtArgs>
+  noteChildren?: boolean | Prisma.LessonNode$noteChildrenArgs<ExtArgs>
   _count?: boolean | Prisma.LessonNodeCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type LessonNodeIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1051,13 +1180,14 @@ export type $LessonNodePayload<ExtArgs extends runtime.Types.Extensions.Internal
     children: Prisma.$LessonNodePayload<ExtArgs>[]
     course: Prisma.$CoursePayload<ExtArgs>
     rootOfCourse: Prisma.$CoursePayload<ExtArgs> | null
+    noteChildren: Prisma.$ClassLessonNodePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     title: string
     parentId: string | null
     courseId: string
-    type: string
+    type: $Enums.LessonNodeType
     content: runtime.JsonValue | null
     order: number | null
     createdAt: Date
@@ -1460,6 +1590,7 @@ export interface Prisma__LessonNodeClient<T, Null = never, ExtArgs extends runti
   children<T extends Prisma.LessonNode$childrenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LessonNode$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LessonNodePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   course<T extends Prisma.CourseDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CourseDefaultArgs<ExtArgs>>): Prisma.Prisma__CourseClient<runtime.Types.Result.GetResult<Prisma.$CoursePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   rootOfCourse<T extends Prisma.LessonNode$rootOfCourseArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LessonNode$rootOfCourseArgs<ExtArgs>>): Prisma.Prisma__CourseClient<runtime.Types.Result.GetResult<Prisma.$CoursePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  noteChildren<T extends Prisma.LessonNode$noteChildrenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LessonNode$noteChildrenArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClassLessonNodePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1493,7 +1624,7 @@ export interface LessonNodeFieldRefs {
   readonly title: Prisma.FieldRef<"LessonNode", 'String'>
   readonly parentId: Prisma.FieldRef<"LessonNode", 'String'>
   readonly courseId: Prisma.FieldRef<"LessonNode", 'String'>
-  readonly type: Prisma.FieldRef<"LessonNode", 'String'>
+  readonly type: Prisma.FieldRef<"LessonNode", 'LessonNodeType'>
   readonly content: Prisma.FieldRef<"LessonNode", 'Json'>
   readonly order: Prisma.FieldRef<"LessonNode", 'Int'>
   readonly createdAt: Prisma.FieldRef<"LessonNode", 'DateTime'>
@@ -1953,6 +2084,30 @@ export type LessonNode$rootOfCourseArgs<ExtArgs extends runtime.Types.Extensions
    */
   include?: Prisma.CourseInclude<ExtArgs> | null
   where?: Prisma.CourseWhereInput
+}
+
+/**
+ * LessonNode.noteChildren
+ */
+export type LessonNode$noteChildrenArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ClassLessonNode
+   */
+  select?: Prisma.ClassLessonNodeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ClassLessonNode
+   */
+  omit?: Prisma.ClassLessonNodeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClassLessonNodeInclude<ExtArgs> | null
+  where?: Prisma.ClassLessonNodeWhereInput
+  orderBy?: Prisma.ClassLessonNodeOrderByWithRelationInput | Prisma.ClassLessonNodeOrderByWithRelationInput[]
+  cursor?: Prisma.ClassLessonNodeWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ClassLessonNodeScalarFieldEnum | Prisma.ClassLessonNodeScalarFieldEnum[]
 }
 
 /**
