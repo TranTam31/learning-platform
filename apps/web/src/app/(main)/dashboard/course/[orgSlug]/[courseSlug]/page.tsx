@@ -1,8 +1,10 @@
 "use client";
 
 import { useCourse } from "@/components/providers/course-context";
+import CourseStructureManager from "./_component/course-structure";
 
 export default function CoursePage() {
   const course = useCourse();
-  return <div>{course.rootLessonNodeId}</div>;
+  // console.log(course);
+  return <CourseStructureManager initialCourse={course} />;
 }

@@ -155,7 +155,8 @@ model Course {
 }
 
 model LessonNode {
-  id String @id @default(cuid())
+  id    String @id @default(cuid())
+  title String
 
   parentId String?
   parent   LessonNode?  @relation("Tree", fields: [parentId], references: [id])

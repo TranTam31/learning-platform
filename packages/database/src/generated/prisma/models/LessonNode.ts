@@ -36,6 +36,7 @@ export type LessonNodeSumAggregateOutputType = {
 
 export type LessonNodeMinAggregateOutputType = {
   id: string | null
+  title: string | null
   parentId: string | null
   courseId: string | null
   type: string | null
@@ -46,6 +47,7 @@ export type LessonNodeMinAggregateOutputType = {
 
 export type LessonNodeMaxAggregateOutputType = {
   id: string | null
+  title: string | null
   parentId: string | null
   courseId: string | null
   type: string | null
@@ -56,6 +58,7 @@ export type LessonNodeMaxAggregateOutputType = {
 
 export type LessonNodeCountAggregateOutputType = {
   id: number
+  title: number
   parentId: number
   courseId: number
   type: number
@@ -77,6 +80,7 @@ export type LessonNodeSumAggregateInputType = {
 
 export type LessonNodeMinAggregateInputType = {
   id?: true
+  title?: true
   parentId?: true
   courseId?: true
   type?: true
@@ -87,6 +91,7 @@ export type LessonNodeMinAggregateInputType = {
 
 export type LessonNodeMaxAggregateInputType = {
   id?: true
+  title?: true
   parentId?: true
   courseId?: true
   type?: true
@@ -97,6 +102,7 @@ export type LessonNodeMaxAggregateInputType = {
 
 export type LessonNodeCountAggregateInputType = {
   id?: true
+  title?: true
   parentId?: true
   courseId?: true
   type?: true
@@ -195,6 +201,7 @@ export type LessonNodeGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
 
 export type LessonNodeGroupByOutputType = {
   id: string
+  title: string
   parentId: string | null
   courseId: string
   type: string
@@ -229,6 +236,7 @@ export type LessonNodeWhereInput = {
   OR?: Prisma.LessonNodeWhereInput[]
   NOT?: Prisma.LessonNodeWhereInput | Prisma.LessonNodeWhereInput[]
   id?: Prisma.StringFilter<"LessonNode"> | string
+  title?: Prisma.StringFilter<"LessonNode"> | string
   parentId?: Prisma.StringNullableFilter<"LessonNode"> | string | null
   courseId?: Prisma.StringFilter<"LessonNode"> | string
   type?: Prisma.StringFilter<"LessonNode"> | string
@@ -244,6 +252,7 @@ export type LessonNodeWhereInput = {
 
 export type LessonNodeOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   parentId?: Prisma.SortOrderInput | Prisma.SortOrder
   courseId?: Prisma.SortOrder
   type?: Prisma.SortOrder
@@ -262,6 +271,7 @@ export type LessonNodeWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.LessonNodeWhereInput | Prisma.LessonNodeWhereInput[]
   OR?: Prisma.LessonNodeWhereInput[]
   NOT?: Prisma.LessonNodeWhereInput | Prisma.LessonNodeWhereInput[]
+  title?: Prisma.StringFilter<"LessonNode"> | string
   parentId?: Prisma.StringNullableFilter<"LessonNode"> | string | null
   courseId?: Prisma.StringFilter<"LessonNode"> | string
   type?: Prisma.StringFilter<"LessonNode"> | string
@@ -277,6 +287,7 @@ export type LessonNodeWhereUniqueInput = Prisma.AtLeast<{
 
 export type LessonNodeOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   parentId?: Prisma.SortOrderInput | Prisma.SortOrder
   courseId?: Prisma.SortOrder
   type?: Prisma.SortOrder
@@ -296,6 +307,7 @@ export type LessonNodeScalarWhereWithAggregatesInput = {
   OR?: Prisma.LessonNodeScalarWhereWithAggregatesInput[]
   NOT?: Prisma.LessonNodeScalarWhereWithAggregatesInput | Prisma.LessonNodeScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"LessonNode"> | string
+  title?: Prisma.StringWithAggregatesFilter<"LessonNode"> | string
   parentId?: Prisma.StringNullableWithAggregatesFilter<"LessonNode"> | string | null
   courseId?: Prisma.StringWithAggregatesFilter<"LessonNode"> | string
   type?: Prisma.StringWithAggregatesFilter<"LessonNode"> | string
@@ -307,6 +319,7 @@ export type LessonNodeScalarWhereWithAggregatesInput = {
 
 export type LessonNodeCreateInput = {
   id?: string
+  title: string
   type: string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
@@ -320,6 +333,7 @@ export type LessonNodeCreateInput = {
 
 export type LessonNodeUncheckedCreateInput = {
   id?: string
+  title: string
   parentId?: string | null
   courseId: string
   type: string
@@ -333,6 +347,7 @@ export type LessonNodeUncheckedCreateInput = {
 
 export type LessonNodeUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -346,6 +361,7 @@ export type LessonNodeUpdateInput = {
 
 export type LessonNodeUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courseId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -359,6 +375,7 @@ export type LessonNodeUncheckedUpdateInput = {
 
 export type LessonNodeCreateManyInput = {
   id?: string
+  title: string
   parentId?: string | null
   courseId: string
   type: string
@@ -370,6 +387,7 @@ export type LessonNodeCreateManyInput = {
 
 export type LessonNodeUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -379,6 +397,7 @@ export type LessonNodeUpdateManyMutationInput = {
 
 export type LessonNodeUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courseId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -405,6 +424,7 @@ export type LessonNodeOrderByRelationAggregateInput = {
 
 export type LessonNodeCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   parentId?: Prisma.SortOrder
   courseId?: Prisma.SortOrder
   type?: Prisma.SortOrder
@@ -420,6 +440,7 @@ export type LessonNodeAvgOrderByAggregateInput = {
 
 export type LessonNodeMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   parentId?: Prisma.SortOrder
   courseId?: Prisma.SortOrder
   type?: Prisma.SortOrder
@@ -430,6 +451,7 @@ export type LessonNodeMaxOrderByAggregateInput = {
 
 export type LessonNodeMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   parentId?: Prisma.SortOrder
   courseId?: Prisma.SortOrder
   type?: Prisma.SortOrder
@@ -568,6 +590,7 @@ export type LessonNodeUncheckedUpdateManyWithoutParentNestedInput = {
 
 export type LessonNodeCreateWithoutRootOfCourseInput = {
   id?: string
+  title: string
   type: string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
@@ -580,6 +603,7 @@ export type LessonNodeCreateWithoutRootOfCourseInput = {
 
 export type LessonNodeUncheckedCreateWithoutRootOfCourseInput = {
   id?: string
+  title: string
   parentId?: string | null
   courseId: string
   type: string
@@ -597,6 +621,7 @@ export type LessonNodeCreateOrConnectWithoutRootOfCourseInput = {
 
 export type LessonNodeCreateWithoutCourseInput = {
   id?: string
+  title: string
   type: string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
@@ -609,6 +634,7 @@ export type LessonNodeCreateWithoutCourseInput = {
 
 export type LessonNodeUncheckedCreateWithoutCourseInput = {
   id?: string
+  title: string
   parentId?: string | null
   type: string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -642,6 +668,7 @@ export type LessonNodeUpdateToOneWithWhereWithoutRootOfCourseInput = {
 
 export type LessonNodeUpdateWithoutRootOfCourseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -654,6 +681,7 @@ export type LessonNodeUpdateWithoutRootOfCourseInput = {
 
 export type LessonNodeUncheckedUpdateWithoutRootOfCourseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courseId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -685,6 +713,7 @@ export type LessonNodeScalarWhereInput = {
   OR?: Prisma.LessonNodeScalarWhereInput[]
   NOT?: Prisma.LessonNodeScalarWhereInput | Prisma.LessonNodeScalarWhereInput[]
   id?: Prisma.StringFilter<"LessonNode"> | string
+  title?: Prisma.StringFilter<"LessonNode"> | string
   parentId?: Prisma.StringNullableFilter<"LessonNode"> | string | null
   courseId?: Prisma.StringFilter<"LessonNode"> | string
   type?: Prisma.StringFilter<"LessonNode"> | string
@@ -696,6 +725,7 @@ export type LessonNodeScalarWhereInput = {
 
 export type LessonNodeCreateWithoutChildrenInput = {
   id?: string
+  title: string
   type: string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
@@ -708,6 +738,7 @@ export type LessonNodeCreateWithoutChildrenInput = {
 
 export type LessonNodeUncheckedCreateWithoutChildrenInput = {
   id?: string
+  title: string
   parentId?: string | null
   courseId: string
   type: string
@@ -725,6 +756,7 @@ export type LessonNodeCreateOrConnectWithoutChildrenInput = {
 
 export type LessonNodeCreateWithoutParentInput = {
   id?: string
+  title: string
   type: string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: number | null
@@ -737,6 +769,7 @@ export type LessonNodeCreateWithoutParentInput = {
 
 export type LessonNodeUncheckedCreateWithoutParentInput = {
   id?: string
+  title: string
   courseId: string
   type: string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -770,6 +803,7 @@ export type LessonNodeUpdateToOneWithWhereWithoutChildrenInput = {
 
 export type LessonNodeUpdateWithoutChildrenInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -782,6 +816,7 @@ export type LessonNodeUpdateWithoutChildrenInput = {
 
 export type LessonNodeUncheckedUpdateWithoutChildrenInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courseId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -810,6 +845,7 @@ export type LessonNodeUpdateManyWithWhereWithoutParentInput = {
 
 export type LessonNodeCreateManyCourseInput = {
   id?: string
+  title: string
   parentId?: string | null
   type: string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -820,6 +856,7 @@ export type LessonNodeCreateManyCourseInput = {
 
 export type LessonNodeUpdateWithoutCourseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -832,6 +869,7 @@ export type LessonNodeUpdateWithoutCourseInput = {
 
 export type LessonNodeUncheckedUpdateWithoutCourseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.StringFieldUpdateOperationsInput | string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -844,6 +882,7 @@ export type LessonNodeUncheckedUpdateWithoutCourseInput = {
 
 export type LessonNodeUncheckedUpdateManyWithoutCourseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.StringFieldUpdateOperationsInput | string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -854,6 +893,7 @@ export type LessonNodeUncheckedUpdateManyWithoutCourseInput = {
 
 export type LessonNodeCreateManyParentInput = {
   id?: string
+  title: string
   courseId: string
   type: string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -864,6 +904,7 @@ export type LessonNodeCreateManyParentInput = {
 
 export type LessonNodeUpdateWithoutParentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   order?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -876,6 +917,7 @@ export type LessonNodeUpdateWithoutParentInput = {
 
 export type LessonNodeUncheckedUpdateWithoutParentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   courseId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -888,6 +930,7 @@ export type LessonNodeUncheckedUpdateWithoutParentInput = {
 
 export type LessonNodeUncheckedUpdateManyWithoutParentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   courseId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -929,6 +972,7 @@ export type LessonNodeCountOutputTypeCountChildrenArgs<ExtArgs extends runtime.T
 
 export type LessonNodeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  title?: boolean
   parentId?: boolean
   courseId?: boolean
   type?: boolean
@@ -945,6 +989,7 @@ export type LessonNodeSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
 
 export type LessonNodeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  title?: boolean
   parentId?: boolean
   courseId?: boolean
   type?: boolean
@@ -958,6 +1003,7 @@ export type LessonNodeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
 
 export type LessonNodeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  title?: boolean
   parentId?: boolean
   courseId?: boolean
   type?: boolean
@@ -971,6 +1017,7 @@ export type LessonNodeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
 
 export type LessonNodeSelectScalar = {
   id?: boolean
+  title?: boolean
   parentId?: boolean
   courseId?: boolean
   type?: boolean
@@ -980,7 +1027,7 @@ export type LessonNodeSelectScalar = {
   updatedAt?: boolean
 }
 
-export type LessonNodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "parentId" | "courseId" | "type" | "content" | "order" | "createdAt" | "updatedAt", ExtArgs["result"]["lessonNode"]>
+export type LessonNodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "parentId" | "courseId" | "type" | "content" | "order" | "createdAt" | "updatedAt", ExtArgs["result"]["lessonNode"]>
 export type LessonNodeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   parent?: boolean | Prisma.LessonNode$parentArgs<ExtArgs>
   children?: boolean | Prisma.LessonNode$childrenArgs<ExtArgs>
@@ -1007,6 +1054,7 @@ export type $LessonNodePayload<ExtArgs extends runtime.Types.Extensions.Internal
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
+    title: string
     parentId: string | null
     courseId: string
     type: string
@@ -1442,6 +1490,7 @@ export interface Prisma__LessonNodeClient<T, Null = never, ExtArgs extends runti
  */
 export interface LessonNodeFieldRefs {
   readonly id: Prisma.FieldRef<"LessonNode", 'String'>
+  readonly title: Prisma.FieldRef<"LessonNode", 'String'>
   readonly parentId: Prisma.FieldRef<"LessonNode", 'String'>
   readonly courseId: Prisma.FieldRef<"LessonNode", 'String'>
   readonly type: Prisma.FieldRef<"LessonNode", 'String'>

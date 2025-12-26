@@ -1,9 +1,9 @@
 "use client";
 
-import { Course } from "@repo/db";
+import { CourseUI } from "@/types/course";
 import { createContext, useContext } from "react";
 
-export const CourseContext = createContext<Course | null>(null);
+export const CourseContext = createContext<CourseUI | null>(null);
 
 export function useCourse() {
   const ctx = useContext(CourseContext);

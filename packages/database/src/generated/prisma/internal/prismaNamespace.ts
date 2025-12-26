@@ -1230,6 +1230,7 @@ export type CourseScalarFieldEnum = (typeof CourseScalarFieldEnum)[keyof typeof 
 
 export const LessonNodeScalarFieldEnum = {
   id: 'id',
+  title: 'title',
   parentId: 'parentId',
   courseId: 'courseId',
   type: 'type',
