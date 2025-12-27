@@ -1472,7 +1472,6 @@ export const ClassScalarFieldEnum = {
   id: 'id',
   name: 'name',
   courseId: 'courseId',
-  createdById: 'createdById',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1496,7 +1495,6 @@ export const ClassLessonNodeScalarFieldEnum = {
   classId: 'classId',
   type: 'type',
   content: 'content',
-  createdById: 'createdById',
   lessonNodeId: 'lessonNodeId',
   createdAt: 'createdAt'
 } as const

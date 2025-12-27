@@ -21,19 +21,18 @@ enum Role {
 }
 
 model User {
-  id             String        @id
-  name           String
-  email          String
-  emailVerified  Boolean       @default(false)
-  image          String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  sessions       Session[]
-  accounts       Account[]
-  members        Member[]
-  createdClasses Class[]       @relation("ClassCreator")
-  classMembers   ClassMember[]
-  invitations    Invitation[]
+  id            String        @id
+  name          String
+  email         String
+  emailVerified Boolean       @default(false)
+  image         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  members       Member[]
+  classMembers  ClassMember[]
+  invitations   Invitation[]
 
   @@unique([email])
   @@map("user")
@@ -176,7 +175,7 @@ model LessonNode {
 
   order Int?
 
-  noteChildren ClassLessonNode[] @relation("NodeRoot")
+  classChildren ClassLessonNode[] @relation("NodeRoot")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -200,9 +199,6 @@ model Class {
   course   Course @relation(fields: [courseId], references: [id])
 
   members ClassMember[]
-
-  createdById String
-  createdBy   User   @relation("ClassCreator", fields: [createdById], references: [id])
 
   classLessonNodes ClassLessonNode[] @relation("ClassLessonNode")
 
@@ -230,6 +226,7 @@ model ClassMember {
 }
 
 enum ClassRole {
+  owner
   teacher
   student
 }
@@ -242,8 +239,6 @@ model ClassLessonNode {
 
   type    ClassAddonType
   content Json?
-
-  createdById String
 
   lessonNodeId String
   lessonNode   LessonNode @relation("NodeRoot", fields: [lessonNodeId], references: [id])

@@ -29,6 +29,7 @@ export type LessonNodeType = (typeof LessonNodeType)[keyof typeof LessonNodeType
 
 
 export const ClassRole = {
+  owner: 'owner',
   teacher: 'teacher',
   student: 'student'
 } as const

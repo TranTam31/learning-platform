@@ -24,6 +24,16 @@ import {
   LessonNodeUI,
   LessonNodeWithCount,
 } from "@/types/course";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { CreateClassForm } from "@/components/forms/create-class-form";
 
 // Extended type cho UI state (thêm metadata cho lazy loading)
 
@@ -79,7 +89,7 @@ const HomeworkList: React.FC<{
 const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
   initialCourse,
 }) => {
-  console.log(initialCourse);
+  // console.log(initialCourse);
   const [course, setCourse] = useState<CourseUI>(initialCourse);
   const [selectedNode, setSelectedNode] = useState<LessonNodeUI | null>(
     initialCourse.rootLessonNode as LessonNodeUI | null
@@ -156,6 +166,8 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
               rootLessonNode: updatedRoot,
             };
           });
+
+          console.log("course log", course);
 
           // Update selectedNode nếu đang select node này
           if (selectedNode?.id === nodeId) {
@@ -359,7 +371,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
 
   // Render tree node
   const renderNode = (node: LessonNodeUI, level: number = 0) => {
-    console.log(node);
+    // console.log(node);
     if (node.type === LessonNodeType.homework) return null;
     const isExpanded = expandedNodes.has(node.id);
     const isSelected = selectedNode?.id === node.id;
@@ -450,31 +462,60 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
             <BookOpen className="w-5 h-5 text-purple-500" />
             <span className="font-medium text-gray-700">{course.name}</span>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => handleAddNode(LessonNodeType.module)}
-              disabled={!canAddToSelected || isPending}
-              className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              {isAddingModule ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Plus className="w-4 h-4" />
-              )}
-              Add Module
-            </button>
-            <button
-              onClick={() => handleAddNode(LessonNodeType.lesson)}
-              disabled={!canAddToSelected || isPending}
-              className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-green-500 text-white text-sm rounded hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              {isAddingLesson ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Plus className="w-4 h-4" />
-              )}
-              Add Lesson
-            </button>
+          <div className="flex gap-2 w-full">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="bg-primary hover:bg-primary/90">
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Class</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create Class</DialogTitle>
+                </DialogHeader>
+                <CreateClassForm
+                  courseId={course.id}
+                  organizationId={course.organizationId}
+                  onSuccess={() => {}}
+                />
+              </DialogContent>
+            </Dialog>
+
+            {/* Nhóm 2 nút nhỏ chiếm 1/2 chiều rộng còn lại */}
+            <div className="flex-1 flex gap-2">
+              <button
+                onClick={() => handleAddNode(LessonNodeType.module)}
+                disabled={!canAddToSelected || isPending}
+                className="flex-1 flex items-center justify-center p-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                title="Add Module"
+              >
+                {isAddingModule ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <Plus className="w-4 h-4" />
+                    <span className="hidden sm:inline">Module</span>
+                  </div>
+                )}
+              </button>
+
+              <button
+                onClick={() => handleAddNode(LessonNodeType.lesson)}
+                disabled={!canAddToSelected || isPending}
+                className="flex-1 flex items-center justify-center p-1.5 bg-green-500 text-white text-sm rounded hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                title="Add Lesson"
+              >
+                {isAddingLesson ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <Plus className="w-4 h-4" />
+                    <span className="hidden sm:inline">Lesson</span>
+                  </div>
+                )}
+              </button>
+            </div>
           </div>
         </div>
         <div className="flex-1 overflow-y-auto">

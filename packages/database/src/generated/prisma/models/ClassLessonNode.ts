@@ -28,7 +28,6 @@ export type ClassLessonNodeMinAggregateOutputType = {
   id: string | null
   classId: string | null
   type: $Enums.ClassAddonType | null
-  createdById: string | null
   lessonNodeId: string | null
   createdAt: Date | null
 }
@@ -37,7 +36,6 @@ export type ClassLessonNodeMaxAggregateOutputType = {
   id: string | null
   classId: string | null
   type: $Enums.ClassAddonType | null
-  createdById: string | null
   lessonNodeId: string | null
   createdAt: Date | null
 }
@@ -47,7 +45,6 @@ export type ClassLessonNodeCountAggregateOutputType = {
   classId: number
   type: number
   content: number
-  createdById: number
   lessonNodeId: number
   createdAt: number
   _all: number
@@ -58,7 +55,6 @@ export type ClassLessonNodeMinAggregateInputType = {
   id?: true
   classId?: true
   type?: true
-  createdById?: true
   lessonNodeId?: true
   createdAt?: true
 }
@@ -67,7 +63,6 @@ export type ClassLessonNodeMaxAggregateInputType = {
   id?: true
   classId?: true
   type?: true
-  createdById?: true
   lessonNodeId?: true
   createdAt?: true
 }
@@ -77,7 +72,6 @@ export type ClassLessonNodeCountAggregateInputType = {
   classId?: true
   type?: true
   content?: true
-  createdById?: true
   lessonNodeId?: true
   createdAt?: true
   _all?: true
@@ -160,7 +154,6 @@ export type ClassLessonNodeGroupByOutputType = {
   classId: string
   type: $Enums.ClassAddonType
   content: runtime.JsonValue | null
-  createdById: string
   lessonNodeId: string
   createdAt: Date
   _count: ClassLessonNodeCountAggregateOutputType | null
@@ -191,7 +184,6 @@ export type ClassLessonNodeWhereInput = {
   classId?: Prisma.StringFilter<"ClassLessonNode"> | string
   type?: Prisma.EnumClassAddonTypeFilter<"ClassLessonNode"> | $Enums.ClassAddonType
   content?: Prisma.JsonNullableFilter<"ClassLessonNode">
-  createdById?: Prisma.StringFilter<"ClassLessonNode"> | string
   lessonNodeId?: Prisma.StringFilter<"ClassLessonNode"> | string
   createdAt?: Prisma.DateTimeFilter<"ClassLessonNode"> | Date | string
   class?: Prisma.XOR<Prisma.ClassScalarRelationFilter, Prisma.ClassWhereInput>
@@ -203,7 +195,6 @@ export type ClassLessonNodeOrderByWithRelationInput = {
   classId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   content?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdById?: Prisma.SortOrder
   lessonNodeId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   class?: Prisma.ClassOrderByWithRelationInput
@@ -218,7 +209,6 @@ export type ClassLessonNodeWhereUniqueInput = Prisma.AtLeast<{
   classId?: Prisma.StringFilter<"ClassLessonNode"> | string
   type?: Prisma.EnumClassAddonTypeFilter<"ClassLessonNode"> | $Enums.ClassAddonType
   content?: Prisma.JsonNullableFilter<"ClassLessonNode">
-  createdById?: Prisma.StringFilter<"ClassLessonNode"> | string
   lessonNodeId?: Prisma.StringFilter<"ClassLessonNode"> | string
   createdAt?: Prisma.DateTimeFilter<"ClassLessonNode"> | Date | string
   class?: Prisma.XOR<Prisma.ClassScalarRelationFilter, Prisma.ClassWhereInput>
@@ -230,7 +220,6 @@ export type ClassLessonNodeOrderByWithAggregationInput = {
   classId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   content?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdById?: Prisma.SortOrder
   lessonNodeId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.ClassLessonNodeCountOrderByAggregateInput
@@ -246,7 +235,6 @@ export type ClassLessonNodeScalarWhereWithAggregatesInput = {
   classId?: Prisma.StringWithAggregatesFilter<"ClassLessonNode"> | string
   type?: Prisma.EnumClassAddonTypeWithAggregatesFilter<"ClassLessonNode"> | $Enums.ClassAddonType
   content?: Prisma.JsonNullableWithAggregatesFilter<"ClassLessonNode">
-  createdById?: Prisma.StringWithAggregatesFilter<"ClassLessonNode"> | string
   lessonNodeId?: Prisma.StringWithAggregatesFilter<"ClassLessonNode"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ClassLessonNode"> | Date | string
 }
@@ -255,10 +243,9 @@ export type ClassLessonNodeCreateInput = {
   id?: string
   type: $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById: string
   createdAt?: Date | string
   class: Prisma.ClassCreateNestedOneWithoutClassLessonNodesInput
-  lessonNode: Prisma.LessonNodeCreateNestedOneWithoutNoteChildrenInput
+  lessonNode: Prisma.LessonNodeCreateNestedOneWithoutClassChildrenInput
 }
 
 export type ClassLessonNodeUncheckedCreateInput = {
@@ -266,7 +253,6 @@ export type ClassLessonNodeUncheckedCreateInput = {
   classId: string
   type: $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById: string
   lessonNodeId: string
   createdAt?: Date | string
 }
@@ -275,10 +261,9 @@ export type ClassLessonNodeUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumClassAddonTypeFieldUpdateOperationsInput | $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   class?: Prisma.ClassUpdateOneRequiredWithoutClassLessonNodesNestedInput
-  lessonNode?: Prisma.LessonNodeUpdateOneRequiredWithoutNoteChildrenNestedInput
+  lessonNode?: Prisma.LessonNodeUpdateOneRequiredWithoutClassChildrenNestedInput
 }
 
 export type ClassLessonNodeUncheckedUpdateInput = {
@@ -286,7 +271,6 @@ export type ClassLessonNodeUncheckedUpdateInput = {
   classId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumClassAddonTypeFieldUpdateOperationsInput | $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById?: Prisma.StringFieldUpdateOperationsInput | string
   lessonNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -296,7 +280,6 @@ export type ClassLessonNodeCreateManyInput = {
   classId: string
   type: $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById: string
   lessonNodeId: string
   createdAt?: Date | string
 }
@@ -305,7 +288,6 @@ export type ClassLessonNodeUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumClassAddonTypeFieldUpdateOperationsInput | $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -314,7 +296,6 @@ export type ClassLessonNodeUncheckedUpdateManyInput = {
   classId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumClassAddonTypeFieldUpdateOperationsInput | $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById?: Prisma.StringFieldUpdateOperationsInput | string
   lessonNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -334,7 +315,6 @@ export type ClassLessonNodeCountOrderByAggregateInput = {
   classId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   content?: Prisma.SortOrder
-  createdById?: Prisma.SortOrder
   lessonNodeId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -343,7 +323,6 @@ export type ClassLessonNodeMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   classId?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  createdById?: Prisma.SortOrder
   lessonNodeId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -352,7 +331,6 @@ export type ClassLessonNodeMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   classId?: Prisma.SortOrder
   type?: Prisma.SortOrder
-  createdById?: Prisma.SortOrder
   lessonNodeId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -449,7 +427,6 @@ export type ClassLessonNodeCreateWithoutLessonNodeInput = {
   id?: string
   type: $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById: string
   createdAt?: Date | string
   class: Prisma.ClassCreateNestedOneWithoutClassLessonNodesInput
 }
@@ -459,7 +436,6 @@ export type ClassLessonNodeUncheckedCreateWithoutLessonNodeInput = {
   classId: string
   type: $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById: string
   createdAt?: Date | string
 }
 
@@ -497,7 +473,6 @@ export type ClassLessonNodeScalarWhereInput = {
   classId?: Prisma.StringFilter<"ClassLessonNode"> | string
   type?: Prisma.EnumClassAddonTypeFilter<"ClassLessonNode"> | $Enums.ClassAddonType
   content?: Prisma.JsonNullableFilter<"ClassLessonNode">
-  createdById?: Prisma.StringFilter<"ClassLessonNode"> | string
   lessonNodeId?: Prisma.StringFilter<"ClassLessonNode"> | string
   createdAt?: Prisma.DateTimeFilter<"ClassLessonNode"> | Date | string
 }
@@ -506,16 +481,14 @@ export type ClassLessonNodeCreateWithoutClassInput = {
   id?: string
   type: $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById: string
   createdAt?: Date | string
-  lessonNode: Prisma.LessonNodeCreateNestedOneWithoutNoteChildrenInput
+  lessonNode: Prisma.LessonNodeCreateNestedOneWithoutClassChildrenInput
 }
 
 export type ClassLessonNodeUncheckedCreateWithoutClassInput = {
   id?: string
   type: $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById: string
   lessonNodeId: string
   createdAt?: Date | string
 }
@@ -551,7 +524,6 @@ export type ClassLessonNodeCreateManyLessonNodeInput = {
   classId: string
   type: $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById: string
   createdAt?: Date | string
 }
 
@@ -559,7 +531,6 @@ export type ClassLessonNodeUpdateWithoutLessonNodeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumClassAddonTypeFieldUpdateOperationsInput | $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   class?: Prisma.ClassUpdateOneRequiredWithoutClassLessonNodesNestedInput
 }
@@ -569,7 +540,6 @@ export type ClassLessonNodeUncheckedUpdateWithoutLessonNodeInput = {
   classId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumClassAddonTypeFieldUpdateOperationsInput | $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -578,7 +548,6 @@ export type ClassLessonNodeUncheckedUpdateManyWithoutLessonNodeInput = {
   classId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumClassAddonTypeFieldUpdateOperationsInput | $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -586,7 +555,6 @@ export type ClassLessonNodeCreateManyClassInput = {
   id?: string
   type: $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById: string
   lessonNodeId: string
   createdAt?: Date | string
 }
@@ -595,16 +563,14 @@ export type ClassLessonNodeUpdateWithoutClassInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumClassAddonTypeFieldUpdateOperationsInput | $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  lessonNode?: Prisma.LessonNodeUpdateOneRequiredWithoutNoteChildrenNestedInput
+  lessonNode?: Prisma.LessonNodeUpdateOneRequiredWithoutClassChildrenNestedInput
 }
 
 export type ClassLessonNodeUncheckedUpdateWithoutClassInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumClassAddonTypeFieldUpdateOperationsInput | $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById?: Prisma.StringFieldUpdateOperationsInput | string
   lessonNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -613,7 +579,6 @@ export type ClassLessonNodeUncheckedUpdateManyWithoutClassInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumClassAddonTypeFieldUpdateOperationsInput | $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdById?: Prisma.StringFieldUpdateOperationsInput | string
   lessonNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -625,7 +590,6 @@ export type ClassLessonNodeSelect<ExtArgs extends runtime.Types.Extensions.Inter
   classId?: boolean
   type?: boolean
   content?: boolean
-  createdById?: boolean
   lessonNodeId?: boolean
   createdAt?: boolean
   class?: boolean | Prisma.ClassDefaultArgs<ExtArgs>
@@ -637,7 +601,6 @@ export type ClassLessonNodeSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   classId?: boolean
   type?: boolean
   content?: boolean
-  createdById?: boolean
   lessonNodeId?: boolean
   createdAt?: boolean
   class?: boolean | Prisma.ClassDefaultArgs<ExtArgs>
@@ -649,7 +612,6 @@ export type ClassLessonNodeSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   classId?: boolean
   type?: boolean
   content?: boolean
-  createdById?: boolean
   lessonNodeId?: boolean
   createdAt?: boolean
   class?: boolean | Prisma.ClassDefaultArgs<ExtArgs>
@@ -661,12 +623,11 @@ export type ClassLessonNodeSelectScalar = {
   classId?: boolean
   type?: boolean
   content?: boolean
-  createdById?: boolean
   lessonNodeId?: boolean
   createdAt?: boolean
 }
 
-export type ClassLessonNodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "classId" | "type" | "content" | "createdById" | "lessonNodeId" | "createdAt", ExtArgs["result"]["classLessonNode"]>
+export type ClassLessonNodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "classId" | "type" | "content" | "lessonNodeId" | "createdAt", ExtArgs["result"]["classLessonNode"]>
 export type ClassLessonNodeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   class?: boolean | Prisma.ClassDefaultArgs<ExtArgs>
   lessonNode?: boolean | Prisma.LessonNodeDefaultArgs<ExtArgs>
@@ -691,7 +652,6 @@ export type $ClassLessonNodePayload<ExtArgs extends runtime.Types.Extensions.Int
     classId: string
     type: $Enums.ClassAddonType
     content: runtime.JsonValue | null
-    createdById: string
     lessonNodeId: string
     createdAt: Date
   }, ExtArgs["result"]["classLessonNode"]>
@@ -1123,7 +1083,6 @@ export interface ClassLessonNodeFieldRefs {
   readonly classId: Prisma.FieldRef<"ClassLessonNode", 'String'>
   readonly type: Prisma.FieldRef<"ClassLessonNode", 'ClassAddonType'>
   readonly content: Prisma.FieldRef<"ClassLessonNode", 'Json'>
-  readonly createdById: Prisma.FieldRef<"ClassLessonNode", 'String'>
   readonly lessonNodeId: Prisma.FieldRef<"ClassLessonNode", 'String'>
   readonly createdAt: Prisma.FieldRef<"ClassLessonNode", 'DateTime'>
 }

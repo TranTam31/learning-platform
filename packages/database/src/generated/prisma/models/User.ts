@@ -201,7 +201,6 @@ export type UserWhereInput = {
   sessions?: Prisma.SessionListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
   members?: Prisma.MemberListRelationFilter
-  createdClasses?: Prisma.ClassListRelationFilter
   classMembers?: Prisma.ClassMemberListRelationFilter
   invitations?: Prisma.InvitationListRelationFilter
 }
@@ -217,7 +216,6 @@ export type UserOrderByWithRelationInput = {
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   accounts?: Prisma.AccountOrderByRelationAggregateInput
   members?: Prisma.MemberOrderByRelationAggregateInput
-  createdClasses?: Prisma.ClassOrderByRelationAggregateInput
   classMembers?: Prisma.ClassMemberOrderByRelationAggregateInput
   invitations?: Prisma.InvitationOrderByRelationAggregateInput
 }
@@ -236,7 +234,6 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   sessions?: Prisma.SessionListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
   members?: Prisma.MemberListRelationFilter
-  createdClasses?: Prisma.ClassListRelationFilter
   classMembers?: Prisma.ClassMemberListRelationFilter
   invitations?: Prisma.InvitationListRelationFilter
 }, "id" | "email">
@@ -278,7 +275,6 @@ export type UserCreateInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   members?: Prisma.MemberCreateNestedManyWithoutUserInput
-  createdClasses?: Prisma.ClassCreateNestedManyWithoutCreatedByInput
   classMembers?: Prisma.ClassMemberCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
 }
@@ -294,7 +290,6 @@ export type UserUncheckedCreateInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
-  createdClasses?: Prisma.ClassUncheckedCreateNestedManyWithoutCreatedByInput
   classMembers?: Prisma.ClassMemberUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
 }
@@ -310,7 +305,6 @@ export type UserUpdateInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   members?: Prisma.MemberUpdateManyWithoutUserNestedInput
-  createdClasses?: Prisma.ClassUpdateManyWithoutCreatedByNestedInput
   classMembers?: Prisma.ClassMemberUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
 }
@@ -326,7 +320,6 @@ export type UserUncheckedUpdateInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
-  createdClasses?: Prisma.ClassUncheckedUpdateManyWithoutCreatedByNestedInput
   classMembers?: Prisma.ClassMemberUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -468,20 +461,6 @@ export type UserUpdateOneRequiredWithoutInvitationsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutInvitationsInput, Prisma.UserUpdateWithoutInvitationsInput>, Prisma.UserUncheckedUpdateWithoutInvitationsInput>
 }
 
-export type UserCreateNestedOneWithoutCreatedClassesInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutCreatedClassesInput, Prisma.UserUncheckedCreateWithoutCreatedClassesInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCreatedClassesInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserUpdateOneRequiredWithoutCreatedClassesNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutCreatedClassesInput, Prisma.UserUncheckedCreateWithoutCreatedClassesInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCreatedClassesInput
-  upsert?: Prisma.UserUpsertWithoutCreatedClassesInput
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCreatedClassesInput, Prisma.UserUpdateWithoutCreatedClassesInput>, Prisma.UserUncheckedUpdateWithoutCreatedClassesInput>
-}
-
 export type UserCreateNestedOneWithoutClassMembersInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutClassMembersInput, Prisma.UserUncheckedCreateWithoutClassMembersInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutClassMembersInput
@@ -506,7 +485,6 @@ export type UserCreateWithoutSessionsInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   members?: Prisma.MemberCreateNestedManyWithoutUserInput
-  createdClasses?: Prisma.ClassCreateNestedManyWithoutCreatedByInput
   classMembers?: Prisma.ClassMemberCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
 }
@@ -521,7 +499,6 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
-  createdClasses?: Prisma.ClassUncheckedCreateNestedManyWithoutCreatedByInput
   classMembers?: Prisma.ClassMemberUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
 }
@@ -552,7 +529,6 @@ export type UserUpdateWithoutSessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   members?: Prisma.MemberUpdateManyWithoutUserNestedInput
-  createdClasses?: Prisma.ClassUpdateManyWithoutCreatedByNestedInput
   classMembers?: Prisma.ClassMemberUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
 }
@@ -567,7 +543,6 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
-  createdClasses?: Prisma.ClassUncheckedUpdateManyWithoutCreatedByNestedInput
   classMembers?: Prisma.ClassMemberUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -582,7 +557,6 @@ export type UserCreateWithoutAccountsInput = {
   updatedAt?: Date | string
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   members?: Prisma.MemberCreateNestedManyWithoutUserInput
-  createdClasses?: Prisma.ClassCreateNestedManyWithoutCreatedByInput
   classMembers?: Prisma.ClassMemberCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
 }
@@ -597,7 +571,6 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   updatedAt?: Date | string
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
-  createdClasses?: Prisma.ClassUncheckedCreateNestedManyWithoutCreatedByInput
   classMembers?: Prisma.ClassMemberUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
 }
@@ -628,7 +601,6 @@ export type UserUpdateWithoutAccountsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   members?: Prisma.MemberUpdateManyWithoutUserNestedInput
-  createdClasses?: Prisma.ClassUpdateManyWithoutCreatedByNestedInput
   classMembers?: Prisma.ClassMemberUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
 }
@@ -643,7 +615,6 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
-  createdClasses?: Prisma.ClassUncheckedUpdateManyWithoutCreatedByNestedInput
   classMembers?: Prisma.ClassMemberUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -658,7 +629,6 @@ export type UserCreateWithoutMembersInput = {
   updatedAt?: Date | string
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
-  createdClasses?: Prisma.ClassCreateNestedManyWithoutCreatedByInput
   classMembers?: Prisma.ClassMemberCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
 }
@@ -673,7 +643,6 @@ export type UserUncheckedCreateWithoutMembersInput = {
   updatedAt?: Date | string
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
-  createdClasses?: Prisma.ClassUncheckedCreateNestedManyWithoutCreatedByInput
   classMembers?: Prisma.ClassMemberUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
 }
@@ -704,7 +673,6 @@ export type UserUpdateWithoutMembersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
-  createdClasses?: Prisma.ClassUpdateManyWithoutCreatedByNestedInput
   classMembers?: Prisma.ClassMemberUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
 }
@@ -719,7 +687,6 @@ export type UserUncheckedUpdateWithoutMembersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
-  createdClasses?: Prisma.ClassUncheckedUpdateManyWithoutCreatedByNestedInput
   classMembers?: Prisma.ClassMemberUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -735,7 +702,6 @@ export type UserCreateWithoutInvitationsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   members?: Prisma.MemberCreateNestedManyWithoutUserInput
-  createdClasses?: Prisma.ClassCreateNestedManyWithoutCreatedByInput
   classMembers?: Prisma.ClassMemberCreateNestedManyWithoutUserInput
 }
 
@@ -750,7 +716,6 @@ export type UserUncheckedCreateWithoutInvitationsInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
-  createdClasses?: Prisma.ClassUncheckedCreateNestedManyWithoutCreatedByInput
   classMembers?: Prisma.ClassMemberUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -781,7 +746,6 @@ export type UserUpdateWithoutInvitationsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   members?: Prisma.MemberUpdateManyWithoutUserNestedInput
-  createdClasses?: Prisma.ClassUpdateManyWithoutCreatedByNestedInput
   classMembers?: Prisma.ClassMemberUpdateManyWithoutUserNestedInput
 }
 
@@ -796,84 +760,7 @@ export type UserUncheckedUpdateWithoutInvitationsInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
-  createdClasses?: Prisma.ClassUncheckedUpdateManyWithoutCreatedByNestedInput
   classMembers?: Prisma.ClassMemberUncheckedUpdateManyWithoutUserNestedInput
-}
-
-export type UserCreateWithoutCreatedClassesInput = {
-  id: string
-  name: string
-  email: string
-  emailVerified?: boolean
-  image?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
-  members?: Prisma.MemberCreateNestedManyWithoutUserInput
-  classMembers?: Prisma.ClassMemberCreateNestedManyWithoutUserInput
-  invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
-}
-
-export type UserUncheckedCreateWithoutCreatedClassesInput = {
-  id: string
-  name: string
-  email: string
-  emailVerified?: boolean
-  image?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
-  members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
-  classMembers?: Prisma.ClassMemberUncheckedCreateNestedManyWithoutUserInput
-  invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
-}
-
-export type UserCreateOrConnectWithoutCreatedClassesInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutCreatedClassesInput, Prisma.UserUncheckedCreateWithoutCreatedClassesInput>
-}
-
-export type UserUpsertWithoutCreatedClassesInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutCreatedClassesInput, Prisma.UserUncheckedUpdateWithoutCreatedClassesInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutCreatedClassesInput, Prisma.UserUncheckedCreateWithoutCreatedClassesInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutCreatedClassesInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutCreatedClassesInput, Prisma.UserUncheckedUpdateWithoutCreatedClassesInput>
-}
-
-export type UserUpdateWithoutCreatedClassesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
-  members?: Prisma.MemberUpdateManyWithoutUserNestedInput
-  classMembers?: Prisma.ClassMemberUpdateManyWithoutUserNestedInput
-  invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
-}
-
-export type UserUncheckedUpdateWithoutCreatedClassesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
-  members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
-  classMembers?: Prisma.ClassMemberUncheckedUpdateManyWithoutUserNestedInput
-  invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutClassMembersInput = {
@@ -887,7 +774,6 @@ export type UserCreateWithoutClassMembersInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   members?: Prisma.MemberCreateNestedManyWithoutUserInput
-  createdClasses?: Prisma.ClassCreateNestedManyWithoutCreatedByInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
 }
 
@@ -902,7 +788,6 @@ export type UserUncheckedCreateWithoutClassMembersInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
-  createdClasses?: Prisma.ClassUncheckedCreateNestedManyWithoutCreatedByInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -933,7 +818,6 @@ export type UserUpdateWithoutClassMembersInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   members?: Prisma.MemberUpdateManyWithoutUserNestedInput
-  createdClasses?: Prisma.ClassUpdateManyWithoutCreatedByNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
 }
 
@@ -948,7 +832,6 @@ export type UserUncheckedUpdateWithoutClassMembersInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
-  createdClasses?: Prisma.ClassUncheckedUpdateManyWithoutCreatedByNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -961,7 +844,6 @@ export type UserCountOutputType = {
   sessions: number
   accounts: number
   members: number
-  createdClasses: number
   classMembers: number
   invitations: number
 }
@@ -970,7 +852,6 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   members?: boolean | UserCountOutputTypeCountMembersArgs
-  createdClasses?: boolean | UserCountOutputTypeCountCreatedClassesArgs
   classMembers?: boolean | UserCountOutputTypeCountClassMembersArgs
   invitations?: boolean | UserCountOutputTypeCountInvitationsArgs
 }
@@ -1009,13 +890,6 @@ export type UserCountOutputTypeCountMembersArgs<ExtArgs extends runtime.Types.Ex
 /**
  * UserCountOutputType without action
  */
-export type UserCountOutputTypeCountCreatedClassesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ClassWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
 export type UserCountOutputTypeCountClassMembersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ClassMemberWhereInput
 }
@@ -1039,7 +913,6 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   members?: boolean | Prisma.User$membersArgs<ExtArgs>
-  createdClasses?: boolean | Prisma.User$createdClassesArgs<ExtArgs>
   classMembers?: boolean | Prisma.User$classMembersArgs<ExtArgs>
   invitations?: boolean | Prisma.User$invitationsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1080,7 +953,6 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   members?: boolean | Prisma.User$membersArgs<ExtArgs>
-  createdClasses?: boolean | Prisma.User$createdClassesArgs<ExtArgs>
   classMembers?: boolean | Prisma.User$classMembersArgs<ExtArgs>
   invitations?: boolean | Prisma.User$invitationsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1094,7 +966,6 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     accounts: Prisma.$AccountPayload<ExtArgs>[]
     members: Prisma.$MemberPayload<ExtArgs>[]
-    createdClasses: Prisma.$ClassPayload<ExtArgs>[]
     classMembers: Prisma.$ClassMemberPayload<ExtArgs>[]
     invitations: Prisma.$InvitationPayload<ExtArgs>[]
   }
@@ -1503,7 +1374,6 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   members<T extends Prisma.User$membersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$membersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  createdClasses<T extends Prisma.User$createdClassesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$createdClassesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClassPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   classMembers<T extends Prisma.User$classMembersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$classMembersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClassMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   invitations<T extends Prisma.User$invitationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$invitationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -1999,30 +1869,6 @@ export type User$membersArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   distinct?: Prisma.MemberScalarFieldEnum | Prisma.MemberScalarFieldEnum[]
-}
-
-/**
- * User.createdClasses
- */
-export type User$createdClassesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Class
-   */
-  select?: Prisma.ClassSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Class
-   */
-  omit?: Prisma.ClassOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ClassInclude<ExtArgs> | null
-  where?: Prisma.ClassWhereInput
-  orderBy?: Prisma.ClassOrderByWithRelationInput | Prisma.ClassOrderByWithRelationInput[]
-  cursor?: Prisma.ClassWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ClassScalarFieldEnum | Prisma.ClassScalarFieldEnum[]
 }
 
 /**
