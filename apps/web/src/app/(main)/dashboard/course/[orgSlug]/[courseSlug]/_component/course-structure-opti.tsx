@@ -45,12 +45,23 @@ import {
   addChildToNode,
 } from "@/components/course-structure/utils/course-structure-utiles";
 
+import {
+  loadClassAddons,
+  getClassAddonCounts,
+  addClassAddon,
+  deleteClassAddon,
+} from "@/server/class-addons";
+
 interface CourseStructureManagerProps {
   initialCourse: CourseUI;
+  classId?: string;
+  userRole: "org_admin" | "org_member" | "class_teacher" | "class_student";
 }
 
 const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
   initialCourse,
+  classId,
+  userRole,
 }) => {
   const [course, setCourse] = useState<CourseUI>(initialCourse);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(
@@ -86,6 +97,165 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
     return findNodeById(course.rootLessonNode, selectedNodeId);
   }, [selectedNodeId, course.rootLessonNode]);
 
+  // ✅ UNIFIED: Chỉ 1 Map cho tất cả ClassLessonNode
+  const [classAddons, setClassAddons] = useState<Map<string, any[]>>(new Map()); // Map<nodeId, addons[]>
+
+  const [addonCounts, setAddonCounts] = useState<
+    Map<string, { lesson_note: number; homework_imp: number }>
+  >(new Map());
+
+  const [expandedAddons, setExpandedAddons] = useState<Set<string>>(new Set()); // Set of nodeIds that are expanded
+
+  const isClassView = !!classId;
+  const isTeacher = userRole === "class_teacher";
+  const isAdmin = userRole === "org_admin";
+
+  // ✅ UNIFIED: Load addons cho bất kỳ node nào
+  const handleToggleAddons = useCallback(
+    async (nodeId: string) => {
+      if (!classId) return;
+
+      // Toggle
+      const isExpanded = expandedAddons.has(nodeId);
+      if (isExpanded) {
+        setExpandedAddons((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(nodeId);
+          return newSet;
+        });
+        return;
+      }
+
+      // Load addons
+      setLoadingNodeIds((prev) => new Set([...prev, `${nodeId}-addons`]));
+
+      const result = await loadClassAddons(nodeId, classId);
+
+      setLoadingNodeIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(`${nodeId}-addons`);
+        return newSet;
+      });
+
+      if (result.success && result.data) {
+        setClassAddons((prev) => new Map(prev).set(nodeId, result.data));
+        setExpandedAddons((prev) => new Set([...prev, nodeId]));
+      }
+    },
+    [classId, expandedAddons]
+  );
+
+  // ✅ UNIFIED: Add addon
+  const handleAddClassAddon = useCallback(
+    async (nodeId: string, type: "lesson_note" | "homework_imp") => {
+      if (!classId) return;
+
+      setLoadingAction(`add-addon-${nodeId}`);
+
+      startTransition(async () => {
+        const result = await addClassAddon({
+          lessonNodeId: nodeId,
+          classId,
+          type,
+          content: {
+            text: type === "lesson_note" ? "New note" : "New assignment",
+          },
+        });
+
+        if (result.success && result.data) {
+          // Update local state
+          setClassAddons((prev) => {
+            const newMap = new Map(prev);
+            const existing = newMap.get(nodeId) || [];
+            newMap.set(nodeId, [...existing, result.data]);
+            return newMap;
+          });
+
+          // Update count
+          setAddonCounts((prev) => {
+            const newMap = new Map(prev);
+            const current = newMap.get(nodeId) || {
+              lesson_note: 0,
+              homework_imp: 0,
+            };
+            newMap.set(nodeId, {
+              ...current,
+              [type]: current[type] + 1,
+            });
+            return newMap;
+          });
+
+          // Auto expand
+          setExpandedAddons((prev) => new Set([...prev, nodeId]));
+        } else {
+          alert(result.error || "Có lỗi xảy ra");
+        }
+
+        setLoadingAction(null);
+      });
+    },
+    [classId]
+  );
+
+  // ✅ UNIFIED: Delete addon
+  const handleDeleteClassAddon = useCallback(
+    async (
+      nodeId: string,
+      addonId: string,
+      type: "lesson_note" | "homework_imp"
+    ) => {
+      if (!classId) return;
+
+      if (!confirm("Bạn có chắc muốn xóa?")) return;
+
+      setLoadingAction(`delete-addon-${addonId}`);
+
+      startTransition(async () => {
+        const result = await deleteClassAddon({ addonId, classId });
+
+        if (result.success) {
+          // Update local state
+          setClassAddons((prev) => {
+            const newMap = new Map(prev);
+            const existing = newMap.get(nodeId) || [];
+            newMap.set(
+              nodeId,
+              existing.filter((a) => a.id !== addonId)
+            );
+            return newMap;
+          });
+
+          // Update count
+          setAddonCounts((prev) => {
+            const newMap = new Map(prev);
+            const current = newMap.get(nodeId) || {
+              lesson_note: 0,
+              homework_imp: 0,
+            };
+            newMap.set(nodeId, {
+              ...current,
+              [type]: Math.max(0, current[type] - 1),
+            });
+            return newMap;
+          });
+        } else {
+          alert(result.error || "Có lỗi xảy ra");
+        }
+
+        setLoadingAction(null);
+      });
+    },
+    [classId]
+  );
+
+  const getAddonsByType = (
+    nodeId: string,
+    type: "lesson_note" | "homework_imp"
+  ) => {
+    const allAddons = classAddons.get(nodeId) || [];
+    return allAddons.filter((a) => a.type === type);
+  };
+
   // Memoized root node for rendering
   const rootNode = useMemo(
     () => course.rootLessonNode,
@@ -95,12 +265,11 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
   // ✅ Generic function to load children for ANY node (module, lesson, course)
   const fetchAndLoadChildren = useCallback(
     async (nodeId: string): Promise<{ success: boolean }> => {
-      // Already loaded? Skip
+      // 1. Kiểm tra nếu đã load rồi hoặc đang load để tránh duplicate request
       if (loadedNodeIds.has(nodeId)) {
         return { success: true };
       }
 
-      // Already loading? Skip
       if (pendingRequestsRef.current.has(nodeId)) {
         return { success: false };
       }
@@ -111,14 +280,15 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
       try {
         const result = await loadNodeChildren(nodeId);
 
+        // Kiểm tra request có bị hủy giữa chừng không
         if (!pendingRequestsRef.current.has(nodeId)) {
-          // Request was cancelled
           return { success: false };
         }
 
         if (result.success && result.data) {
           const childrenUI: LessonNodeUI[] = result.data.map(transformToUINode);
 
+          // 2. Cập nhật cấu trúc cây (Course tree)
           setCourse((prev) => {
             if (!prev.rootLessonNode) return prev;
 
@@ -138,7 +308,23 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
             };
           });
 
-          // Mark as loaded
+          // 3. Logic mới: Auto-load addon counts cho các node con vừa load
+          // Điều kiện: Đang ở chế độ xem lớp học, có classId và có danh sách node con
+          if (isClassView && classId && childrenUI.length > 0) {
+            const childIds = childrenUI.map((c) => c.id);
+            const countsResult = await getClassAddonCounts(childIds, classId);
+
+            if (countsResult.success && countsResult.data) {
+              setAddonCounts((prev) => {
+                const newMap = new Map(prev);
+                Object.entries(countsResult.data).forEach(([id, counts]) => {
+                  newMap.set(id, counts as any); // Ép kiểu nếu cần thiết tùy vào định nghĩa của bạn
+                });
+                return newMap;
+              });
+            }
+          }
+
           setLoadedNodeIds((prev) => new Set([...prev, nodeId]));
           return { success: true };
         }
@@ -157,7 +343,15 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
         });
       }
     },
-    [loadedNodeIds]
+    // Đừng quên cập nhật dependencies cho useCallback
+    [
+      loadedNodeIds,
+      isClassView,
+      classId,
+      loadNodeChildren,
+      transformToUINode,
+      getClassAddonCounts,
+    ]
   );
 
   // Toggle expand/collapse
@@ -600,17 +794,20 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
               {/* Homework Section */}
               {selectedNode.type === LessonNodeType.lesson && (
                 <div className="border-t border-gray-200 mt-4 pt-4">
+                  {/* Homework List */}
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-sm font-semibold text-gray-700">
                       Homework
                     </h3>
-                    <button
-                      onClick={() => handleAddNode(LessonNodeType.homework)}
-                      disabled={isPending}
-                      className="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 disabled:bg-gray-300"
-                    >
-                      + Add Homework
-                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleAddNode(LessonNodeType.homework)}
+                        disabled={isPending}
+                        className="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 disabled:bg-gray-300"
+                      >
+                        + Add Homework
+                      </button>
+                    )}
                   </div>
 
                   {isLoadingHomework ? (
@@ -621,21 +818,164 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {homeworkNodes.map((hw) => (
-                        <div
-                          key={hw.id}
-                          className="flex items-center gap-2 p-2 bg-orange-50 rounded group"
-                        >
-                          <File className="w-4 h-4 text-orange-500" />
-                          <span className="text-sm flex-1">{hw.title}</span>
+                      {homeworkNodes.map((hw) => {
+                        const hwImplCount =
+                          addonCounts.get(hw.id)?.homework_imp || 0;
+                        const hwAddons = getAddonsByType(hw.id, "homework_imp");
+                        const isHwExpanded = expandedAddons.has(hw.id);
+                        return (
+                          <div key={hw.id}>
+                            <div className="flex items-center gap-2 p-2 bg-orange-50 rounded group">
+                              <File className="w-4 h-4 text-orange-500" />
+                              <span className="text-sm flex-1">{hw.title}</span>
+                              {/* Show count badge (Class view) */}
+                              {isClassView && hwImplCount > 0 && (
+                                <span className="text-xs text-gray-500 bg-orange-100 px-2 py-0.5 rounded">
+                                  {hwImplCount}
+                                </span>
+                              )}
+                              {/* Expand button (Class view) */}
+                              {isClassView && (
+                                <button
+                                  onClick={() => handleToggleAddons(hw.id)}
+                                  className="p-1 hover:bg-orange-200 rounded"
+                                >
+                                  {loadingNodeIds.has(`${hw.id}-addons`) ? (
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                  ) : isHwExpanded ? (
+                                    <ChevronDown className="w-3 h-3" />
+                                  ) : (
+                                    <ChevronRight className="w-3 h-3" />
+                                  )}
+                                </button>
+                              )}
+                              {/* Delete (Admin only) */}
+                              {isAdmin && (
+                                <button
+                                  onClick={() => handleDeleteNode(hw.id)}
+                                  className="p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100"
+                                >
+                                  <Trash2 className="w-3 h-3 text-red-500" />
+                                </button>
+                              )}
+                            </div>
+                            {/* Show homework implementations (Class view) */}
+                            {isClassView && isHwExpanded && (
+                              <div className="ml-6 mt-2 space-y-1">
+                                {isTeacher && (
+                                  <button
+                                    onClick={() =>
+                                      handleAddClassAddon(hw.id, "homework_imp")
+                                    }
+                                    className="w-full px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded hover:bg-orange-200"
+                                  >
+                                    + Add Assignment
+                                  </button>
+                                )}
+                                {hwAddons.map((addon) => (
+                                  <div
+                                    key={addon.id}
+                                    className="flex items-center gap-2 p-2 bg-orange-100 rounded text-xs group"
+                                  >
+                                    <span className="flex-1">
+                                      📋 {addon.content?.text || "Assignment"}
+                                    </span>
+                                    {isTeacher && (
+                                      <button
+                                        onClick={() =>
+                                          handleDeleteClassAddon(
+                                            hw.id,
+                                            addon.id,
+                                            "homework_imp"
+                                          )
+                                        }
+                                        className="p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100"
+                                      >
+                                        <Trash2 className="w-3 h-3 text-red-500" />
+                                      </button>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Lesson Notes Section (Class view only) */}
+                  {isClassView && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-sm font-semibold text-gray-700">
+                          Notes
+                          {addonCounts.get(selectedNode.id)?.lesson_note! >
+                            0 && (
+                            <span className="ml-2 text-xs text-gray-500 bg-blue-100 px-2 py-0.5 rounded">
+                              {addonCounts.get(selectedNode.id)?.lesson_note}
+                            </span>
+                          )}
+                        </h3>
+                        <div className="flex gap-2">
+                          {isTeacher && (
+                            <button
+                              onClick={() =>
+                                handleAddClassAddon(
+                                  selectedNode.id,
+                                  "lesson_note"
+                                )
+                              }
+                              disabled={isPending}
+                              className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 disabled:bg-gray-300"
+                            >
+                              + Add Note
+                            </button>
+                          )}
                           <button
-                            onClick={() => handleDeleteNode(hw.id)}
-                            className="p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100"
+                            onClick={() => handleToggleAddons(selectedNode.id)}
+                            className="p-1 hover:bg-gray-200 rounded"
                           >
-                            <Trash2 className="w-3 h-3 text-red-500" />
+                            {loadingNodeIds.has(`${selectedNode.id}-addons`) ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : expandedAddons.has(selectedNode.id) ? (
+                              <ChevronDown className="w-3 h-3" />
+                            ) : (
+                              <ChevronRight className="w-3 h-3" />
+                            )}
                           </button>
                         </div>
-                      ))}
+                      </div>
+                      {expandedAddons.has(selectedNode.id) && (
+                        <div className="space-y-2">
+                          {getAddonsByType(selectedNode.id, "lesson_note").map(
+                            (note) => (
+                              <div
+                                key={note.id}
+                                className="flex items-center gap-2 p-2 bg-blue-50 rounded group"
+                              >
+                                <span className="text-sm flex-1">
+                                  📝 {note.content?.text || "Note"}
+                                </span>
+                                {isTeacher && (
+                                  <button
+                                    onClick={() =>
+                                      handleDeleteClassAddon(
+                                        selectedNode.id,
+                                        note.id,
+                                        "lesson_note"
+                                      )
+                                    }
+                                    className="p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100"
+                                  >
+                                    <Trash2 className="w-3 h-3 text-red-500" />
+                                  </button>
+                                )}
+                              </div>
+                            )
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

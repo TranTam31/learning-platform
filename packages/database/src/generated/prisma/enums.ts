@@ -39,7 +39,7 @@ export type ClassRole = (typeof ClassRole)[keyof typeof ClassRole]
 
 export const ClassAddonType = {
   lesson_note: 'lesson_note',
-  homework: 'homework'
+  homework_imp: 'homework_imp'
 } as const
 
 export type ClassAddonType = (typeof ClassAddonType)[keyof typeof ClassAddonType]

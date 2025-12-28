@@ -250,5 +250,5 @@ model ClassLessonNode {
 
 enum ClassAddonType {
   lesson_note
-  homework
+  homework_imp
 }

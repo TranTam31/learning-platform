@@ -1,92 +1,13 @@
+// server/class-addons.ts
 "use server";
 
-import { auth } from "@/lib/auth-server";
-import { headers } from "next/headers";
-import { checkUserInOrg } from "./members";
 import prisma from "@/lib/prisma";
-import { ClassRole } from "@repo/db";
-import {
-  ClassAddonType,
-  CreateClassLessonNodeInput,
-  DeleteClassLessonNodeInput,
-} from "@/types/class";
 import { revalidatePath } from "next/cache";
 
-export async function checkUserInClass(classId: string) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) throw new Error("Unauthorized");
-
-  return await prisma.classMember.findUnique({
-    where: {
-      classId_userId: { classId, userId: session?.user.id },
-    },
-    select: {
-      userId: true,
-      role: true,
-    },
-  });
-}
-
-export async function canCreateClass(orgId: string) {
-  return await auth.api.hasPermission({
-    headers: await headers(),
-    body: {
-      organizationId: orgId,
-      permissions: {
-        class: ["create"],
-      },
-    },
-  });
-}
-
-export async function createClass(
-  name: string,
-  courseId: string,
-  organizationId: string
-) {
-  const isMember = await checkUserInOrg({ orgId: organizationId });
-  //   const permission = await canCreateClass(organizationId);
-
-  if (
-    // !permission.success ||
-    !isMember
-  )
-    throw new Error("Forbidden");
-
-  return await prisma.$transaction(async (tx) => {
-    const newClass = await tx.class.create({
-      data: {
-        name: name,
-        courseId: courseId,
-      },
-    });
-
-    await tx.classMember.create({
-      data: {
-        classId: newClass.id,
-        userId: isMember.userId,
-        role: ClassRole.owner,
-      },
-    });
-  });
-}
-
-export async function getClass(classId: string) {
-  const isMember = await checkUserInClass(classId);
-  if (!isMember) throw new Error("Forbidden");
-  return await prisma.class.findUnique({
-    where: {
-      id: classId,
-    },
-    include: {
-      course: true,
-      members: true,
-    },
-  });
-}
-
+/**
+ * ✅ UNIFIED: Load ClassLessonNode cho một LessonNode
+ * Dùng chung cho cả lesson_note VÀ homework_imp
+ */
 export async function loadClassAddons(lessonNodeId: string, classId: string) {
   try {
     const addons = await prisma.classLessonNode.findMany({
@@ -116,6 +37,10 @@ export async function loadClassAddons(lessonNodeId: string, classId: string) {
   }
 }
 
+/**
+ * ✅ UNIFIED: Get counts cho nhiều nodes
+ * Trả về grouped by nodeId và type
+ */
 export async function getClassAddonCounts(nodeIds: string[], classId: string) {
   try {
     const counts = await prisma.classLessonNode.groupBy({
@@ -154,6 +79,10 @@ export async function getClassAddonCounts(nodeIds: string[], classId: string) {
   }
 }
 
+/**
+ * ✅ UNIFIED: Add ClassLessonNode
+ * Type validation ở đây
+ */
 export async function addClassAddon(input: {
   lessonNodeId: string;
   classId: string;
@@ -212,6 +141,9 @@ export async function addClassAddon(input: {
   }
 }
 
+/**
+ * ✅ UNIFIED: Delete ClassLessonNode
+ */
 export async function deleteClassAddon(input: {
   addonId: string;
   classId: string;
