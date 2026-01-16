@@ -97,3 +97,13 @@ export type ClassMember = Prisma.ClassMemberModel
  * 
  */
 export type ClassLessonNode = Prisma.ClassLessonNodeModel
+/**
+ * Model GitHubAccount
+ * 
+ */
+export type GitHubAccount = Prisma.GitHubAccountModel
+/**
+ * Model Widget
+ * 
+ */
+export type Widget = Prisma.WidgetModel

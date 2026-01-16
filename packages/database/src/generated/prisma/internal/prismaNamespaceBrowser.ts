@@ -62,7 +62,9 @@ export const ModelName = {
   LessonNode: 'LessonNode',
   Class: 'Class',
   ClassMember: 'ClassMember',
-  ClassLessonNode: 'ClassLessonNode'
+  ClassLessonNode: 'ClassLessonNode',
+  GitHubAccount: 'GitHubAccount',
+  Widget: 'Widget'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -239,6 +241,37 @@ export const ClassLessonNodeScalarFieldEnum = {
 } as const
 
 export type ClassLessonNodeScalarFieldEnum = (typeof ClassLessonNodeScalarFieldEnum)[keyof typeof ClassLessonNodeScalarFieldEnum]
+
+
+export const GitHubAccountScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  installationId: 'installationId',
+  accountLogin: 'accountLogin',
+  accountType: 'accountType',
+  accessToken: 'accessToken',
+  accessTokenExpiry: 'accessTokenExpiry',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GitHubAccountScalarFieldEnum = (typeof GitHubAccountScalarFieldEnum)[keyof typeof GitHubAccountScalarFieldEnum]
+
+
+export const WidgetScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  repoFullName: 'repoFullName',
+  repoUrl: 'repoUrl',
+  branch: 'branch',
+  buildStatus: 'buildStatus',
+  buildOutput: 'buildOutput',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WidgetScalarFieldEnum = (typeof WidgetScalarFieldEnum)[keyof typeof WidgetScalarFieldEnum]
 
 
 export const SortOrder = {

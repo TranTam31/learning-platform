@@ -34,6 +34,9 @@ model User {
   classMembers  ClassMember[]
   invitations   Invitation[]
 
+  githubAccounts GitHubAccount[]
+  widgets        Widget[]
+
   @@unique([email])
   @@map("user")
 }
@@ -251,4 +254,37 @@ model ClassLessonNode {
 enum ClassAddonType {
   lesson_note
   homework_imp
+}
+
+model GitHubAccount {
+  id                String    @id @default(cuid())
+  userId            String
+  installationId    String    @unique // GitHub App Installation ID
+  accountLogin      String // GitHub username or org name
+  accountType       String // "User" or "Organization"
+  accessToken       String? // Encrypted token
+  accessTokenExpiry DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Widget {
+  id           String   @id @default(cuid())
+  userId       String
+  name         String
+  repoFullName String // "username/repo-name"
+  repoUrl      String
+  branch       String   @default("main")
+  buildStatus  String   @default("pending") // pending, building, success, failed
+  buildOutput  String? // JSON string of build files
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
