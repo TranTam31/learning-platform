@@ -64,7 +64,7 @@ export default function RepoList() {
       }
 
       // Redirect to build page
-      router.push(`/build/${data.widget.id}`);
+      router.push(`/dev/deploy/${data.widget.id}`);
     } catch (err: any) {
       alert(`Error: ${err.message}`);
       setImporting(null);
