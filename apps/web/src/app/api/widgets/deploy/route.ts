@@ -2,9 +2,9 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { Octokit } from "@octokit/rest";
+import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth-server";
 import { headers } from "next/headers";
-import prisma from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
 
     const { widgetId } = await request.json();
 
-    // 1. Get widget from database
+    // Get widget with latest build
     const widget = await prisma.widget.findUnique({
       where: { id: widgetId },
       include: {
@@ -24,6 +24,10 @@ export async function POST(request: NextRequest) {
             githubAccounts: true,
           },
         },
+        builds: {
+          orderBy: { version: "desc" },
+          take: 1,
+        },
       },
     });
 
@@ -31,13 +35,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Widget not found" }, { status: 404 });
     }
 
-    // 2. Update status to building
-    await prisma.widget.update({
-      where: { id: widgetId },
-      data: { buildStatus: "building" },
+    // Calculate next version
+    const latestBuild = widget.builds[0];
+    const nextVersion = latestBuild ? latestBuild.version + 1 : 1;
+
+    // Create new build record
+    const build = await prisma.widgetBuild.create({
+      data: {
+        widgetId: widget.id,
+        version: nextVersion,
+        status: "building",
+        startedAt: new Date(),
+      },
     });
 
-    // 3. Trigger GitHub Actions workflow
+    // Trigger GitHub Actions
     const octokit = new Octokit({
       auth: process.env.GITHUB_PAT,
     });
@@ -45,27 +57,50 @@ export async function POST(request: NextRequest) {
     const [owner, repo] = process.env.WIDGET_BUILDER_REPO!.split("/");
     const installationId = widget.user.githubAccounts[0]?.installationId || "";
 
-    const { data: workflowDispatch } =
-      await octokit.rest.actions.createWorkflowDispatch({
-        owner,
-        repo,
-        workflow_id: "build-widget.yml",
-        ref: "main", // hoặc branch của repo widget-builder
-        inputs: {
-          repo_url: widget.repoUrl,
-          repo_full_name: widget.repoFullName,
-          branch: widget.branch,
-          widget_id: widget.id,
-          installation_id: installationId,
-        },
-      });
+    await octokit.rest.actions.createWorkflowDispatch({
+      owner,
+      repo,
+      workflow_id: "build-widget.yml",
+      ref: "main",
+      inputs: {
+        repo_url: widget.repoUrl,
+        repo_full_name: widget.repoFullName,
+        branch: widget.branch,
+        widget_id: widget.id,
+        build_id: build.id,
+        version: nextVersion.toString(),
+        installation_id: installationId,
+      },
+    });
 
-    console.log("Workflow dispatched:", workflowDispatch);
+    // Wait and get run_id
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    const { data: runs } = await octokit.rest.actions.listWorkflowRuns({
+      owner,
+      repo,
+      workflow_id: "build-widget.yml",
+      per_page: 1,
+    });
+
+    const latestRun = runs.workflow_runs[0];
+
+    if (latestRun) {
+      await prisma.widgetBuild.update({
+        where: { id: build.id },
+        data: { buildRunId: latestRun.id.toString() },
+      });
+    }
 
     return NextResponse.json({
       success: true,
       message: "Build started",
-      widgetId: widget.id,
+      build: {
+        id: build.id,
+        version: build.version,
+        status: build.status,
+      },
+      runId: latestRun?.id,
     });
   } catch (error: any) {
     console.error("Build trigger error:", error);

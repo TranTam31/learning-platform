@@ -397,7 +397,8 @@ export const ModelName = {
   ClassMember: 'ClassMember',
   ClassLessonNode: 'ClassLessonNode',
   GitHubAccount: 'GitHubAccount',
-  Widget: 'Widget'
+  Widget: 'Widget',
+  WidgetBuild: 'WidgetBuild'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -413,7 +414,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "organization" | "member" | "invitation" | "course" | "lessonNode" | "class" | "classMember" | "classLessonNode" | "gitHubAccount" | "widget"
+    modelProps: "user" | "session" | "account" | "verification" | "organization" | "member" | "invitation" | "course" | "lessonNode" | "class" | "classMember" | "classLessonNode" | "gitHubAccount" | "widget" | "widgetBuild"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1453,6 +1454,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    WidgetBuild: {
+      payload: Prisma.$WidgetBuildPayload<ExtArgs>
+      fields: Prisma.WidgetBuildFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WidgetBuildFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WidgetBuildPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WidgetBuildFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WidgetBuildPayload>
+        }
+        findFirst: {
+          args: Prisma.WidgetBuildFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WidgetBuildPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WidgetBuildFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WidgetBuildPayload>
+        }
+        findMany: {
+          args: Prisma.WidgetBuildFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WidgetBuildPayload>[]
+        }
+        create: {
+          args: Prisma.WidgetBuildCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WidgetBuildPayload>
+        }
+        createMany: {
+          args: Prisma.WidgetBuildCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WidgetBuildCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WidgetBuildPayload>[]
+        }
+        delete: {
+          args: Prisma.WidgetBuildDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WidgetBuildPayload>
+        }
+        update: {
+          args: Prisma.WidgetBuildUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WidgetBuildPayload>
+        }
+        deleteMany: {
+          args: Prisma.WidgetBuildDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WidgetBuildUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WidgetBuildUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WidgetBuildPayload>[]
+        }
+        upsert: {
+          args: Prisma.WidgetBuildUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WidgetBuildPayload>
+        }
+        aggregate: {
+          args: Prisma.WidgetBuildAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWidgetBuild>
+        }
+        groupBy: {
+          args: Prisma.WidgetBuildGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WidgetBuildGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WidgetBuildCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WidgetBuildCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1674,13 +1749,28 @@ export const WidgetScalarFieldEnum = {
   repoFullName: 'repoFullName',
   repoUrl: 'repoUrl',
   branch: 'branch',
-  buildStatus: 'buildStatus',
-  buildOutput: 'buildOutput',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type WidgetScalarFieldEnum = (typeof WidgetScalarFieldEnum)[keyof typeof WidgetScalarFieldEnum]
+
+
+export const WidgetBuildScalarFieldEnum = {
+  id: 'id',
+  widgetId: 'widgetId',
+  version: 'version',
+  status: 'status',
+  buildRunId: 'buildRunId',
+  errorMessage: 'errorMessage',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  duration: 'duration',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WidgetBuildScalarFieldEnum = (typeof WidgetBuildScalarFieldEnum)[keyof typeof WidgetBuildScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1971,6 +2061,7 @@ export type GlobalOmitConfig = {
   classLessonNode?: Prisma.ClassLessonNodeOmit
   gitHubAccount?: Prisma.GitHubAccountOmit
   widget?: Prisma.WidgetOmit
+  widgetBuild?: Prisma.WidgetBuildOmit
 }
 
 /* Types for Logging */

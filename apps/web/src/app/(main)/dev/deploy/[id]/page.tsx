@@ -12,12 +12,17 @@ export default async function BuildPage({
   const { id } = await params;
 
   const widget = await prisma.widget.findUnique({
-    where: { id },
+    where: { id: id },
+    include: {
+      builds: {
+        orderBy: { version: "desc" },
+      },
+    },
   });
 
   if (!widget) {
-    redirect("/dashboard");
+    redirect("/dev/dashboard");
   }
 
-  return <BuildInterface widget={widget} />;
+  return <BuildInterface widget={widget} builds={widget.builds} />;
 }

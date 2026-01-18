@@ -107,3 +107,8 @@ export type GitHubAccount = Prisma.GitHubAccountModel
  * 
  */
 export type Widget = Prisma.WidgetModel
+/**
+ * Model WidgetBuild
+ * 
+ */
+export type WidgetBuild = Prisma.WidgetBuildModel

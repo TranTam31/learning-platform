@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Verify webhook secret
+    // Verify webhook secret
     const authHeader = request.headers.get("authorization");
     const expectedAuth = `Bearer ${process.env.WEBHOOK_SECRET}`;
 
@@ -13,22 +13,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 2. Parse webhook payload
+    // Parse payload
     const body = await request.json();
-    const { widget_id, status, run_id, run_number } = body;
+    const { build_id, status, run_id } = body;
 
-    console.log("Build webhook received:", { widget_id, status, run_id });
+    console.log("Build webhook received:", { build_id, status, run_id });
 
-    // 3. Update widget status
-    await prisma.widget.update({
-      where: { id: widget_id },
+    // Get build to calculate duration
+    const build = await prisma.widgetBuild.findUnique({
+      where: { id: build_id },
+    });
+
+    if (!build) {
+      return NextResponse.json({ error: "Build not found" }, { status: 404 });
+    }
+
+    // Calculate duration
+    let duration = null;
+    if (build.startedAt) {
+      duration = Math.floor(
+        (new Date().getTime() - build.startedAt.getTime()) / 1000,
+      );
+    }
+
+    // Update build
+    await prisma.widgetBuild.update({
+      where: { id: build_id },
       data: {
-        buildStatus: status, // 'success' or 'failed'
+        status: status,
+        completedAt: new Date(),
+        duration: duration,
         updatedAt: new Date(),
       },
     });
-
-    // TODO Phase 3: Download artifacts nếu status = success
 
     return NextResponse.json({
       success: true,

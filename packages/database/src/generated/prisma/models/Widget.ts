@@ -31,8 +31,6 @@ export type WidgetMinAggregateOutputType = {
   repoFullName: string | null
   repoUrl: string | null
   branch: string | null
-  buildStatus: string | null
-  buildOutput: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -44,8 +42,6 @@ export type WidgetMaxAggregateOutputType = {
   repoFullName: string | null
   repoUrl: string | null
   branch: string | null
-  buildStatus: string | null
-  buildOutput: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -57,8 +53,6 @@ export type WidgetCountAggregateOutputType = {
   repoFullName: number
   repoUrl: number
   branch: number
-  buildStatus: number
-  buildOutput: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -72,8 +66,6 @@ export type WidgetMinAggregateInputType = {
   repoFullName?: true
   repoUrl?: true
   branch?: true
-  buildStatus?: true
-  buildOutput?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -85,8 +77,6 @@ export type WidgetMaxAggregateInputType = {
   repoFullName?: true
   repoUrl?: true
   branch?: true
-  buildStatus?: true
-  buildOutput?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -98,8 +88,6 @@ export type WidgetCountAggregateInputType = {
   repoFullName?: true
   repoUrl?: true
   branch?: true
-  buildStatus?: true
-  buildOutput?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -184,8 +172,6 @@ export type WidgetGroupByOutputType = {
   repoFullName: string
   repoUrl: string
   branch: string
-  buildStatus: string
-  buildOutput: string | null
   createdAt: Date
   updatedAt: Date
   _count: WidgetCountAggregateOutputType | null
@@ -218,11 +204,10 @@ export type WidgetWhereInput = {
   repoFullName?: Prisma.StringFilter<"Widget"> | string
   repoUrl?: Prisma.StringFilter<"Widget"> | string
   branch?: Prisma.StringFilter<"Widget"> | string
-  buildStatus?: Prisma.StringFilter<"Widget"> | string
-  buildOutput?: Prisma.StringNullableFilter<"Widget"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Widget"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Widget"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  builds?: Prisma.WidgetBuildListRelationFilter
 }
 
 export type WidgetOrderByWithRelationInput = {
@@ -232,11 +217,10 @@ export type WidgetOrderByWithRelationInput = {
   repoFullName?: Prisma.SortOrder
   repoUrl?: Prisma.SortOrder
   branch?: Prisma.SortOrder
-  buildStatus?: Prisma.SortOrder
-  buildOutput?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
+  builds?: Prisma.WidgetBuildOrderByRelationAggregateInput
 }
 
 export type WidgetWhereUniqueInput = Prisma.AtLeast<{
@@ -249,11 +233,10 @@ export type WidgetWhereUniqueInput = Prisma.AtLeast<{
   repoFullName?: Prisma.StringFilter<"Widget"> | string
   repoUrl?: Prisma.StringFilter<"Widget"> | string
   branch?: Prisma.StringFilter<"Widget"> | string
-  buildStatus?: Prisma.StringFilter<"Widget"> | string
-  buildOutput?: Prisma.StringNullableFilter<"Widget"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Widget"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Widget"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  builds?: Prisma.WidgetBuildListRelationFilter
 }, "id">
 
 export type WidgetOrderByWithAggregationInput = {
@@ -263,8 +246,6 @@ export type WidgetOrderByWithAggregationInput = {
   repoFullName?: Prisma.SortOrder
   repoUrl?: Prisma.SortOrder
   branch?: Prisma.SortOrder
-  buildStatus?: Prisma.SortOrder
-  buildOutput?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.WidgetCountOrderByAggregateInput
@@ -282,8 +263,6 @@ export type WidgetScalarWhereWithAggregatesInput = {
   repoFullName?: Prisma.StringWithAggregatesFilter<"Widget"> | string
   repoUrl?: Prisma.StringWithAggregatesFilter<"Widget"> | string
   branch?: Prisma.StringWithAggregatesFilter<"Widget"> | string
-  buildStatus?: Prisma.StringWithAggregatesFilter<"Widget"> | string
-  buildOutput?: Prisma.StringNullableWithAggregatesFilter<"Widget"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Widget"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Widget"> | Date | string
 }
@@ -294,11 +273,10 @@ export type WidgetCreateInput = {
   repoFullName: string
   repoUrl: string
   branch?: string
-  buildStatus?: string
-  buildOutput?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutWidgetsInput
+  builds?: Prisma.WidgetBuildCreateNestedManyWithoutWidgetInput
 }
 
 export type WidgetUncheckedCreateInput = {
@@ -308,10 +286,9 @@ export type WidgetUncheckedCreateInput = {
   repoFullName: string
   repoUrl: string
   branch?: string
-  buildStatus?: string
-  buildOutput?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  builds?: Prisma.WidgetBuildUncheckedCreateNestedManyWithoutWidgetInput
 }
 
 export type WidgetUpdateInput = {
@@ -320,11 +297,10 @@ export type WidgetUpdateInput = {
   repoFullName?: Prisma.StringFieldUpdateOperationsInput | string
   repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
-  buildStatus?: Prisma.StringFieldUpdateOperationsInput | string
-  buildOutput?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutWidgetsNestedInput
+  builds?: Prisma.WidgetBuildUpdateManyWithoutWidgetNestedInput
 }
 
 export type WidgetUncheckedUpdateInput = {
@@ -334,10 +310,9 @@ export type WidgetUncheckedUpdateInput = {
   repoFullName?: Prisma.StringFieldUpdateOperationsInput | string
   repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
-  buildStatus?: Prisma.StringFieldUpdateOperationsInput | string
-  buildOutput?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  builds?: Prisma.WidgetBuildUncheckedUpdateManyWithoutWidgetNestedInput
 }
 
 export type WidgetCreateManyInput = {
@@ -347,8 +322,6 @@ export type WidgetCreateManyInput = {
   repoFullName: string
   repoUrl: string
   branch?: string
-  buildStatus?: string
-  buildOutput?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -359,8 +332,6 @@ export type WidgetUpdateManyMutationInput = {
   repoFullName?: Prisma.StringFieldUpdateOperationsInput | string
   repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
-  buildStatus?: Prisma.StringFieldUpdateOperationsInput | string
-  buildOutput?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -372,8 +343,6 @@ export type WidgetUncheckedUpdateManyInput = {
   repoFullName?: Prisma.StringFieldUpdateOperationsInput | string
   repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
-  buildStatus?: Prisma.StringFieldUpdateOperationsInput | string
-  buildOutput?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -395,8 +364,6 @@ export type WidgetCountOrderByAggregateInput = {
   repoFullName?: Prisma.SortOrder
   repoUrl?: Prisma.SortOrder
   branch?: Prisma.SortOrder
-  buildStatus?: Prisma.SortOrder
-  buildOutput?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -408,8 +375,6 @@ export type WidgetMaxOrderByAggregateInput = {
   repoFullName?: Prisma.SortOrder
   repoUrl?: Prisma.SortOrder
   branch?: Prisma.SortOrder
-  buildStatus?: Prisma.SortOrder
-  buildOutput?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -421,10 +386,13 @@ export type WidgetMinOrderByAggregateInput = {
   repoFullName?: Prisma.SortOrder
   repoUrl?: Prisma.SortOrder
   branch?: Prisma.SortOrder
-  buildStatus?: Prisma.SortOrder
-  buildOutput?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type WidgetScalarRelationFilter = {
+  is?: Prisma.WidgetWhereInput
+  isNot?: Prisma.WidgetWhereInput
 }
 
 export type WidgetCreateNestedManyWithoutUserInput = {
@@ -469,16 +437,29 @@ export type WidgetUncheckedUpdateManyWithoutUserNestedInput = {
   deleteMany?: Prisma.WidgetScalarWhereInput | Prisma.WidgetScalarWhereInput[]
 }
 
+export type WidgetCreateNestedOneWithoutBuildsInput = {
+  create?: Prisma.XOR<Prisma.WidgetCreateWithoutBuildsInput, Prisma.WidgetUncheckedCreateWithoutBuildsInput>
+  connectOrCreate?: Prisma.WidgetCreateOrConnectWithoutBuildsInput
+  connect?: Prisma.WidgetWhereUniqueInput
+}
+
+export type WidgetUpdateOneRequiredWithoutBuildsNestedInput = {
+  create?: Prisma.XOR<Prisma.WidgetCreateWithoutBuildsInput, Prisma.WidgetUncheckedCreateWithoutBuildsInput>
+  connectOrCreate?: Prisma.WidgetCreateOrConnectWithoutBuildsInput
+  upsert?: Prisma.WidgetUpsertWithoutBuildsInput
+  connect?: Prisma.WidgetWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WidgetUpdateToOneWithWhereWithoutBuildsInput, Prisma.WidgetUpdateWithoutBuildsInput>, Prisma.WidgetUncheckedUpdateWithoutBuildsInput>
+}
+
 export type WidgetCreateWithoutUserInput = {
   id?: string
   name: string
   repoFullName: string
   repoUrl: string
   branch?: string
-  buildStatus?: string
-  buildOutput?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  builds?: Prisma.WidgetBuildCreateNestedManyWithoutWidgetInput
 }
 
 export type WidgetUncheckedCreateWithoutUserInput = {
@@ -487,10 +468,9 @@ export type WidgetUncheckedCreateWithoutUserInput = {
   repoFullName: string
   repoUrl: string
   branch?: string
-  buildStatus?: string
-  buildOutput?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  builds?: Prisma.WidgetBuildUncheckedCreateNestedManyWithoutWidgetInput
 }
 
 export type WidgetCreateOrConnectWithoutUserInput = {
@@ -529,10 +509,68 @@ export type WidgetScalarWhereInput = {
   repoFullName?: Prisma.StringFilter<"Widget"> | string
   repoUrl?: Prisma.StringFilter<"Widget"> | string
   branch?: Prisma.StringFilter<"Widget"> | string
-  buildStatus?: Prisma.StringFilter<"Widget"> | string
-  buildOutput?: Prisma.StringNullableFilter<"Widget"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Widget"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Widget"> | Date | string
+}
+
+export type WidgetCreateWithoutBuildsInput = {
+  id?: string
+  name: string
+  repoFullName: string
+  repoUrl: string
+  branch?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutWidgetsInput
+}
+
+export type WidgetUncheckedCreateWithoutBuildsInput = {
+  id?: string
+  userId: string
+  name: string
+  repoFullName: string
+  repoUrl: string
+  branch?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type WidgetCreateOrConnectWithoutBuildsInput = {
+  where: Prisma.WidgetWhereUniqueInput
+  create: Prisma.XOR<Prisma.WidgetCreateWithoutBuildsInput, Prisma.WidgetUncheckedCreateWithoutBuildsInput>
+}
+
+export type WidgetUpsertWithoutBuildsInput = {
+  update: Prisma.XOR<Prisma.WidgetUpdateWithoutBuildsInput, Prisma.WidgetUncheckedUpdateWithoutBuildsInput>
+  create: Prisma.XOR<Prisma.WidgetCreateWithoutBuildsInput, Prisma.WidgetUncheckedCreateWithoutBuildsInput>
+  where?: Prisma.WidgetWhereInput
+}
+
+export type WidgetUpdateToOneWithWhereWithoutBuildsInput = {
+  where?: Prisma.WidgetWhereInput
+  data: Prisma.XOR<Prisma.WidgetUpdateWithoutBuildsInput, Prisma.WidgetUncheckedUpdateWithoutBuildsInput>
+}
+
+export type WidgetUpdateWithoutBuildsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  repoFullName?: Prisma.StringFieldUpdateOperationsInput | string
+  repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  branch?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutWidgetsNestedInput
+}
+
+export type WidgetUncheckedUpdateWithoutBuildsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  repoFullName?: Prisma.StringFieldUpdateOperationsInput | string
+  repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  branch?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type WidgetCreateManyUserInput = {
@@ -541,8 +579,6 @@ export type WidgetCreateManyUserInput = {
   repoFullName: string
   repoUrl: string
   branch?: string
-  buildStatus?: string
-  buildOutput?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -553,10 +589,9 @@ export type WidgetUpdateWithoutUserInput = {
   repoFullName?: Prisma.StringFieldUpdateOperationsInput | string
   repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
-  buildStatus?: Prisma.StringFieldUpdateOperationsInput | string
-  buildOutput?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  builds?: Prisma.WidgetBuildUpdateManyWithoutWidgetNestedInput
 }
 
 export type WidgetUncheckedUpdateWithoutUserInput = {
@@ -565,10 +600,9 @@ export type WidgetUncheckedUpdateWithoutUserInput = {
   repoFullName?: Prisma.StringFieldUpdateOperationsInput | string
   repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
-  buildStatus?: Prisma.StringFieldUpdateOperationsInput | string
-  buildOutput?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  builds?: Prisma.WidgetBuildUncheckedUpdateManyWithoutWidgetNestedInput
 }
 
 export type WidgetUncheckedUpdateManyWithoutUserInput = {
@@ -577,12 +611,39 @@ export type WidgetUncheckedUpdateManyWithoutUserInput = {
   repoFullName?: Prisma.StringFieldUpdateOperationsInput | string
   repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
-  buildStatus?: Prisma.StringFieldUpdateOperationsInput | string
-  buildOutput?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+
+/**
+ * Count Type WidgetCountOutputType
+ */
+
+export type WidgetCountOutputType = {
+  builds: number
+}
+
+export type WidgetCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  builds?: boolean | WidgetCountOutputTypeCountBuildsArgs
+}
+
+/**
+ * WidgetCountOutputType without action
+ */
+export type WidgetCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WidgetCountOutputType
+   */
+  select?: Prisma.WidgetCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * WidgetCountOutputType without action
+ */
+export type WidgetCountOutputTypeCountBuildsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WidgetBuildWhereInput
+}
 
 
 export type WidgetSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -592,11 +653,11 @@ export type WidgetSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   repoFullName?: boolean
   repoUrl?: boolean
   branch?: boolean
-  buildStatus?: boolean
-  buildOutput?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  builds?: boolean | Prisma.Widget$buildsArgs<ExtArgs>
+  _count?: boolean | Prisma.WidgetCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["widget"]>
 
 export type WidgetSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -606,8 +667,6 @@ export type WidgetSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   repoFullName?: boolean
   repoUrl?: boolean
   branch?: boolean
-  buildStatus?: boolean
-  buildOutput?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -620,8 +679,6 @@ export type WidgetSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   repoFullName?: boolean
   repoUrl?: boolean
   branch?: boolean
-  buildStatus?: boolean
-  buildOutput?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -634,15 +691,15 @@ export type WidgetSelectScalar = {
   repoFullName?: boolean
   repoUrl?: boolean
   branch?: boolean
-  buildStatus?: boolean
-  buildOutput?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type WidgetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "repoFullName" | "repoUrl" | "branch" | "buildStatus" | "buildOutput" | "createdAt" | "updatedAt", ExtArgs["result"]["widget"]>
+export type WidgetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "repoFullName" | "repoUrl" | "branch" | "createdAt" | "updatedAt", ExtArgs["result"]["widget"]>
 export type WidgetInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  builds?: boolean | Prisma.Widget$buildsArgs<ExtArgs>
+  _count?: boolean | Prisma.WidgetCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type WidgetIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -655,6 +712,7 @@ export type $WidgetPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   name: "Widget"
   objects: {
     user: Prisma.$UserPayload<ExtArgs>
+    builds: Prisma.$WidgetBuildPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -663,8 +721,6 @@ export type $WidgetPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     repoFullName: string
     repoUrl: string
     branch: string
-    buildStatus: string
-    buildOutput: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["widget"]>
@@ -1062,6 +1118,7 @@ readonly fields: WidgetFieldRefs;
 export interface Prisma__WidgetClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  builds<T extends Prisma.Widget$buildsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Widget$buildsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WidgetBuildPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1097,8 +1154,6 @@ export interface WidgetFieldRefs {
   readonly repoFullName: Prisma.FieldRef<"Widget", 'String'>
   readonly repoUrl: Prisma.FieldRef<"Widget", 'String'>
   readonly branch: Prisma.FieldRef<"Widget", 'String'>
-  readonly buildStatus: Prisma.FieldRef<"Widget", 'String'>
-  readonly buildOutput: Prisma.FieldRef<"Widget", 'String'>
   readonly createdAt: Prisma.FieldRef<"Widget", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Widget", 'DateTime'>
 }
@@ -1494,6 +1549,30 @@ export type WidgetDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Limit how many Widgets to delete.
    */
   limit?: number
+}
+
+/**
+ * Widget.builds
+ */
+export type Widget$buildsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WidgetBuild
+   */
+  select?: Prisma.WidgetBuildSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WidgetBuild
+   */
+  omit?: Prisma.WidgetBuildOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WidgetBuildInclude<ExtArgs> | null
+  where?: Prisma.WidgetBuildWhereInput
+  orderBy?: Prisma.WidgetBuildOrderByWithRelationInput | Prisma.WidgetBuildOrderByWithRelationInput[]
+  cursor?: Prisma.WidgetBuildWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WidgetBuildScalarFieldEnum | Prisma.WidgetBuildScalarFieldEnum[]
 }
 
 /**

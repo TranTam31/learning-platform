@@ -11,10 +11,6 @@ export async function POST(request: NextRequest) {
     });
     if (!session) throw new Error("Unauthorized");
 
-    if (!session.user) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
     const body = await request.json();
     const { repoFullName, repoUrl, branch = "main", name } = body;
 
@@ -25,7 +21,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create widget record
+    const existingWidget = await prisma.widget.findFirst({
+      where: {
+        userId: session.user.id,
+        repoFullName,
+      },
+    });
+
+    if (existingWidget) {
+      return NextResponse.json({
+        success: true,
+        widget: {
+          id: existingWidget.id,
+          name: existingWidget.name,
+          repoFullName: existingWidget.repoFullName,
+        },
+        message: "Widget already exists for this repository",
+      });
+    }
+
+    // Create widget
     const widget = await prisma.widget.create({
       data: {
         userId: session.user.id,
@@ -33,7 +48,6 @@ export async function POST(request: NextRequest) {
         repoFullName,
         repoUrl,
         branch,
-        buildStatus: "pending",
       },
     });
 
