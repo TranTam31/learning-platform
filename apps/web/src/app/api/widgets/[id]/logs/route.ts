@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Octokit } from "@octokit/rest";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth-server";
 import { headers } from "next/headers";

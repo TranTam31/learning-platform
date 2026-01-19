@@ -2,6 +2,7 @@
 
 import { parseAnsiToStyledSegments } from "@/lib/github/ansi-parser";
 import { useEffect, useState } from "react";
+import WidgetPreviewDialog from "../widget/WidgetPreviewDialog";
 
 interface Widget {
   id: string;
@@ -14,6 +15,7 @@ interface Build {
   id: string;
   version: number;
   status: string;
+  buildRunId: string | null;
   startedAt: Date | null;
   completedAt: Date | null;
   duration: number | null;
@@ -40,9 +42,10 @@ interface ParsedStep {
 interface Props {
   widget: Widget;
   build: Build;
+  widgetHtml: string | null;
 }
 
-export default function BuildDetailsView({ widget, build }: Props) {
+export default function BuildDetailsView({ widget, build, widgetHtml }: Props) {
   const [steps, setSteps] = useState<ParsedStep[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -118,7 +121,7 @@ export default function BuildDetailsView({ widget, build }: Props) {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
               <a
-                href={`/build/${widget.id}`}
+                href={`/dev/deploy/${widget.id}`}
                 className="text-sm text-blue-600 hover:text-blue-800"
               >
                 ← Back to {widget.name}
@@ -166,6 +169,8 @@ export default function BuildDetailsView({ widget, build }: Props) {
             </div>
           </div>
         </div>
+
+        {widgetHtml && <WidgetPreviewDialog html={widgetHtml} />}
 
         {/* Build Steps */}
         <div className="bg-white rounded-lg shadow p-6">
