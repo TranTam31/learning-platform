@@ -1,7 +1,7 @@
 // app/api/repos/route.ts
 
 import { NextResponse } from "next/server";
-import { getUserRepositories } from "@/lib/github";
+import { getUserRepositories } from "@/lib/github/github";
 import { auth } from "@/lib/auth-server";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
@@ -22,7 +22,7 @@ export async function GET() {
     if (!githubAccounts) {
       return NextResponse.json(
         { error: "You have not connected your GitHub account" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -47,7 +47,7 @@ export async function GET() {
     console.error("Get repos error:", error);
     return NextResponse.json(
       { error: "Failed to fetch repositories" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

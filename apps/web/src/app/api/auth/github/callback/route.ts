@@ -1,7 +1,7 @@
 // app/api/auth/github/callback/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { githubApp } from "@/lib/github";
+import { githubApp } from "@/lib/github/github";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth-server";
 import { headers } from "next/headers";
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
   if (!installationId) {
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/dev/dashboard?error=no_installation`
+      `${process.env.NEXT_PUBLIC_APP_URL}/dev/dashboard?error=no_installation`,
     );
   }
 
@@ -24,13 +24,13 @@ export async function GET(request: NextRequest) {
 
     // 2. Lấy thông tin từ GitHub
     const octokit = await githubApp.getInstallationOctokit(
-      parseInt(installationId)
+      parseInt(installationId),
     );
     const { data: installation } = await octokit.request(
       "GET /app/installations/{installation_id}",
       {
         installation_id: parseInt(installationId),
-      }
+      },
     );
 
     const account = installation.account as {
@@ -62,12 +62,12 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/dev/dashboard?success=github_connected`
+      `${process.env.NEXT_PUBLIC_APP_URL}/dev/dashboard?success=github_connected`,
     );
   } catch (error) {
     console.error("GitHub linking error:", error);
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/dev/dashboard?error=link_failed`
+      `${process.env.NEXT_PUBLIC_APP_URL}/dev/dashboard?error=link_failed`,
     );
   }
 }

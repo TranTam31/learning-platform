@@ -148,11 +148,14 @@ export default function BuildInterface({ widget, builds }: Props) {
                       <div className="text-right text-sm text-gray-500">
                         {build.completedAt ? (
                           <span>
-                            {new Date(build.completedAt).toLocaleString()}
+                            {new Date(build.completedAt).toLocaleString(
+                              "vi-VN",
+                            )}
                           </span>
                         ) : build.startedAt ? (
                           <span>
-                            Started {new Date(build.startedAt).toLocaleString()}
+                            Started{" "}
+                            {new Date(build.startedAt).toLocaleString("vi-VN")}
                           </span>
                         ) : (
                           <span>Pending</span>
@@ -162,7 +165,7 @@ export default function BuildInterface({ widget, builds }: Props) {
                       {(build.status === "success" ||
                         build.status === "failed") && (
                         <a
-                          href={`/build/${widget.id}/details/${build.id}`}
+                          href={`/dev/deploy/${widget.id}/details/${build.id}`}
                           className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
                         >
                           View Details

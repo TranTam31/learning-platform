@@ -1,0 +1,374 @@
+"use client";
+
+import { parseAnsiToStyledSegments } from "@/lib/github/ansi-parser";
+import { useEffect, useState } from "react";
+
+interface Widget {
+  id: string;
+  name: string;
+  repoFullName: string;
+  branch: string;
+}
+
+interface Build {
+  id: string;
+  version: number;
+  status: string;
+  startedAt: Date | null;
+  completedAt: Date | null;
+  duration: number | null;
+}
+
+interface LogSection {
+  type: "group" | "line";
+  title?: string;
+  lines: string[];
+  collapsed?: boolean;
+}
+
+interface ParsedStep {
+  number: number;
+  name: string;
+  status: string;
+  conclusion: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  duration: number | null;
+  logs: LogSection[];
+}
+
+interface Props {
+  widget: Widget;
+  build: Build;
+}
+
+export default function BuildDetailsView({ widget, build }: Props) {
+  const [steps, setSteps] = useState<ParsedStep[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set([1])); // Expand first step by default
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    fetchLogs();
+  }, []);
+
+  async function fetchLogs() {
+    try {
+      const response = await fetch(`/api/widgets/${build.id}/logs`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch logs");
+      }
+
+      setSteps(data.steps);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function toggleStep(stepNumber: number) {
+    setExpandedSteps((prev) => {
+      const next = new Set(prev);
+      if (next.has(stepNumber)) {
+        next.delete(stepNumber);
+      } else {
+        next.add(stepNumber);
+      }
+      return next;
+    });
+  }
+
+  function toggleGroup(stepNumber: number, groupTitle: string) {
+    const key = `${stepNumber}-${groupTitle}`;
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }
+
+  function expandAll() {
+    setExpandedSteps(new Set(steps.map((s) => s.number)));
+    const allGroups = steps.flatMap((step) =>
+      step.logs
+        .filter((log) => log.type === "group")
+        .map((log) => `${step.number}-${log.title}`),
+    );
+    setExpandedGroups(new Set(allGroups));
+  }
+
+  function collapseAll() {
+    setExpandedSteps(new Set());
+    setExpandedGroups(new Set());
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <nav className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-4">
+              <a
+                href={`/build/${widget.id}`}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                ← Back to {widget.name}
+              </a>
+              <span className="text-gray-300">|</span>
+              <h1 className="text-lg font-semibold text-gray-900">
+                Build v{build.version}
+              </h1>
+            </div>
+            <StatusBadge status={build.status} />
+          </div>
+        </div>
+      </nav>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Build Summary */}
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
+            Build Information
+          </h2>
+          <div className="grid grid-cols-4 gap-4 text-sm">
+            <div>
+              <span className="text-gray-600">Version</span>
+              <p className="font-mono text-lg font-semibold text-gray-900">
+                v{build.version}
+              </p>
+            </div>
+            <div>
+              <span className="text-gray-600">Status</span>
+              <p className="font-medium text-gray-900">{build.status}</p>
+            </div>
+            <div>
+              <span className="text-gray-600">Duration</span>
+              <p className="font-medium text-gray-900">
+                {build.duration ? `${build.duration}s` : "-"}
+              </p>
+            </div>
+            <div>
+              <span className="text-gray-600">Completed</span>
+              <p className="font-medium text-gray-900">
+                {build.completedAt
+                  ? new Date(build.completedAt).toLocaleString("vi-VN")
+                  : "In progress"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Build Steps */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">Build Steps</h2>
+            <div className="flex gap-2">
+              <button
+                onClick={expandAll}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                Expand All
+              </button>
+              <span className="text-gray-300">|</span>
+              <button
+                onClick={collapseAll}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                Collapse All
+              </button>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-3 text-gray-600">Loading logs...</span>
+            </div>
+          ) : error ? (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
+              {error}
+            </div>
+          ) : steps.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">No steps found</div>
+          ) : (
+            <div className="space-y-2">
+              {steps.map((step) => (
+                <StepView
+                  key={step.number}
+                  step={step}
+                  expanded={expandedSteps.has(step.number)}
+                  expandedGroups={expandedGroups}
+                  onToggle={() => toggleStep(step.number)}
+                  onToggleGroup={(groupTitle) =>
+                    toggleGroup(step.number, groupTitle)
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function StepView({
+  step,
+  expanded,
+  expandedGroups,
+  onToggle,
+  onToggleGroup,
+}: {
+  step: ParsedStep;
+  expanded: boolean;
+  expandedGroups: Set<string>;
+  onToggle: () => void;
+  onToggleGroup: (title: string) => void;
+}) {
+  const conclusionIcon =
+    {
+      success: "✅",
+      failure: "❌",
+      cancelled: "🚫",
+      skipped: "⏭️",
+    }[step.conclusion || ""] || "⏳";
+
+  const conclusionColor =
+    {
+      success: "text-green-600",
+      failure: "text-red-600",
+      cancelled: "text-gray-600",
+      skipped: "text-gray-400",
+    }[step.conclusion || ""] || "text-blue-600";
+
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
+      {/* Step Header */}
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors text-left"
+      >
+        <div className="flex items-center gap-3">
+          <span className={`text-xl ${conclusionColor}`}>{conclusionIcon}</span>
+          <span className="font-medium text-gray-900">{step.name}</span>
+          {step.duration !== null && (
+            <span className="text-sm text-gray-500">({step.duration}s)</span>
+          )}
+        </div>
+        <span className="text-gray-400">{expanded ? "▼" : "▶"}</span>
+      </button>
+
+      {/* Step Logs */}
+      {expanded && (
+        <div className="border-t border-gray-200 bg-gray-900 p-4">
+          {step.logs.length === 0 ? (
+            <p className="text-gray-500 text-sm">No logs for this step</p>
+          ) : (
+            <div className="space-y-2">
+              {step.logs.map((section, idx) => (
+                <LogSectionView
+                  key={idx}
+                  section={section}
+                  stepNumber={step.number}
+                  expanded={expandedGroups.has(
+                    `${step.number}-${section.title}`,
+                  )}
+                  onToggle={() => section.title && onToggleGroup(section.title)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StyledLogLine({ text }: { text: string }) {
+  const segments = parseAnsiToStyledSegments(text);
+
+  return (
+    <div className="leading-relaxed">
+      {segments.map((segment, idx) => (
+        <span key={idx} className={segment.classes.join(" ")}>
+          {segment.text}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function LogSectionView({
+  section,
+  stepNumber,
+  expanded,
+  onToggle,
+}: {
+  section: LogSection;
+  stepNumber: number;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  if (section.type === "line") {
+    // ✅ UPDATE: Use StyledLogLine instead of plain div
+    return (
+      <div className="font-mono text-xs text-gray-300">
+        {section.lines.map((line, idx) => (
+          <StyledLogLine key={idx} text={line} />
+        ))}
+      </div>
+    );
+  }
+
+  // Group
+  return (
+    <div className="border border-gray-700 rounded">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center gap-2 p-2 hover:bg-gray-800 transition-colors text-left"
+      >
+        <span className="text-gray-400 text-xs">{expanded ? "▼" : "▶"}</span>
+        <span className="font-mono text-xs text-purple-400">
+          {section.title}
+        </span>
+      </button>
+
+      {expanded && (
+        <div className="p-2 pt-0 font-mono text-xs text-gray-300 space-y-0.5">
+          {section.lines.map((line, idx) => (
+            // ✅ UPDATE: Use StyledLogLine
+            <div key={idx} className="pl-4">
+              <StyledLogLine text={line} />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const colors = {
+    pending: "bg-gray-100 text-gray-700",
+    building: "bg-blue-100 text-blue-700",
+    success: "bg-green-100 text-green-700",
+    failed: "bg-red-100 text-red-700",
+  };
+
+  return (
+    <span
+      className={`px-3 py-1 rounded-full text-sm font-medium ${colors[status as keyof typeof colors] || colors.pending}`}
+    >
+      {status.toUpperCase()}
+    </span>
+  );
+}
