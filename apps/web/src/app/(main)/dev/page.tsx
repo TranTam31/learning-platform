@@ -1,32 +1,166 @@
-export default async function DevPage() {
+import Link from "next/link";
+import prisma from "@/lib/prisma";
+import { auth } from "@/lib/auth-server";
+import { headers } from "next/headers";
+
+async function getWidgets(userId: string) {
+  return await prisma.widget.findMany({
+    where: { userId },
+    include: {
+      builds: {
+        orderBy: { version: "desc" },
+        take: 1,
+      },
+      _count: {
+        select: { builds: true },
+      },
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+}
+
+export default async function WidgetsPage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) throw new Error("Unauthorized");
+
+  const widgets = await getWidgets(session.user.id);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 to-indigo-100">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          HostWeb Platform
-        </h1>
-        <p className="text-gray-600 mb-8">
-          Build and deploy your widgets from GitHub repositories
-        </p>
-
-        <a
-          href="/api/auth/github"
-          className="w-full flex items-center justify-center gap-3 bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium"
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Your Widgets</h1>
+        <Link
+          href="/dev/dashboard"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path
-              fillRule="evenodd"
-              d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-              clipRule="evenodd"
-            />
-          </svg>
-          Connect with GitHub
-        </a>
-
-        <p className="text-sm text-gray-500 mt-4 text-center">
-          We'll only access repositories you grant permission to
-        </p>
+          New Widget
+        </Link>
       </div>
+
+      {widgets.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+            <svg
+              className="w-8 h-8 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">
+            Chưa có widget nào
+          </h2>
+          <p className="text-gray-500 mb-6">
+            Bắt đầu bằng cách tạo widget đầu tiên của bạn
+          </p>
+          <Link
+            href="/dev/dashboard"
+            className="inline-flex px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Tạo Widget đầu tiên
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {widgets.map((widget) => {
+            const latestBuild = widget.builds[0];
+            const statusColors = {
+              pending: "bg-yellow-100 text-yellow-800",
+              building: "bg-blue-100 text-blue-800",
+              success: "bg-green-100 text-green-800",
+              failed: "bg-red-100 text-red-800",
+            };
+
+            return (
+              <Link
+                key={widget.id}
+                href={`/dev/deploy/${widget.id}`}
+                className="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 truncate flex-1">
+                    {widget.name}
+                  </h3>
+                  {latestBuild && (
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        statusColors[
+                          latestBuild.status as keyof typeof statusColors
+                        ] || "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {latestBuild.status}
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-2 text-sm text-gray-600 mb-4">
+                  <div className="flex items-center">
+                    <svg
+                      className="w-4 h-4 mr-2 shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                    </svg>
+                    <span className="truncate">{widget.repoFullName}</span>
+                  </div>
+
+                  <div className="flex items-center">
+                    <svg
+                      className="w-4 h-4 mr-2 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <span>Branch: {widget.branch}</span>
+                  </div>
+
+                  <div className="flex items-center">
+                    <svg
+                      className="w-4 h-4 mr-2 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                      />
+                    </svg>
+                    <span>{widget._count.builds} builds</span>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-100">
+                  <p className="text-xs text-gray-500">
+                    Cập nhật{" "}
+                    {new Date(widget.updatedAt).toLocaleString("vi-VN")}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
