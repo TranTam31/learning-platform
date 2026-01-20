@@ -13,6 +13,7 @@ import {
   addLessonNode,
   deleteLessonNode,
   loadNodeChildren,
+  updateLessonNode,
 } from "@/server/courses";
 import {
   loadClassAddons,
@@ -38,10 +39,10 @@ import {
 interface CourseStructureContextValue {
   // ===== READ-ONLY CONFIG =====
   classId?: string;
-  userRole: "org_admin" | "org_member" | "class_teacher" | "class_student";
-  isClassView: boolean;
   isAdmin: boolean;
+  isMember: boolean;
   isTeacher: boolean;
+  isStudent: boolean;
 
   // ===== COURSE DATA =====
   course: CourseUI;
@@ -72,17 +73,24 @@ interface CourseStructureContextValue {
   handleToggleAddons: (nodeId: string) => Promise<void>;
   handleAddClassAddon: (
     nodeId: string,
-    type: "lesson_note" | "homework_imp"
+    type: "lesson_note" | "homework_imp",
   ) => Promise<void>;
   handleDeleteClassAddon: (
     nodeId: string,
     addonId: string,
-    type: "lesson_note" | "homework_imp"
+    type: "lesson_note" | "homework_imp",
   ) => Promise<void>;
   getAddonsByType: (
     nodeId: string,
-    type: "lesson_note" | "homework_imp"
+    type: "lesson_note" | "homework_imp",
   ) => any[];
+
+  // ===== UPDATE ACTIONS =====
+  handleUpdateNode: (
+    nodeId: string,
+    updates: { title?: string; content?: any },
+  ) => Promise<void>;
+  isUpdatingNode: string | null; // Track which node is being updated
 }
 
 const CourseStructureContext = createContext<
@@ -101,35 +109,33 @@ export const CourseStructureProvider: React.FC<
   CourseStructureProviderProps
 > = ({ children, initialCourse, classId, userRole }) => {
   // ===== READ-ONLY CONFIG (không bao giờ thay đổi) =====
-  const config = useMemo(
-    () => ({
-      classId,
-      userRole,
-      isClassView: !!classId,
-      isAdmin: userRole === "org_admin",
-      isTeacher: userRole === "class_teacher",
-    }),
-    [classId, userRole]
-  );
+  const config = {
+    classId,
+    isAdmin: userRole === "org_admin",
+    isMember: userRole === "org_member",
+    isTeacher: userRole === "class_teacher",
+    isStudent: userRole === "class_student",
+  };
 
   // ===== COURSE DATA =====
   const [course, setCourse] = useState<CourseUI>(initialCourse);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(
-    initialCourse.rootLessonNodeId
+    initialCourse.rootLessonNodeId,
   );
 
   // ===== TREE UI STATES =====
   const [expandedNodeIds, setExpandedNodeIds] = useState<Set<string>>(
     new Set(
-      initialCourse.rootLessonNodeId ? [initialCourse.rootLessonNodeId] : []
-    )
+      initialCourse.rootLessonNodeId ? [initialCourse.rootLessonNodeId] : [],
+    ),
   );
   const [loadedNodeIds, setLoadedNodeIds] = useState<Set<string>>(
     new Set(
-      initialCourse.rootLessonNodeId ? [initialCourse.rootLessonNodeId] : []
-    )
+      initialCourse.rootLessonNodeId ? [initialCourse.rootLessonNodeId] : [],
+    ),
   );
   const [loadingNodeIds, setLoadingNodeIds] = useState<Set<string>>(new Set());
+  const [isUpdatingNode, setIsUpdatingNode] = useState<string | null>(null);
 
   // ===== CLASS ADDON STATES =====
   const [classAddons, setClassAddons] = useState<Map<string, any[]>>(new Map());
@@ -185,7 +191,7 @@ export const CourseStructureProvider: React.FC<
                 ...node,
                 children: childrenUI,
                 childrenLoaded: true,
-              })
+              }),
             );
 
             return {
@@ -195,11 +201,11 @@ export const CourseStructureProvider: React.FC<
           });
 
           // Auto-load addon counts nếu là Class view
-          if (config.isClassView && config.classId && childrenUI.length > 0) {
+          if (config.classId && childrenUI.length > 0) {
             const childIds = childrenUI.map((c) => c.id);
             const countsResult = await getClassAddonCounts(
               childIds,
-              config.classId
+              config.classId,
             );
 
             if (countsResult.success && countsResult.data) {
@@ -231,7 +237,7 @@ export const CourseStructureProvider: React.FC<
         });
       }
     },
-    [loadedNodeIds, config.isClassView, config.classId]
+    [loadedNodeIds, config.classId],
   );
 
   // ===== ACTION: Toggle expand/collapse =====
@@ -256,7 +262,7 @@ export const CourseStructureProvider: React.FC<
         await fetchAndLoadChildren(nodeId);
       }
     },
-    [expandedNodeIds, fetchAndLoadChildren]
+    [expandedNodeIds, fetchAndLoadChildren],
   );
 
   // ===== ACTION: Add LessonNode =====
@@ -303,7 +309,7 @@ export const CourseStructureProvider: React.FC<
             const updatedRoot = addChildToNode(
               prev.rootLessonNode,
               selectedNode.id,
-              newNode
+              newNode,
             );
 
             return {
@@ -324,7 +330,7 @@ export const CourseStructureProvider: React.FC<
         setLoadingAction(null);
       });
     },
-    [selectedNode, course.id]
+    [selectedNode, course.id],
   );
 
   // ===== ACTION: Delete LessonNode =====
@@ -337,7 +343,7 @@ export const CourseStructureProvider: React.FC<
 
       if (
         !confirm(
-          "Bạn có chắc muốn xóa node này? Tất cả children cũng sẽ bị xóa."
+          "Bạn có chắc muốn xóa node này? Tất cả children cũng sẽ bị xóa.",
         )
       ) {
         return;
@@ -385,7 +391,52 @@ export const CourseStructureProvider: React.FC<
         setLoadingAction(null);
       });
     },
-    [course.id, course.rootLessonNodeId, selectedNodeId]
+    [course.id, course.rootLessonNodeId, selectedNodeId],
+  );
+
+  const handleUpdateNode = useCallback(
+    async (nodeId: string, updates: { title?: string; content?: any }) => {
+      setIsUpdatingNode(nodeId);
+
+      try {
+        const result = await updateLessonNode({
+          nodeId,
+          courseId: course.id,
+          ...updates,
+        });
+
+        if (result.success && result.data) {
+          // Update node trong tree
+          setCourse((prev) => {
+            if (!prev.rootLessonNode) return prev;
+
+            const updatedRoot = updateNodeInTree(
+              prev.rootLessonNode,
+              nodeId,
+              (node) => ({
+                ...node,
+                title: result.data.title,
+                content: result.data.content,
+                updatedAt: result.data.updatedAt,
+              }),
+            );
+
+            return {
+              ...prev,
+              rootLessonNode: updatedRoot,
+            };
+          });
+        } else {
+          alert(result.error || "Có lỗi xảy ra khi cập nhật");
+        }
+      } catch (error) {
+        console.error("Error updating node:", error);
+        alert("Có lỗi xảy ra");
+      } finally {
+        setIsUpdatingNode(null);
+      }
+    },
+    [course.id],
   );
 
   // ===== ACTION: Toggle addons =====
@@ -418,7 +469,7 @@ export const CourseStructureProvider: React.FC<
         setExpandedAddons((prev) => new Set([...prev, nodeId]));
       }
     },
-    [config.classId, expandedAddons]
+    [config.classId, expandedAddons],
   );
 
   // ===== ACTION: Add class addon =====
@@ -467,7 +518,7 @@ export const CourseStructureProvider: React.FC<
         setLoadingAction(null);
       });
     },
-    [config.classId]
+    [config.classId],
   );
 
   // ===== ACTION: Delete class addon =====
@@ -475,7 +526,7 @@ export const CourseStructureProvider: React.FC<
     async (
       nodeId: string,
       addonId: string,
-      type: "lesson_note" | "homework_imp"
+      type: "lesson_note" | "homework_imp",
     ) => {
       if (!config.classId) return;
 
@@ -495,7 +546,7 @@ export const CourseStructureProvider: React.FC<
             const existing = newMap.get(nodeId) || [];
             newMap.set(
               nodeId,
-              existing.filter((a) => a.id !== addonId)
+              existing.filter((a) => a.id !== addonId),
             );
             return newMap;
           });
@@ -519,7 +570,7 @@ export const CourseStructureProvider: React.FC<
         setLoadingAction(null);
       });
     },
-    [config.classId]
+    [config.classId],
   );
 
   // ===== HELPER: Get addons by type =====
@@ -528,7 +579,7 @@ export const CourseStructureProvider: React.FC<
       const allAddons = classAddons.get(nodeId) || [];
       return allAddons.filter((a) => a.type === type);
     },
-    [classAddons]
+    [classAddons],
   );
 
   // ===== AUTO-LOAD homework khi select lesson =====
@@ -566,6 +617,8 @@ export const CourseStructureProvider: React.FC<
     // Loading states
     isPending,
     loadingAction,
+    handleUpdateNode,
+    isUpdatingNode,
 
     // Actions
     setSelectedNodeId,
@@ -590,7 +643,7 @@ export const useCourseStructure = () => {
   const context = useContext(CourseStructureContext);
   if (!context) {
     throw new Error(
-      "useCourseStructure must be used within CourseStructureProvider"
+      "useCourseStructure must be used within CourseStructureProvider",
     );
   }
   return context;

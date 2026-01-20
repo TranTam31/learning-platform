@@ -57,16 +57,16 @@ export default async function WidgetsPage() {
             </svg>
           </div>
           <h2 className="text-xl font-semibold text-gray-700 mb-2">
-            Chưa có widget nào
+            No widgets found
           </h2>
           <p className="text-gray-500 mb-6">
-            Bắt đầu bằng cách tạo widget đầu tiên của bạn
+            Start by creating your first widget
           </p>
           <Link
             href="/dev/dashboard"
             className="inline-flex px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            Tạo Widget đầu tiên
+            New Widget
           </Link>
         </div>
       ) : (

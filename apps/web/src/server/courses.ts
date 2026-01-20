@@ -25,7 +25,7 @@ export async function createCourse(
   name: string,
   slug: string,
   organizationId: string,
-  description?: string
+  description?: string,
 ) {
   const isMember = await checkUserInOrg({ orgId: organizationId });
   const permission = await canCreateCourse(organizationId);
@@ -147,6 +147,76 @@ export async function addLessonNode(input: AddNodeInput) {
     return {
       success: false,
       error: "Có lỗi xảy ra khi thêm node",
+    };
+  }
+}
+
+export async function updateLessonNode(input: {
+  nodeId: string;
+  courseId: string;
+  title?: string;
+  content?: any;
+}) {
+  try {
+    const { nodeId, courseId, title, content } = input;
+
+    // Verify node exists and belongs to course
+    const node = await prisma.lessonNode.findUnique({
+      where: { id: nodeId },
+      select: { courseId: true, type: true },
+    });
+
+    if (!node || node.courseId !== courseId) {
+      return {
+        success: false,
+        error: "Node không tồn tại hoặc không thuộc course này",
+      };
+    }
+
+    // Prevent updating root course node title
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      select: { rootLessonNodeId: true },
+    });
+
+    if (course?.rootLessonNodeId === nodeId && title !== undefined) {
+      return { success: false, error: "Không thể đổi tên root course node" };
+    }
+
+    // Update node
+    const updated = await prisma.lessonNode.update({
+      where: { id: nodeId },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(content !== undefined && { content }),
+      },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        content: true,
+        order: true,
+        parentId: true,
+        courseId: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: { children: true },
+        },
+      },
+    });
+
+    revalidatePath(`/courses/${courseId}`);
+
+    return {
+      success: true,
+      data: updated,
+    };
+  } catch (error) {
+    console.error("Error updating lesson node:", error);
+    return {
+      success: false,
+      error: "Có lỗi xảy ra khi cập nhật node",
     };
   }
 }

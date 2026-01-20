@@ -1,3 +1,5 @@
+"use client";
+
 import { useClass } from "@/components/providers/class-context";
 import React from "react";
 

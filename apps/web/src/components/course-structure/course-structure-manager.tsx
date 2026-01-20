@@ -1,5 +1,5 @@
 // components/course-structure/CourseStructureManager.tsx
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronRight,
   ChevronDown,
@@ -33,13 +33,95 @@ interface CourseStructureManagerProps {
   userRole: "org_admin" | "org_member" | "class_teacher" | "class_student";
 }
 
+interface EditableTitleProps {
+  initialTitle: string;
+  onSave: (newTitle: string) => void;
+  isUpdating: boolean;
+  className?: string;
+}
+
+const EditableTitle: React.FC<EditableTitleProps> = ({
+  initialTitle,
+  onSave,
+  isUpdating,
+  className = "block w-full",
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [title, setTitle] = useState(initialTitle);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // 🔑 Sync khi đổi node
+  useEffect(() => {
+    setTitle(initialTitle);
+    setIsEditing(false);
+  }, [initialTitle]);
+
+  // Auto focus
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleSave = () => {
+    const trimmed = title.trim();
+
+    if (!trimmed) {
+      setTitle(initialTitle);
+      setIsEditing(false);
+      return;
+    }
+
+    if (trimmed !== initialTitle) {
+      onSave(trimmed); // optimistic
+    }
+
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSave();
+    } else if (e.key === "Escape") {
+      setTitle(initialTitle);
+      setIsEditing(false);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <input
+        ref={inputRef}
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        onBlur={handleSave}
+        onKeyDown={handleKeyDown}
+        disabled={isUpdating}
+        className={`bg-white border border-blue-500 rounded px-2 py-1 ${className}`}
+      />
+    );
+  }
+
+  return (
+    <span
+      onClick={() => setIsEditing(true)}
+      className={`cursor-pointer hover:bg-gray-100 px-2 py-1 rounded ${className}`}
+      title="Click to edit"
+    >
+      {title}
+    </span>
+  );
+};
+
 // ===== MAIN COMPONENT (UI Only - Logic từ Context) =====
 const CourseStructureContent: React.FC = () => {
   const {
     // Config
-    isClassView,
     isAdmin,
+    isMember,
     isTeacher,
+    isStudent,
 
     // Data
     course,
@@ -58,6 +140,8 @@ const CourseStructureContent: React.FC = () => {
     // Loading
     isPending,
     loadingAction,
+    handleUpdateNode,
+    isUpdatingNode,
 
     // Actions
     setSelectedNodeId,
@@ -91,7 +175,7 @@ const CourseStructureContent: React.FC = () => {
   // ===== RENDER: Tree node (recursive) =====
   const renderNode = (
     node: LessonNodeUI,
-    level: number = 0
+    level: number = 0,
   ): React.ReactNode => {
     if (node.type === LessonNodeType.homework) return null;
 
@@ -170,7 +254,7 @@ const CourseStructureContent: React.FC = () => {
   const homeworkNodes = useMemo(() => {
     if (selectedNode && selectedNode.type === LessonNodeType.lesson) {
       return (selectedNode.children || []).filter(
-        (child) => child.type === LessonNodeType.homework
+        (child) => child.type === LessonNodeType.homework,
       );
     }
     return [];
@@ -201,62 +285,65 @@ const CourseStructureContent: React.FC = () => {
             <BookOpen className="w-5 h-5 text-purple-500" />
             <span className="font-medium text-gray-700">{course.name}</span>
           </div>
-          <div className="flex gap-2 w-full">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90">
-                  <Plus className="w-4 h-4" />
-                  <span className="hidden sm:inline">Class</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create Class</DialogTitle>
-                </DialogHeader>
-                <CreateClassForm
-                  courseId={course.id}
-                  organizationId={course.organizationId}
-                  onSuccess={() => {}}
-                />
-              </DialogContent>
-            </Dialog>
-
-            {isAdmin && (
-              <div className="flex-1 flex gap-2">
-                <button
-                  onClick={() => handleAddNode(LessonNodeType.module)}
-                  disabled={!canAddToSelected || isPending}
-                  className="flex-1 flex items-center justify-center p-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                  title="Add Module"
-                >
-                  {isAddingModule ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <div className="flex items-center gap-1">
+          {(isAdmin || isMember) && (
+            <div className="flex gap-2 w-full">
+              <div className="flex-1">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="w-full bg-primary hover:bg-primary/90">
                       <Plus className="w-4 h-4" />
-                      <span className="hidden sm:inline">Module</span>
-                    </div>
-                  )}
-                </button>
-
-                <button
-                  onClick={() => handleAddNode(LessonNodeType.lesson)}
-                  disabled={!canAddToSelected || isPending}
-                  className="flex-1 flex items-center justify-center p-1.5 bg-green-500 text-white text-sm rounded hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                  title="Add Lesson"
-                >
-                  {isAddingLesson ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <div className="flex items-center gap-1">
-                      <Plus className="w-4 h-4" />
-                      <span className="hidden sm:inline">Lesson</span>
-                    </div>
-                  )}
-                </button>
+                      <span className="hidden sm:inline">Add Class</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create New Class</DialogTitle>
+                    </DialogHeader>
+                    <CreateClassForm
+                      courseId={course.id}
+                      organizationId={course.organizationId}
+                      onSuccess={() => {}}
+                    />
+                  </DialogContent>
+                </Dialog>
               </div>
-            )}
-          </div>
+              {isAdmin && (
+                <div className="flex-1 flex gap-2">
+                  <button
+                    onClick={() => handleAddNode(LessonNodeType.module)}
+                    disabled={!canAddToSelected || isPending}
+                    className="flex-1 flex items-center justify-center p-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    title="Add Module"
+                  >
+                    {isAddingModule ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <Plus className="w-4 h-4" />
+                        <span className="hidden sm:inline">Module</span>
+                      </div>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => handleAddNode(LessonNodeType.lesson)}
+                    disabled={!canAddToSelected || isPending}
+                    className="flex-1 flex items-center justify-center p-1.5 bg-green-500 text-white text-sm rounded hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    title="Add Lesson"
+                  >
+                    {isAddingLesson ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <Plus className="w-4 h-4" />
+                        <span className="hidden sm:inline">Lesson</span>
+                      </div>
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex-1 overflow-y-auto">
           {course.rootLessonNode && renderNode(course.rootLessonNode)}
@@ -273,10 +360,20 @@ const CourseStructureContent: React.FC = () => {
                 <div className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full mb-2">
                   {selectedNode.type}
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  {selectedNode.title}
-                </h1>
-                <p className="text-sm text-gray-500">ID: {selectedNode.id}</p>
+                {isAdmin ? (
+                  <EditableTitle
+                    initialTitle={selectedNode.title}
+                    onSave={(newTitle) =>
+                      handleUpdateNode(selectedNode.id, { title: newTitle })
+                    }
+                    isUpdating={isUpdatingNode === selectedNode.id}
+                    className="text-2xl font-bold text-gray-900 block"
+                  />
+                ) : (
+                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                    {selectedNode.title}
+                  </h1>
+                )}
               </div>
 
               {/* Description */}
@@ -286,44 +383,7 @@ const CourseStructureContent: React.FC = () => {
                 </h3>
                 <p className="text-gray-600">
                   {(selectedNode.content as any)?.description ||
-                    "Chưa có mô tả"}
-                </p>
-              </div>
-
-              {/* Metadata */}
-              <div className="border-t border-gray-200 mt-4 pt-4">
-                <h3 className="text-sm font-semibold text-gray-700 mb-2">
-                  Metadata
-                </h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Parent ID:</span>
-                    <span className="text-gray-900">
-                      {selectedNode.parentId || "None"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Children:</span>
-                    <span className="text-gray-900">
-                      {loadedNodeIds.has(selectedNode.id)
-                        ? selectedNode.children?.length || 0
-                        : `${selectedNode._count.children} (not loaded)`}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Order:</span>
-                    <span className="text-gray-900">
-                      {selectedNode.order ?? "N/A"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Editor Placeholder */}
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>Editor placeholder:</strong> Phần editor để chỉnh sửa
-                  nội dung chi tiết sẽ được thêm vào sau.
+                    "No Description available."}
                 </p>
               </div>
 
@@ -363,15 +423,35 @@ const CourseStructureContent: React.FC = () => {
                           <div key={hw.id}>
                             <div className="flex items-center gap-2 p-2 bg-orange-50 rounded group">
                               <File className="w-4 h-4 text-orange-500" />
-                              <span className="text-sm flex-1">{hw.title}</span>
+                              {isAdmin ? (
+                                <div
+                                  className="flex-1"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <EditableTitle
+                                    initialTitle={hw.title}
+                                    onSave={(newTitle) =>
+                                      handleUpdateNode(hw.id, {
+                                        title: newTitle,
+                                      })
+                                    }
+                                    isUpdating={isUpdatingNode === hw.id}
+                                    className="text-sm"
+                                  />
+                                </div>
+                              ) : (
+                                <span className="text-sm flex-1">
+                                  {hw.title}
+                                </span>
+                              )}
 
-                              {isClassView && hwImplCount > 0 && (
+                              {(isTeacher || isStudent) && hwImplCount > 0 && (
                                 <span className="text-xs text-gray-500 bg-orange-100 px-2 py-0.5 rounded">
                                   {hwImplCount}
                                 </span>
                               )}
 
-                              {isClassView && (
+                              {(isTeacher || isStudent) && (
                                 <button
                                   onClick={() => handleToggleAddons(hw.id)}
                                   className="p-1 hover:bg-orange-200 rounded"
@@ -396,7 +476,7 @@ const CourseStructureContent: React.FC = () => {
                               )}
                             </div>
 
-                            {isClassView && isHwExpanded && (
+                            {(isTeacher || isStudent) && isHwExpanded && (
                               <div className="ml-6 mt-2 space-y-1">
                                 {isTeacher && (
                                   <button
@@ -422,7 +502,7 @@ const CourseStructureContent: React.FC = () => {
                                           handleDeleteClassAddon(
                                             hw.id,
                                             addon.id,
-                                            "homework_imp"
+                                            "homework_imp",
                                           )
                                         }
                                         className="p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100"
@@ -441,7 +521,7 @@ const CourseStructureContent: React.FC = () => {
                   )}
 
                   {/* Lesson Notes (Class view only) */}
-                  {isClassView && (
+                  {(isTeacher || isStudent) && (
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-sm font-semibold text-gray-700">
@@ -459,7 +539,7 @@ const CourseStructureContent: React.FC = () => {
                               onClick={() =>
                                 handleAddClassAddon(
                                   selectedNode.id,
-                                  "lesson_note"
+                                  "lesson_note",
                                 )
                               }
                               disabled={isPending}
@@ -500,7 +580,7 @@ const CourseStructureContent: React.FC = () => {
                                       handleDeleteClassAddon(
                                         selectedNode.id,
                                         note.id,
-                                        "lesson_note"
+                                        "lesson_note",
                                       )
                                     }
                                     className="p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100"
@@ -509,7 +589,7 @@ const CourseStructureContent: React.FC = () => {
                                   </button>
                                 )}
                               </div>
-                            )
+                            ),
                           )}
                         </div>
                       )}
