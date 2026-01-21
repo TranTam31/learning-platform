@@ -163,7 +163,7 @@ export default function BuildDetailsView({ widget, build, widgetHtml }: Props) {
               <span className="text-gray-600">Completed</span>
               <p className="font-medium text-gray-900">
                 {build.completedAt
-                  ? new Date(build.completedAt).toLocaleString("vi-VN")
+                  ? new Date(build.completedAt).toLocaleDateString("vi-VN")
                   : "In progress"}
               </p>
             </div>

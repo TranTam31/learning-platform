@@ -79,11 +79,22 @@ export enum LessonNodeType {
   homework = "homework",
 }
 
+export type LessonContent = {
+  content?: string;
+};
+
+export type HomeworkContent = {
+  widgetId?: string;
+};
+
+export type LessonNodeContent = LessonContent | HomeworkContent;
+
 export interface AddNodeInput {
   courseId: string;
   parentId: string;
   type: AddNodeInputType;
   title: string;
+  content?: LessonNodeContent;
 }
 
 export interface DeleteNodeInput {

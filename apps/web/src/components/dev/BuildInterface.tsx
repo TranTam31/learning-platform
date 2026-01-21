@@ -132,14 +132,16 @@ export default function BuildInterface({ widget, builds }: Props) {
                       <div className="text-right text-sm text-gray-500">
                         {build.completedAt ? (
                           <span>
-                            {new Date(build.completedAt).toLocaleString(
+                            {new Date(build.completedAt).toLocaleDateString(
                               "vi-VN",
                             )}
                           </span>
                         ) : build.startedAt ? (
                           <span>
                             Started{" "}
-                            {new Date(build.startedAt).toLocaleString("vi-VN")}
+                            {new Date(build.startedAt).toLocaleDateString(
+                              "vi-VN",
+                            )}
                           </span>
                         ) : (
                           <span>Pending</span>

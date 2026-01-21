@@ -25,6 +25,7 @@ import {
   CourseStructureProvider,
   useCourseStructure,
 } from "@/components/providers/course-structure-provider";
+import WidgetMarketplaceDialog from "../widget/marketplace/WidgetMarketplaceDialog";
 
 // ===== PROPS =====
 interface CourseStructureManagerProps {
@@ -395,6 +396,25 @@ const CourseStructureContent: React.FC = () => {
                       Homework
                     </h3>
                     {isAdmin && (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button className="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 disabled:bg-gray-300">
+                            <Plus className="w-2 h-2" />
+                            <span className="hidden sm:inline">
+                              Add Homework
+                            </span>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="w-[90vw]! h-[95vh]! max-w-none! p-1! flex! flex-col! min-h-0!">
+                          <DialogHeader className="px-6 py-4 border-b shrink-0">
+                            <DialogTitle>Widget Marketplace</DialogTitle>
+                          </DialogHeader>
+                          <WidgetMarketplaceDialog />
+                        </DialogContent>
+                      </Dialog>
+                    )}
+
+                    {/* {isAdmin && (
                       <button
                         onClick={() => handleAddNode(LessonNodeType.homework)}
                         disabled={isPending}
@@ -402,7 +422,7 @@ const CourseStructureContent: React.FC = () => {
                       >
                         + Add Homework
                       </button>
-                    )}
+                    )} */}
                   </div>
 
                   {isLoadingHomework ? (

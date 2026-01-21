@@ -6,7 +6,13 @@ import { auth } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { checkUserInOrg } from "./members";
 import { revalidatePath } from "next/cache";
-import { AddNodeInput, DeleteNodeInput } from "@/types/course";
+import {
+  AddNodeInput,
+  DeleteNodeInput,
+  HomeworkContent,
+  LessonContent,
+  LessonNodeContent,
+} from "@/types/course";
 import { LessonNodeType } from "@repo/db";
 
 export async function canCreateCourse(orgId: string) {
@@ -70,7 +76,7 @@ export async function createCourse(
 
 export async function addLessonNode(input: AddNodeInput) {
   try {
-    const { courseId, parentId, type, title } = input;
+    const { courseId, parentId, type, title, content } = input;
 
     const parentNode = await prisma.lessonNode.findUnique({
       where: { id: parentId },
@@ -110,6 +116,7 @@ export async function addLessonNode(input: AddNodeInput) {
     }
 
     const order = parentNode._count.children;
+    const finalContent = content ?? getDefaultContent(type);
 
     const newNode = await prisma.lessonNode.create({
       data: {
@@ -118,7 +125,7 @@ export async function addLessonNode(input: AddNodeInput) {
         courseId,
         parentId,
         order,
-        content: {}, // Empty object cho tất cả
+        content: finalContent,
       },
       select: {
         id: true,
@@ -148,6 +155,21 @@ export async function addLessonNode(input: AddNodeInput) {
       success: false,
       error: "Có lỗi xảy ra khi thêm node",
     };
+  }
+}
+
+function getDefaultContent(type: LessonNodeType): LessonNodeContent {
+  switch (type) {
+    case LessonNodeType.lesson:
+      return { content: "" } as LessonContent;
+
+    case LessonNodeType.homework:
+      return { widgetId: "" } as HomeworkContent;
+
+    case LessonNodeType.module:
+      return { content: "" } as LessonContent;
+    default:
+      return {};
   }
 }
 

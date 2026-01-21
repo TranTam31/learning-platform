@@ -3,11 +3,13 @@ import prisma from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } },
+  context: { params: Promise<{ userId: string }> },
 ) {
   try {
+    const { userId } = await context.params;
+
     const widgets = await prisma.widget.findMany({
-      where: { userId: params.userId },
+      where: { userId },
       include: {
         builds: {
           orderBy: { version: "desc" },

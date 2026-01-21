@@ -18,6 +18,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import WidgetPreview from "@/components/widget/WidgetPreview";
+import { useOptionalCourseStructure } from "@/components/providers/course-structure-provider";
+import { LessonNodeType } from "@/types/course";
 
 export type WidgetCardProps = {
   widget: {
@@ -53,6 +55,14 @@ type UserWidget = {
 };
 
 export function WidgetCard({ widget }: WidgetCardProps) {
+  const { isAdmin, selectedNodeId, handleAddNode } =
+    useOptionalCourseStructure() ?? {
+      isAdmin: null,
+      selectedNodeId: null,
+      handleAddNode: undefined,
+    };
+  console.log(isAdmin, selectedNodeId);
+
   const [userWidgets, setUserWidgets] = useState<UserWidget[] | null>(null);
   const [isLoadingWidgets, setIsLoadingWidgets] = useState(false);
   const [widgetHtmlCache, setWidgetHtmlCache] = useState<
@@ -96,6 +106,18 @@ export function WidgetCard({ widget }: WidgetCardProps) {
         return newSet;
       });
     }
+  };
+
+  const handleAddAsHomework = async () => {
+    if (!handleAddNode) {
+      console.error("handleAddNode is not available");
+      return;
+    }
+
+    await handleAddNode(LessonNodeType.homework, {
+      title: `Homework: ${widget.name}`,
+      content: { widgetId: widget.id },
+    });
   };
 
   return (
@@ -175,19 +197,20 @@ export function WidgetCard({ widget }: WidgetCardProps) {
                         <span>{w._count.builds} builds</span>
                       </div>
                       <div className="text-xs text-gray-500">
-                        Updated: {new Date(w.updatedAt).toLocaleString("vi-VN")}
+                        Updated:{" "}
+                        {new Date(w.updatedAt).toLocaleDateString("vi-VN")}
                       </div>
                     </div>
 
                     {/* Đẩy nút Preview xuống đáy card */}
-                    <div className="mt-auto">
+                    <div className="mt-auto flex gap-2">
                       {w.builds?.[0]?.buildRunId && (
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button
                               variant="outline"
                               size="sm"
-                              className="w-full"
+                              className="flex-1"
                               onClick={() =>
                                 loadWidgetHtml(w.id, w.builds[0].buildRunId!)
                               }
@@ -218,6 +241,14 @@ export function WidgetCard({ widget }: WidgetCardProps) {
                             </div>
                           </DialogContent>
                         </Dialog>
+                      )}
+                      {isAdmin && (
+                        <Button
+                          className="flex-1"
+                          onClick={handleAddAsHomework}
+                        >
+                          Add Widget
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -251,42 +282,50 @@ export function WidgetCard({ widget }: WidgetCardProps) {
 
       <div className="pt-4 border-t border-gray-100 space-y-3">
         <p className="text-xs text-gray-500">
-          Updated: {new Date(widget.updatedAt).toLocaleString("vi-VN")}
+          Updated: {new Date(widget.updatedAt).toLocaleDateString("vi-VN")}
         </p>
 
-        {latestBuild?.buildRunId && (
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() =>
-                  loadWidgetHtml(widget.id, latestBuild.buildRunId!)
-                }
-              >
-                {loadingHtmlIds.has(widget.id) ? "Loading..." : "Preview"}
-              </Button>
-            </DialogTrigger>
+        <div className="flex gap-2">
+          {latestBuild?.buildRunId && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() =>
+                    loadWidgetHtml(widget.id, latestBuild.buildRunId!)
+                  }
+                >
+                  {loadingHtmlIds.has(widget.id) ? "Loading..." : "Preview"}
+                </Button>
+              </DialogTrigger>
 
-            <DialogContent className="w-[80vw]! h-[95vh]! max-w-none! p-1! flex! flex-col! min-h-0!">
-              <DialogHeader className="px-6 py-4 border-b shrink-0">
-                <DialogTitle>Widget Preview</DialogTitle>
-              </DialogHeader>
+              <DialogContent className="w-[80vw]! h-[90vh]! max-w-none! p-1! flex! flex-col! min-h-0!">
+                <DialogHeader className="px-6 py-4 border-b shrink-0">
+                  <DialogTitle>Widget Preview</DialogTitle>
+                </DialogHeader>
 
-              <div className="flex-1 overflow-auto min-h-0">
-                {widgetHtmlCache[widget.id] ? (
-                  <WidgetPreview html={widgetHtmlCache[widget.id]} />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-gray-500">
-                    {loadingHtmlIds.has(widget.id)
-                      ? "Loading preview..."
-                      : "No preview available"}
-                  </div>
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
+                <div className="flex-1 overflow-auto min-h-0">
+                  {widgetHtmlCache[widget.id] ? (
+                    <WidgetPreview html={widgetHtmlCache[widget.id]} />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      {loadingHtmlIds.has(widget.id)
+                        ? "Loading preview..."
+                        : "No preview available"}
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
+
+          {isAdmin && (
+            <Button className="flex-1" onClick={handleAddAsHomework}>
+              Add Widget
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

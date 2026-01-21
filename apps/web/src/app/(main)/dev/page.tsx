@@ -29,14 +29,24 @@ export default async function WidgetsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Your Widgets</h1>
-        <Link
-          href="/dev/dashboard"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          New Widget
-        </Link>
+
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dev/marketplace"
+            className="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors"
+          >
+            Widget Marketplace
+          </Link>
+
+          <Link
+            href="/dev/dashboard"
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+          >
+            New Widget
+          </Link>
+        </div>
       </div>
 
       {widgets.length === 0 ? (
@@ -152,8 +162,8 @@ export default async function WidgetsPage() {
 
                 <div className="pt-4 border-t border-gray-100">
                   <p className="text-xs text-gray-500">
-                    Cập nhật{" "}
-                    {new Date(widget.updatedAt).toLocaleString("vi-VN")}
+                    Update{" "}
+                    {new Date(widget.updatedAt).toLocaleDateString("vi-VN")}
                   </p>
                 </div>
               </Link>

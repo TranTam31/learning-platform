@@ -24,6 +24,7 @@ import {
 import {
   AddNodeInputType,
   CourseUI,
+  LessonNodeContent,
   LessonNodeType,
   LessonNodeUI,
 } from "@/types/course";
@@ -66,7 +67,10 @@ interface CourseStructureContextValue {
   // ===== TREE ACTIONS =====
   setSelectedNodeId: (id: string | null) => void;
   toggleNodeExpanded: (node: LessonNodeUI) => Promise<void>;
-  handleAddNode: (type: AddNodeInputType) => Promise<void>;
+  handleAddNode: (
+    type: AddNodeInputType,
+    options?: AddNodeOptions,
+  ) => Promise<void>;
   handleDeleteNode: (nodeId: string) => Promise<void>;
 
   // ===== CLASS ADDON ACTIONS =====
@@ -91,6 +95,11 @@ interface CourseStructureContextValue {
     updates: { title?: string; content?: any },
   ) => Promise<void>;
   isUpdatingNode: string | null; // Track which node is being updated
+}
+
+export interface AddNodeOptions {
+  title?: string;
+  content?: LessonNodeContent;
 }
 
 const CourseStructureContext = createContext<
@@ -267,7 +276,7 @@ export const CourseStructureProvider: React.FC<
 
   // ===== ACTION: Add LessonNode =====
   const handleAddNode = useCallback(
-    async (type: AddNodeInputType) => {
+    async (type: AddNodeInputType, options?: AddNodeOptions): Promise<void> => {
       if (!selectedNode) {
         alert("Vui lòng chọn một node trước");
         return;
@@ -288,16 +297,19 @@ export const CourseStructureProvider: React.FC<
       setLoadingAction(`add-${type}`);
 
       startTransition(async () => {
+        const defaultTitle =
+          type === LessonNodeType.module
+            ? "New Module"
+            : type === LessonNodeType.lesson
+              ? "New Lesson"
+              : "New Homework";
+
         const result = await addLessonNode({
           courseId: course.id,
           parentId: selectedNode.id,
           type: type,
-          title:
-            type === LessonNodeType.module
-              ? "New Module"
-              : type === LessonNodeType.lesson
-                ? "New Lesson"
-                : "New Homework",
+          title: options?.title ?? defaultTitle,
+          content: options?.content,
         });
 
         if (result.success && result.data) {
@@ -647,4 +659,8 @@ export const useCourseStructure = () => {
     );
   }
   return context;
+};
+
+export const useOptionalCourseStructure = () => {
+  return useContext(CourseStructureContext);
 };
