@@ -100,7 +100,9 @@ export default function AssignmentDialog({ hwId }: { hwId: string }) {
       return;
     }
 
-    const currentConfig = widgetPreviewRef.current.getCurrentConfig();
+    // const currentConfig = widgetPreviewRef.current.getCurrentConfig();
+    const currentConfig =
+      await widgetPreviewRef.current!.getCurrentConfigWithUploadedImages();
 
     if (!currentConfig || Object.keys(currentConfig).length === 0) {
       alert("Không có config để lưu");

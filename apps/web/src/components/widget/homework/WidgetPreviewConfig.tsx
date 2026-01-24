@@ -13,9 +13,15 @@ import { AlertCircle } from "lucide-react";
 import { WidgetDefinition } from "../core/types";
 import { TweakpaneBuilder } from "../core/TweakpaneBuilder";
 import { SchemaProcessor } from "../core/SchemaProcessor";
+import {
+  uploadBase64Image,
+  isBase64Image,
+  getImageSizeFromBase64,
+} from "@/lib/supabase/image-upload";
 
 export interface WidgetPreviewRef {
   getCurrentConfig: () => Record<string, any>;
+  getCurrentConfigWithUploadedImages: () => Promise<Record<string, any>>;
   loadConfig: (config: Record<string, any>) => void;
 }
 
@@ -24,13 +30,14 @@ interface WidgetPreviewProps {
   initialConfig?: Record<string, any> | null;
 }
 
-const WidgetPreviewConfig = forwardRef<WidgetPreviewRef, WidgetPreviewProps>(
+const WidgetPreview = forwardRef<WidgetPreviewRef, WidgetPreviewProps>(
   ({ html, initialConfig }, ref) => {
     const [widgetDef, setWidgetDef] = useState<WidgetDefinition | null>(null);
     const [config, setConfig] = useState<Record<string, any>>({});
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [iframeReady, setIframeReady] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState<string | null>(null);
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const paneRef = useRef<HTMLDivElement>(null);
@@ -38,27 +45,114 @@ const WidgetPreviewConfig = forwardRef<WidgetPreviewRef, WidgetPreviewProps>(
     const builderRef = useRef<TweakpaneBuilder | null>(null);
     const messageQueueRef = useRef<any[]>([]);
 
+    // Helper function to recursively find and upload base64 images
+    const processConfigForSave = async (
+      config: Record<string, any>,
+      path: string = "root",
+    ): Promise<Record<string, any>> => {
+      const processed: Record<string, any> = {};
+      let imageCount = 0;
+
+      for (const [key, value] of Object.entries(config)) {
+        const currentPath = `${path}.${key}`;
+
+        if (typeof value === "string" && isBase64Image(value)) {
+          // Upload base64 image and replace with URL
+          imageCount++;
+          const sizeKB = (getImageSizeFromBase64(value) / 1024).toFixed(2);
+
+          setUploadProgress(`Đang upload ảnh ${imageCount} (${sizeKB} KB)...`);
+          console.log(`📤 Uploading image for key: ${key} at ${currentPath}`);
+
+          try {
+            processed[key] = await uploadBase64Image(
+              value,
+              `${key}-${Date.now()}`,
+            );
+            console.log(`✅ Image uploaded: ${processed[key]}`);
+          } catch (error) {
+            console.error(`❌ Failed to upload image for ${key}:`, error);
+            setUploadProgress(`⚠️ Lỗi upload ảnh ${key}, giữ nguyên base64`);
+            // Keep original base64 as fallback
+            processed[key] = value;
+          }
+        } else if (
+          typeof value === "object" &&
+          value !== null &&
+          !Array.isArray(value)
+        ) {
+          // Recursively process nested objects
+          processed[key] = await processConfigForSave(value, currentPath);
+        } else if (Array.isArray(value)) {
+          // Process arrays
+          processed[key] = await Promise.all(
+            value.map(async (item, index) => {
+              if (typeof item === "string" && isBase64Image(item)) {
+                imageCount++;
+                const sizeKB = (getImageSizeFromBase64(item) / 1024).toFixed(2);
+                setUploadProgress(
+                  `Đang upload ảnh ${imageCount} (${sizeKB} KB)...`,
+                );
+
+                try {
+                  return await uploadBase64Image(
+                    item,
+                    `${key}-${index}-${Date.now()}`,
+                  );
+                } catch (error) {
+                  console.error(
+                    `❌ Failed to upload array item ${index}:`,
+                    error,
+                  );
+                  return item;
+                }
+              } else if (typeof item === "object" && item !== null) {
+                return await processConfigForSave(
+                  item,
+                  `${currentPath}[${index}]`,
+                );
+              }
+              return item;
+            }),
+          );
+        } else {
+          processed[key] = value;
+        }
+      }
+
+      return processed;
+    };
+
     // Expose methods to parent
     useImperativeHandle(ref, () => ({
       getCurrentConfig: () => {
         return config;
       },
+      getCurrentConfigWithUploadedImages: async () => {
+        setUploadProgress("Preparing...");
+
+        try {
+          const processed = await processConfigForSave(config);
+          setUploadProgress(null);
+          console.log("✅ Config processed with uploaded images:", processed);
+          return processed;
+        } catch (error) {
+          setUploadProgress(null);
+          throw error;
+        }
+      },
       loadConfig: async (newConfig: Record<string, any>) => {
         if (!builderRef.current || !widgetDef) return;
 
         try {
-          // Merge with defaults to ensure all required fields exist
           const defaults = SchemaProcessor.extractDefaultsFromSchema(
             widgetDef.schema,
           );
           const mergedConfig = { ...defaults, ...newConfig };
 
           setConfig(mergedConfig);
-
-          // Update Tweakpane UI
           builderRef.current.updateConfig(mergedConfig);
 
-          // Send to widget
           sendMessage({
             type: "PARAMS_UPDATE",
             payload: mergedConfig,
@@ -77,7 +171,6 @@ const WidgetPreviewConfig = forwardRef<WidgetPreviewRef, WidgetPreviewProps>(
         setIframeReady(false);
 
         try {
-          // Set srcdoc to load HTML directly
           if (iframeRef.current) {
             iframeRef.current.srcdoc = html;
           }
@@ -103,7 +196,6 @@ const WidgetPreviewConfig = forwardRef<WidgetPreviewRef, WidgetPreviewProps>(
         setTimeout(() => {
           setIframeReady(true);
 
-          // Flush message queue
           if (messageQueueRef.current.length > 0) {
             console.log(
               `📨 Flushing ${messageQueueRef.current.length} queued messages`,
@@ -177,7 +269,6 @@ const WidgetPreviewConfig = forwardRef<WidgetPreviewRef, WidgetPreviewProps>(
           widgetDef.schema,
         );
 
-        // Use initialConfig if provided, otherwise use defaults
         const startingConfig = initialConfig
           ? { ...defaults, ...initialConfig }
           : defaults;
@@ -185,7 +276,7 @@ const WidgetPreviewConfig = forwardRef<WidgetPreviewRef, WidgetPreviewProps>(
         console.log("🎯 Starting config:", startingConfig);
 
         const handleConfigChange = (newConfig: Record<string, any>) => {
-          console.log("🔄 Config changed, sending to widget");
+          console.log("Config changed:", newConfig);
           setConfig(newConfig);
           sendMessage({
             type: "PARAMS_UPDATE",
@@ -241,6 +332,13 @@ const WidgetPreviewConfig = forwardRef<WidgetPreviewRef, WidgetPreviewProps>(
             </div>
           )}
 
+          {uploadProgress && (
+            <div className="text-center mt-8 text-blue-600 flex items-center justify-center gap-2">
+              <div className="animate-spin h-5 w-5 border-2 border-blue-300 border-t-blue-600 rounded-full" />
+              {uploadProgress}
+            </div>
+          )}
+
           {error && (
             <div className="mt-8 max-w-2xl mx-auto bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
               <AlertCircle className="text-red-500 shrink-0 mt-0.5" size={20} />
@@ -260,6 +358,6 @@ const WidgetPreviewConfig = forwardRef<WidgetPreviewRef, WidgetPreviewProps>(
   },
 );
 
-WidgetPreviewConfig.displayName = "WidgetPreviewConfig";
+WidgetPreview.displayName = "WidgetPreview";
 
-export default WidgetPreviewConfig;
+export default WidgetPreview;
