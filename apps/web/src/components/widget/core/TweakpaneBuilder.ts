@@ -245,4 +245,17 @@ export class TweakpaneBuilder {
       this.controlsMap.set(currentPath, control);
     }
   }
+
+  // Thêm vào TweakpaneBuilder class
+  public updateConfig(newConfig: Record<string, any>) {
+    // Update internal state
+    Object.keys(newConfig).forEach((key) => {
+      if (this.config.hasOwnProperty(key)) {
+        this.config[key] = newConfig[key];
+      }
+    });
+
+    // Refresh Tweakpane UI
+    this.pane.refresh();
+  }
 }

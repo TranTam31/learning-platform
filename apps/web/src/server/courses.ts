@@ -164,7 +164,7 @@ function getDefaultContent(type: LessonNodeType): LessonNodeContent {
       return { content: "" } as LessonContent;
 
     case LessonNodeType.homework:
-      return { widgetId: "" } as HomeworkContent;
+      return { widgetId: "", widgetVersion: "" } as HomeworkContent;
 
     case LessonNodeType.module:
       return { content: "" } as LessonContent;

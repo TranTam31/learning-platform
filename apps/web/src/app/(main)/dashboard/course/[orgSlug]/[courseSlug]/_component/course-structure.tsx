@@ -92,12 +92,12 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
   // console.log(initialCourse);
   const [course, setCourse] = useState<CourseUI>(initialCourse);
   const [selectedNode, setSelectedNode] = useState<LessonNodeUI | null>(
-    initialCourse.rootLessonNode as LessonNodeUI | null
+    initialCourse.rootLessonNode as LessonNodeUI | null,
   );
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(
     new Set(
-      initialCourse.rootLessonNodeId ? [initialCourse.rootLessonNodeId] : []
-    )
+      initialCourse.rootLessonNodeId ? [initialCourse.rootLessonNodeId] : [],
+    ),
   );
   const [loadingNodes, setLoadingNodes] = useState<Set<string>>(new Set());
 
@@ -153,13 +153,13 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
               return {
                 ...n,
                 children: n.children.map((child) =>
-                  updateNodeWithChildren(child)
+                  updateNodeWithChildren(child),
                 ),
               };
             };
 
             const updatedRoot = updateNodeWithChildren(
-              newCourse.rootLessonNode as LessonNodeUI
+              newCourse.rootLessonNode as LessonNodeUI,
             );
             return {
               ...newCourse,
@@ -174,7 +174,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
             setSelectedNode((prev) =>
               prev
                 ? { ...prev, children: childrenUI, childrenLoaded: true }
-                : null
+                : null,
             );
           }
         }
@@ -258,7 +258,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
             };
 
             const updatedRoot = updateNode(
-              newCourse.rootLessonNode as LessonNodeUI
+              newCourse.rootLessonNode as LessonNodeUI,
             );
             return {
               ...newCourse,
@@ -276,7 +276,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
                     _count: { children: prev._count.children + 1 },
                     childrenLoaded: true,
                   }
-                : null
+                : null,
             );
           }
 
@@ -335,7 +335,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
           };
 
           const updatedRoot = removeNode(
-            newCourse.rootLessonNode as LessonNodeUI
+            newCourse.rootLessonNode as LessonNodeUI,
           );
           return {
             ...newCourse,

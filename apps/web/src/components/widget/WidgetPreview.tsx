@@ -8,16 +8,6 @@ import { Pane } from "tweakpane";
 import * as TweakpaneImagePlugin from "@kitschpatrol/tweakpane-plugin-image";
 import { AlertCircle } from "lucide-react";
 
-function WidgetPreviewOld({ html }: { html: string }) {
-  return (
-    <iframe
-      sandbox="allow-scripts"
-      srcDoc={html}
-      className="w-full h-full border-none"
-    />
-  );
-}
-
 export default function WidgetPreview({ html }: { html: string }) {
   const [widgetDef, setWidgetDef] = useState<WidgetDefinition | null>(null);
   const [config, setConfig] = useState<Record<string, any>>({});
@@ -141,9 +131,8 @@ export default function WidgetPreview({ html }: { html: string }) {
       console.log("🎯 Initial config extracted:", initialConfig);
 
       const handleConfigChange = (newConfig: Record<string, any>) => {
-        console.log("🔄 Config changed, sending to widget");
+        console.log("Config changed:", newConfig);
         setConfig(newConfig);
-        console.log(config);
         sendMessage({
           type: "PARAMS_UPDATE",
           payload: newConfig,

@@ -78,6 +78,7 @@ interface CourseStructureContextValue {
   handleAddClassAddon: (
     nodeId: string,
     type: "lesson_note" | "homework_imp",
+    content?: Record<string, any>,
   ) => Promise<void>;
   handleDeleteClassAddon: (
     nodeId: string,
@@ -486,7 +487,11 @@ export const CourseStructureProvider: React.FC<
 
   // ===== ACTION: Add class addon =====
   const handleAddClassAddon = useCallback(
-    async (nodeId: string, type: "lesson_note" | "homework_imp") => {
+    async (
+      nodeId: string,
+      type: "lesson_note" | "homework_imp",
+      content?: Record<string, any>,
+    ) => {
       if (!config.classId) return;
 
       setLoadingAction(`add-addon-${nodeId}`);
@@ -496,9 +501,7 @@ export const CourseStructureProvider: React.FC<
           lessonNodeId: nodeId,
           classId: config.classId!,
           type,
-          content: {
-            text: type === "lesson_note" ? "New note" : "New assignment",
-          },
+          content: content,
         });
 
         if (result.success && result.data) {

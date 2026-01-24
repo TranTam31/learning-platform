@@ -11,7 +11,7 @@ export default function CoursePage() {
   return (
     // <CourseStructureManager
     //   initialCourse={course}
-    //   userRole="class_student"
+    //   userRole="class_teacher"
     //   classId="cmjn5vclx00004c5a01sx41vg"
     // />
     <CourseStructureManager initialCourse={course} userRole="org_admin" />

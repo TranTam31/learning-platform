@@ -26,6 +26,7 @@ import {
   useCourseStructure,
 } from "@/components/providers/course-structure-provider";
 import WidgetMarketplaceDialog from "../widget/marketplace/WidgetMarketplaceDialog";
+import AssignmentDialog from "../widget/homework/AssignmentDialog";
 
 // ===== PROPS =====
 interface CourseStructureManagerProps {
@@ -429,7 +430,7 @@ const CourseStructureContent: React.FC = () => {
                     <div className="text-sm text-gray-500">Loading...</div>
                   ) : homeworkNodes.length === 0 ? (
                     <div className="text-sm text-gray-500">
-                      Chưa có homework
+                      Don't have homework now
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -499,14 +500,16 @@ const CourseStructureContent: React.FC = () => {
                             {(isTeacher || isStudent) && isHwExpanded && (
                               <div className="ml-6 mt-2 space-y-1">
                                 {isTeacher && (
-                                  <button
-                                    onClick={() =>
-                                      handleAddClassAddon(hw.id, "homework_imp")
-                                    }
-                                    className="w-full px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded hover:bg-orange-200"
-                                  >
-                                    + Add Assignment
-                                  </button>
+                                  // <button
+                                  //   onClick={() =>
+                                  //     handleAddClassAddon(hw.id, "homework_imp")
+                                  //   }
+                                  //   className="w-full px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded hover:bg-orange-200"
+                                  // >
+                                  //   + Add Assignment
+                                  // </button>
+
+                                  <AssignmentDialog hwId={hw.id} />
                                 )}
                                 {hwAddons.map((addon) => (
                                   <div

@@ -61,7 +61,6 @@ export function WidgetCard({ widget }: WidgetCardProps) {
       selectedNodeId: null,
       handleAddNode: undefined,
     };
-  console.log(isAdmin, selectedNodeId);
 
   const [userWidgets, setUserWidgets] = useState<UserWidget[] | null>(null);
   const [isLoadingWidgets, setIsLoadingWidgets] = useState(false);
@@ -116,7 +115,10 @@ export function WidgetCard({ widget }: WidgetCardProps) {
 
     await handleAddNode(LessonNodeType.homework, {
       title: `Homework: ${widget.name}`,
-      content: { widgetId: widget.id },
+      content: {
+        widgetId: widget.id,
+        widgetBuildId: widget.builds[0].id,
+      },
     });
   };
 

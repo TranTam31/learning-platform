@@ -24,6 +24,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@repo/api-contract": "*",
     "@repo/db": "*",
+    "@supabase/supabase-js": "^2.91.1",
     "@tanstack/react-query": "^5.90.12",
     "@ts-rest/react-query": "^3.52.1",
     "better-auth": "^1.4.6",

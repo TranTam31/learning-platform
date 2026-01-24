@@ -85,6 +85,7 @@ export type LessonContent = {
 
 export type HomeworkContent = {
   widgetId?: string;
+  widgetBuildId?: string | null;
 };
 
 export type LessonNodeContent = LessonContent | HomeworkContent;

@@ -179,3 +179,55 @@ export async function deleteClassAddon(input: {
     };
   }
 }
+
+export async function getBuildRunIdFromLessonNode(
+  lessonNodeId: string,
+): Promise<{
+  widgetId: string | null;
+  buildRunId: string | null;
+}> {
+  // 1. Lấy content của LessonNode
+  const lessonNode = await prisma.lessonNode.findUnique({
+    where: { id: lessonNodeId },
+    select: {
+      content: true,
+    },
+  });
+
+  if (!lessonNode?.content) {
+    return {
+      widgetId: null,
+      buildRunId: null,
+    };
+  }
+
+  const content = lessonNode.content as {
+    widgetId?: string;
+    widgetBuildId?: string;
+  };
+
+  const widgetId = content.widgetId ?? null;
+
+  // Nếu không có widgetBuildId thì vẫn trả widgetId
+  if (!content.widgetBuildId) {
+    return {
+      widgetId,
+      buildRunId: null,
+    };
+  }
+
+  // 2. Lấy buildRunId từ WidgetBuild
+  const widgetBuild = await prisma.widgetBuild.findUnique({
+    where: {
+      id: content.widgetBuildId,
+    },
+    select: {
+      buildRunId: true,
+    },
+  });
+
+  return {
+    widgetId,
+    buildRunId: widgetBuild?.buildRunId ?? null,
+  };
+}
