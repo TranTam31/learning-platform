@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { authClient } from "@/lib/auth-client";
 
 export default function MembersTableAction({ memberId }: { memberId: string }) {

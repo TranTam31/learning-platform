@@ -22,8 +22,12 @@ export default async function CourseLayout({ children, params }: PageProps) {
   }
 
   if (!course) redirect("/dashboard");
+  console.log(course);
+
+  const role = course.role === "member" ? "org_member" : "org_admin";
+
   return (
-    <CourseProvider course={course.data}>
+    <CourseProvider course={course.data} role={role}>
       <div className="">
         {/* <h1 className="font-bold text-2xl">{course.name}</h1>
         <CourseNav /> */}

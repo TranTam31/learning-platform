@@ -385,6 +385,63 @@ export async function getCourseWithRootNode(orgSlug: string, slug: string) {
     return {
       success: true,
       data: course,
+      role: isMember.role,
+    };
+  } catch (error) {
+    console.error("Error fetching course with root node:", error);
+    return {
+      success: false,
+      error: "Có lỗi xảy ra khi lấy dữ liệu course",
+    };
+  }
+}
+
+export async function getCourseWithRootNodeWithCourseId(courseId: string) {
+  // const isMember = await checkUserInOrg({ orgSlug: orgSlug });
+  // if (!isMember) throw new Error("Forbidden");
+  try {
+    const course = await prisma.course.findUnique({
+      where: {
+        id: courseId,
+      },
+      include: {
+        rootLessonNode: {
+          include: {
+            children: {
+              orderBy: { order: "asc" },
+              select: {
+                id: true,
+                title: true,
+                type: true,
+                content: true,
+                order: true,
+                parentId: true,
+                courseId: true,
+                createdAt: true,
+                updatedAt: true,
+                _count: {
+                  select: { children: true },
+                },
+              },
+            },
+            _count: {
+              select: { children: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!course) {
+      return {
+        success: false,
+        error: "Course không tồn tại",
+      };
+    }
+
+    return {
+      success: true,
+      data: course,
     };
   } catch (error) {
     console.error("Error fetching course with root node:", error);

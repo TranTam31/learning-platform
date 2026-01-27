@@ -44,7 +44,7 @@ export async function canCreateClass(orgId: string) {
 export async function createClass(
   name: string,
   courseId: string,
-  organizationId: string
+  organizationId: string,
 ) {
   const isMember = await checkUserInOrg({ orgId: organizationId });
   //   const permission = await canCreateClass(organizationId);
@@ -85,6 +85,71 @@ export async function getClass(classId: string) {
       members: true,
     },
   });
+}
+
+export async function getClassWithCourse(classId: string) {
+  const isMember = await checkUserInClass(classId);
+  if (!isMember) throw new Error("Forbidden");
+
+  const classData = await prisma.class.findUnique({
+    where: { id: classId },
+    select: {
+      id: true,
+      name: true,
+      createdAt: true,
+      updatedAt: true,
+      members: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true, // nếu có
+            },
+          },
+        },
+      },
+      course: {
+        select: {
+          id: true,
+          name: true,
+          rootLessonNodeId: true,
+          rootLessonNode: {
+            include: {
+              children: {
+                orderBy: { order: "asc" },
+                select: {
+                  id: true,
+                  title: true,
+                  type: true,
+                  content: true,
+                  order: true,
+                  parentId: true,
+                  courseId: true,
+                  createdAt: true,
+                  updatedAt: true,
+                  _count: {
+                    select: { children: true },
+                  },
+                },
+              },
+              _count: {
+                select: { children: true },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!classData) throw new Error("Class not found");
+
+  return {
+    data: classData,
+    role: isMember.role,
+  };
 }
 
 export async function loadClassAddons(lessonNodeId: string, classId: string) {
@@ -246,4 +311,18 @@ export async function deleteClassAddon(input: {
       error: "Có lỗi xảy ra khi xóa",
     };
   }
+}
+
+export async function addClassMember(
+  classId: string,
+  userId: string,
+  role: ClassRole,
+) {
+  return await prisma.classMember.create({
+    data: {
+      classId,
+      userId,
+      role,
+    },
+  });
 }

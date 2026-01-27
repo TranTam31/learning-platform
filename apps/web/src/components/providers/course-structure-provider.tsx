@@ -112,7 +112,12 @@ interface CourseStructureProviderProps {
   children: React.ReactNode;
   initialCourse: CourseUI;
   classId?: string;
-  userRole: "org_admin" | "org_member" | "class_teacher" | "class_student";
+  userRole:
+    | "org_admin"
+    | "org_member"
+    | "class_teacher"
+    | "class_student"
+    | "class_owner";
 }
 
 export const CourseStructureProvider: React.FC<
@@ -125,6 +130,7 @@ export const CourseStructureProvider: React.FC<
     isMember: userRole === "org_member",
     isTeacher: userRole === "class_teacher",
     isStudent: userRole === "class_student",
+    isClassOwner: userRole === "class_owner",
   };
 
   // ===== COURSE DATA =====

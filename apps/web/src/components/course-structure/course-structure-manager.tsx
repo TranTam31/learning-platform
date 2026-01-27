@@ -30,12 +30,18 @@ import TeacherAssignmentDialog from "../widget/homework/TeacherCreateAssignmentD
 import StudentAssignmentDialog from "../widget/homework/TeacherViewAssignmentDialog";
 import TeacherViewAssignmentDialog from "../widget/homework/TeacherViewAssignmentDialog";
 import StudentViewAssignmentDialog from "../widget/homework/StudentViewAssignmentDialog";
+import CourseStructureSettings from "./CourseStructureSettings";
 
 // ===== PROPS =====
 interface CourseStructureManagerProps {
   initialCourse: CourseUI;
   classId?: string;
-  userRole: "org_admin" | "org_member" | "class_teacher" | "class_student";
+  userRole:
+    | "org_admin"
+    | "org_member"
+    | "class_teacher"
+    | "class_student"
+    | "class_owner";
 }
 
 interface EditableTitleProps {
@@ -285,6 +291,7 @@ const CourseStructureContent: React.FC = () => {
             <h2 className="text-lg font-semibold text-gray-800">
               Course Structure
             </h2>
+            <CourseStructureSettings />
           </div>
           <div className="flex items-center gap-2 mb-2">
             <BookOpen className="w-5 h-5 text-purple-500" />
