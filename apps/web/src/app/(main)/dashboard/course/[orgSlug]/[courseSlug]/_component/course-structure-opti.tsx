@@ -46,7 +46,7 @@ import {
 } from "@/components/course-structure/utils/course-structure-utiles";
 
 import {
-  loadClassAddons,
+  loadClassLessonNode,
   getClassAddonCounts,
   addClassAddon,
   deleteClassAddon,
@@ -65,21 +65,21 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
 }) => {
   const [course, setCourse] = useState<CourseUI>(initialCourse);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(
-    initialCourse.rootLessonNodeId
+    initialCourse.rootLessonNodeId,
   );
 
   // ✅ UI state: Tracks which nodes are visually expanded
   const [expandedNodeIds, setExpandedNodeIds] = useState<Set<string>>(
     new Set(
-      initialCourse.rootLessonNodeId ? [initialCourse.rootLessonNodeId] : []
-    )
+      initialCourse.rootLessonNodeId ? [initialCourse.rootLessonNodeId] : [],
+    ),
   );
 
   // ✅ Data state: Tracks which nodes have loaded their children from server
   const [loadedNodeIds, setLoadedNodeIds] = useState<Set<string>>(
     new Set(
-      initialCourse.rootLessonNodeId ? [initialCourse.rootLessonNodeId] : []
-    )
+      initialCourse.rootLessonNodeId ? [initialCourse.rootLessonNodeId] : [],
+    ),
   );
 
   // ✅ Loading state: Tracks which nodes are currently loading
@@ -129,7 +129,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
       // Load addons
       setLoadingNodeIds((prev) => new Set([...prev, `${nodeId}-addons`]));
 
-      const result = await loadClassAddons(nodeId, classId);
+      const result = await loadClassLessonNode(nodeId, classId);
 
       setLoadingNodeIds((prev) => {
         const newSet = new Set(prev);
@@ -142,7 +142,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
         setExpandedAddons((prev) => new Set([...prev, nodeId]));
       }
     },
-    [classId, expandedAddons]
+    [classId, expandedAddons],
   );
 
   // ✅ UNIFIED: Add addon
@@ -194,7 +194,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
         setLoadingAction(null);
       });
     },
-    [classId]
+    [classId],
   );
 
   // ✅ UNIFIED: Delete addon
@@ -202,7 +202,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
     async (
       nodeId: string,
       addonId: string,
-      type: "lesson_note" | "homework_imp"
+      type: "lesson_note" | "homework_imp",
     ) => {
       if (!classId) return;
 
@@ -220,7 +220,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
             const existing = newMap.get(nodeId) || [];
             newMap.set(
               nodeId,
-              existing.filter((a) => a.id !== addonId)
+              existing.filter((a) => a.id !== addonId),
             );
             return newMap;
           });
@@ -245,12 +245,12 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
         setLoadingAction(null);
       });
     },
-    [classId]
+    [classId],
   );
 
   const getAddonsByType = (
     nodeId: string,
-    type: "lesson_note" | "homework_imp"
+    type: "lesson_note" | "homework_imp",
   ) => {
     const allAddons = classAddons.get(nodeId) || [];
     return allAddons.filter((a) => a.type === type);
@@ -259,7 +259,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
   // Memoized root node for rendering
   const rootNode = useMemo(
     () => course.rootLessonNode,
-    [course.rootLessonNode]
+    [course.rootLessonNode],
   );
 
   // ✅ Generic function to load children for ANY node (module, lesson, course)
@@ -299,7 +299,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
                 ...node,
                 children: childrenUI,
                 childrenLoaded: true,
-              })
+              }),
             );
 
             return {
@@ -351,7 +351,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
       loadNodeChildren,
       transformToUINode,
       getClassAddonCounts,
-    ]
+    ],
   );
 
   // Toggle expand/collapse
@@ -379,7 +379,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
         await fetchAndLoadChildren(nodeId);
       }
     },
-    [expandedNodeIds, fetchAndLoadChildren]
+    [expandedNodeIds, fetchAndLoadChildren],
   );
 
   // Auto-load children when lesson is selected (for homework display)
@@ -440,7 +440,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
             const updatedRoot = addChildToNode(
               prev.rootLessonNode,
               selectedNode.id,
-              newNode
+              newNode,
             );
 
             return {
@@ -463,7 +463,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
         setLoadingAction(null);
       });
     },
-    [selectedNode, course.id]
+    [selectedNode, course.id],
   );
 
   // Delete node
@@ -476,7 +476,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
 
       if (
         !confirm(
-          "Bạn có chắc muốn xóa node này? Tất cả children cũng sẽ bị xóa."
+          "Bạn có chắc muốn xóa node này? Tất cả children cũng sẽ bị xóa.",
         )
       ) {
         return;
@@ -527,7 +527,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
         setLoadingAction(null);
       });
     },
-    [course.id, course.rootLessonNodeId, selectedNodeId]
+    [course.id, course.rootLessonNodeId, selectedNodeId],
   );
 
   // Get icon for node type
@@ -634,7 +634,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
       toggleNodeExpanded,
       handleDeleteNode,
       getNodeIcon,
-    ]
+    ],
   );
 
   const isAddingModule = loadingAction === "add-MODULE";
@@ -646,7 +646,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
   const homeworkNodes = useMemo(() => {
     if (selectedNode && selectedNode.type === LessonNodeType.lesson) {
       return (selectedNode.children || []).filter(
-        (child) => child.type === LessonNodeType.homework
+        (child) => child.type === LessonNodeType.homework,
       );
     }
     return [];
@@ -886,7 +886,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
                                           handleDeleteClassAddon(
                                             hw.id,
                                             addon.id,
-                                            "homework_imp"
+                                            "homework_imp",
                                           )
                                         }
                                         className="p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100"
@@ -923,7 +923,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
                               onClick={() =>
                                 handleAddClassAddon(
                                   selectedNode.id,
-                                  "lesson_note"
+                                  "lesson_note",
                                 )
                               }
                               disabled={isPending}
@@ -963,7 +963,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
                                       handleDeleteClassAddon(
                                         selectedNode.id,
                                         note.id,
-                                        "lesson_note"
+                                        "lesson_note",
                                       )
                                     }
                                     className="p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100"
@@ -972,7 +972,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
                                   </button>
                                 )}
                               </div>
-                            )
+                            ),
                           )}
                         </div>
                       )}

@@ -5,6 +5,7 @@ import { useClass } from "@/components/providers/class-context";
 
 export default function ClassPage() {
   const { classCourse, role } = useClass();
+  // console.log(classCourse);
   return (
     <CourseStructureManager
       initialCourse={classCourse.course}

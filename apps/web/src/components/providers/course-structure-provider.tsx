@@ -16,7 +16,7 @@ import {
   updateLessonNode,
 } from "@/server/courses";
 import {
-  loadClassAddons,
+  loadClassLessonNode,
   getClassAddonCounts,
   addClassAddon,
   deleteClassAddon,
@@ -475,7 +475,7 @@ export const CourseStructureProvider: React.FC<
 
       setLoadingNodeIds((prev) => new Set([...prev, `${nodeId}-addons`]));
 
-      const result = await loadClassAddons(nodeId, config.classId);
+      const result = await loadClassLessonNode(nodeId, config.classId);
 
       setLoadingNodeIds((prev) => {
         const newSet = new Set(prev);

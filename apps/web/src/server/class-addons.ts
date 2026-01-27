@@ -1,38 +1,172 @@
 // server/class-addons.ts
 "use server";
 
+import { auth } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 /**
  * ✅ UNIFIED: Load ClassLessonNode cho một LessonNode
  * Dùng chung cho cả lesson_note VÀ homework_imp
  */
-export async function loadClassAddons(lessonNodeId: string, classId: string) {
+// export async function loadClassLessonNode(
+//   lessonNodeId: string,
+//   classId: string,
+// ) {
+//   try {
+//     const classLessonNodes = await prisma.classLessonNode.findMany({
+//       where: {
+//         lessonNodeId,
+//         classId,
+//       },
+//       orderBy: { createdAt: "asc" },
+//       select: {
+//         id: true,
+//         type: true,
+//         content: true,
+//         createdAt: true,
+//       },
+//     });
+
+//     return {
+//       success: true,
+//       data: classLessonNodes,
+//     };
+//   } catch (error) {
+//     console.error("Error loading class lesson node:", error);
+//     return {
+//       success: false,
+//       error: "Có lỗi xảy ra khi load class lesson node",
+//     };
+//   }
+// }
+
+export async function loadClassLessonNode(
+  lessonNodeId: string,
+  classId: string,
+) {
   try {
-    const addons = await prisma.classLessonNode.findMany({
+    // 1️⃣ Lấy session và userId
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) throw new Error("Unauthorized");
+
+    const userId = session.user.id;
+
+    // 2️⃣ Kiểm tra membership và role
+    const membership = await prisma.classMember.findUnique({
       where: {
-        lessonNodeId,
-        classId,
+        classId_userId: {
+          classId: classId,
+          userId: userId,
+        },
       },
-      orderBy: { createdAt: "asc" },
       select: {
-        id: true,
-        type: true,
-        content: true,
-        createdAt: true,
+        role: true,
       },
     });
 
-    return {
-      success: true,
-      data: addons,
-    };
+    if (!membership) {
+      return {
+        success: false,
+        error: "Forbidden: Not a member of this class",
+      };
+    }
+
+    const isTeacher =
+      membership.role === "teacher" || membership.role === "owner";
+    const isStudent = membership.role === "student";
+
+    // 3️⃣ LOGIC KHÁC NHAU DỰA TRÊN ROLE
+
+    if (isTeacher) {
+      const classLessonNodes = await prisma.classLessonNode.findMany({
+        where: {
+          lessonNodeId,
+          classId,
+        },
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          type: true,
+          content: true,
+          createdAt: true,
+        },
+      });
+
+      return {
+        success: true,
+        data: classLessonNodes,
+      };
+    } else if (isStudent) {
+      // Lấy tất cả ClassLessonNode của lessonNode này trong class
+      const allClassLessonNodes = await prisma.classLessonNode.findMany({
+        where: {
+          lessonNodeId,
+          classId,
+        },
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          type: true,
+          content: true,
+          createdAt: true,
+        },
+      });
+
+      if (allClassLessonNodes.length === 0) {
+        return {
+          success: true,
+          data: [],
+        };
+      }
+
+      // Lấy các assignmentId của student này
+      const studentAssignments = await prisma.studentAssignment.findMany({
+        where: {
+          studentId: userId,
+          assignmentId: {
+            in: allClassLessonNodes.map((node) => node.id),
+          },
+        },
+        select: {
+          assignmentId: true,
+        },
+      });
+
+      // Tạo Set các assignmentId đã được giao
+      const assignedIds = new Set(
+        studentAssignments.map((sa) => sa.assignmentId),
+      );
+
+      // Filter: Chỉ giữ lại ClassLessonNode đã được giao
+      const assignedClassLessonNodes = allClassLessonNodes.filter((node) =>
+        assignedIds.has(node.id),
+      );
+
+      console.log(
+        `✅ Student has ${assignedClassLessonNodes.length}/${allClassLessonNodes.length} assignments`,
+      );
+
+      return {
+        success: true,
+        data: assignedClassLessonNodes,
+      };
+    } else {
+      // Role không hợp lệ
+      return {
+        success: false,
+        error: "Invalid role",
+      };
+    }
   } catch (error) {
-    console.error("Error loading class addons:", error);
+    console.error("Error loading class lesson node:", error);
     return {
       success: false,
-      error: "Có lỗi xảy ra khi load addons",
+      error: "Có lỗi xảy ra khi load class lesson node",
     };
   }
 }
