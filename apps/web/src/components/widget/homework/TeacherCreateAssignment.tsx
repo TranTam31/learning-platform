@@ -1,19 +1,43 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Submission, WidgetDefinition } from "./core/types";
-import { SchemaProcessor } from "./core/SchemaProcessor";
-import { TweakpaneBuilder } from "./core/TweakpaneBuilder";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
 import { Pane } from "tweakpane";
 import * as TweakpaneImagePlugin from "@kitschpatrol/tweakpane-plugin-image";
 import { AlertCircle, CheckCircle, XCircle } from "lucide-react";
+import { Submission, WidgetDefinition } from "../core/types";
+import { TweakpaneBuilder } from "../core/TweakpaneBuilder";
+import { SchemaProcessor } from "../core/SchemaProcessor";
+import {
+  uploadBase64Image,
+  isBase64Image,
+  getImageSizeFromBase64,
+} from "@/lib/supabase/image-upload";
 
-export default function WidgetPreview({ html }: { html: string }) {
+export interface TeacherCreateAssignmentRef {
+  getCurrentConfig: () => Record<string, any>;
+  getCurrentConfigWithUploadedImages: () => Promise<Record<string, any>>;
+}
+
+interface TeacherCreateAssignmentProps {
+  html: string;
+}
+
+const TeacherCreateAssignment = forwardRef<
+  TeacherCreateAssignmentRef,
+  TeacherCreateAssignmentProps
+>(({ html }, ref) => {
   const [widgetDef, setWidgetDef] = useState<WidgetDefinition | null>(null);
   const [config, setConfig] = useState<Record<string, any>>({});
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [iframeReady, setIframeReady] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
 
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [isReviewMode, setIsReviewMode] = useState(false);
@@ -21,7 +45,105 @@ export default function WidgetPreview({ html }: { html: string }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const paneRef = useRef<HTMLDivElement>(null);
   const paneInstanceRef = useRef<any>(null);
+  const builderRef = useRef<TweakpaneBuilder | null>(null);
   const messageQueueRef = useRef<any[]>([]);
+
+  // Helper function to recursively find and upload base64 images
+  const processConfigForSave = async (
+    config: Record<string, any>,
+    path: string = "root",
+  ): Promise<Record<string, any>> => {
+    const processed: Record<string, any> = {};
+    let imageCount = 0;
+
+    for (const [key, value] of Object.entries(config)) {
+      const currentPath = `${path}.${key}`;
+
+      if (typeof value === "string" && isBase64Image(value)) {
+        imageCount++;
+        const sizeKB = (getImageSizeFromBase64(value) / 1024).toFixed(2);
+
+        setUploadProgress(`Đang upload ảnh ${imageCount} (${sizeKB} KB)...`);
+        console.log(`📤 Uploading image for key: ${key} at ${currentPath}`);
+
+        try {
+          processed[key] = await uploadBase64Image(
+            value,
+            `${key}-${Date.now()}`,
+          );
+          console.log(`✅ Image uploaded: ${processed[key]}`);
+        } catch (error) {
+          console.error(`❌ Failed to upload image for ${key}:`, error);
+          setUploadProgress(`⚠️ Lỗi upload ảnh ${key}, giữ nguyên base64`);
+          processed[key] = value;
+        }
+      } else if (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
+        processed[key] = await processConfigForSave(value, currentPath);
+      } else if (Array.isArray(value)) {
+        processed[key] = await Promise.all(
+          value.map(async (item, index) => {
+            if (typeof item === "string" && isBase64Image(item)) {
+              imageCount++;
+              const sizeKB = (getImageSizeFromBase64(item) / 1024).toFixed(2);
+              setUploadProgress(
+                `Đang upload ảnh ${imageCount} (${sizeKB} KB)...`,
+              );
+
+              try {
+                return await uploadBase64Image(
+                  item,
+                  `${key}-${index}-${Date.now()}`,
+                );
+              } catch (error) {
+                console.error(
+                  `❌ Failed to upload array item ${index}:`,
+                  error,
+                );
+                return item;
+              }
+            } else if (typeof item === "object" && item !== null) {
+              return await processConfigForSave(
+                item,
+                `${currentPath}[${index}]`,
+              );
+            }
+            return item;
+          }),
+        );
+      } else {
+        processed[key] = value;
+      }
+    }
+
+    return processed;
+  };
+
+  // Expose methods to parent
+  useImperativeHandle(ref, () => ({
+    getCurrentConfig: () => {
+      return config;
+    },
+    getCurrentConfigWithUploadedImages: async () => {
+      console.log(
+        "🔄 Processing config for save (uploading images to Supabase)...",
+      );
+      setUploadProgress("Đang chuẩn bị upload...");
+
+      try {
+        const processed = await processConfigForSave(config);
+        setUploadProgress(null);
+        console.log("✅ Config processed with uploaded images:", processed);
+        return processed;
+      } catch (error) {
+        setUploadProgress(null);
+        throw error;
+      }
+    },
+  }));
 
   // Load widget HTML and communicate with iframe
   useEffect(() => {
@@ -31,7 +153,6 @@ export default function WidgetPreview({ html }: { html: string }) {
       setIframeReady(false);
 
       try {
-        // Set srcdoc to load HTML directly
         if (iframeRef.current) {
           iframeRef.current.srcdoc = html;
         }
@@ -57,7 +178,6 @@ export default function WidgetPreview({ html }: { html: string }) {
       setTimeout(() => {
         setIframeReady(true);
 
-        // Flush message queue
         if (messageQueueRef.current.length > 0) {
           console.log(
             `📨 Flushing ${messageQueueRef.current.length} queued messages`,
@@ -85,19 +205,11 @@ export default function WidgetPreview({ html }: { html: string }) {
         setError(null);
       }
 
-      // NEW: Handle submission
+      // Handle submission (for testing)
       if (event.data.type === "SUBMIT") {
         const submissionData: Submission = event.data.payload;
         console.log("✅ Submission received:", submissionData);
-
         setSubmission(submissionData);
-
-        // In production: save to database
-        // For demo: show in console and alert
-        console.log(
-          "💾 SAVE TO DATABASE:",
-          JSON.stringify(submissionData, null, 2),
-        );
       }
 
       if (event.data.type === "EVENT") {
@@ -125,7 +237,7 @@ export default function WidgetPreview({ html }: { html: string }) {
     }
   };
 
-  // NEW: Enter review mode
+  // Enter review mode (for testing)
   const enterReviewMode = () => {
     if (!submission || !config) return;
 
@@ -138,21 +250,20 @@ export default function WidgetPreview({ html }: { html: string }) {
       type: "PARAMS_UPDATE",
       payload: {
         ...config,
-        __answer: submission.answer, // Chỉ gửi answer
+        __answer: submission.answer,
       },
     });
   };
 
-  // NEW: Exit review mode
+  // Exit review mode (for testing)
   const exitReviewMode = () => {
     console.log("🔙 Exiting review mode");
     setIsReviewMode(false);
 
-    // Chỉ cần gửi lại config KHÔNG CÓ __answer
-    // Widget sẽ tự reset về practice mode
+    // Gửi lại config gốc KHÔNG CÓ __answer
     sendMessage({
       type: "PARAMS_UPDATE",
-      payload: config, // Config gốc, không có __answer
+      payload: config,
     });
 
     // Clear submission để có thể submit lại
@@ -176,14 +287,15 @@ export default function WidgetPreview({ html }: { html: string }) {
       pane.registerPlugin(TweakpaneImagePlugin);
       paneInstanceRef.current = pane;
 
-      const initialConfig = SchemaProcessor.extractDefaultsFromSchema(
+      // Lấy defaults từ schema
+      const defaults = SchemaProcessor.extractDefaultsFromSchema(
         widgetDef.schema,
       );
 
-      console.log("🎯 Initial config extracted:", initialConfig);
+      console.log("🎯 Starting config (defaults):", defaults);
 
       const handleConfigChange = (newConfig: Record<string, any>) => {
-        console.log("Config changed:", newConfig);
+        console.log("🔄 Config changed:", newConfig);
         setConfig(newConfig);
         sendMessage({
           type: "PARAMS_UPDATE",
@@ -193,15 +305,16 @@ export default function WidgetPreview({ html }: { html: string }) {
 
       const builder = new TweakpaneBuilder(
         pane,
-        initialConfig,
+        defaults,
         widgetDef.schema,
         handleConfigChange,
       );
 
       builder.build();
+      builderRef.current = builder;
 
       setTimeout(async () => {
-        const serializedConfig = await builder.serializeConfig(initialConfig);
+        const serializedConfig = await builder.serializeConfig(defaults);
         handleConfigChange(serializedConfig);
       }, 100);
     } catch (err) {
@@ -214,6 +327,7 @@ export default function WidgetPreview({ html }: { html: string }) {
         paneInstanceRef.current.dispose();
         paneInstanceRef.current = null;
       }
+      builderRef.current = null;
     };
   }, [widgetDef, iframeReady]);
 
@@ -233,6 +347,13 @@ export default function WidgetPreview({ html }: { html: string }) {
           <div className="text-center mt-8 text-gray-400 flex items-center justify-center gap-2">
             <div className="animate-spin h-5 w-5 border-2 border-gray-300 border-t-gray-600 rounded-full" />
             Đang tải widget...
+          </div>
+        )}
+
+        {uploadProgress && (
+          <div className="text-center mt-8 text-blue-600 flex items-center justify-center gap-2">
+            <div className="animate-spin h-5 w-5 border-2 border-blue-300 border-t-blue-600 rounded-full" />
+            {uploadProgress}
           </div>
         )}
 
@@ -259,11 +380,11 @@ export default function WidgetPreview({ html }: { html: string }) {
           className="flex-1 overflow-y-auto p-4 text-sm text-slate-600"
         />
 
-        {/* NEW: Submission Info */}
+        {/* Submission Info (for testing) */}
         {submission && (
           <div className="border-t border-slate-200 p-4 space-y-3">
             <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-              📊 Kết quả nộp bài
+              📊 Kết quả test
             </div>
 
             <div
@@ -322,4 +443,8 @@ export default function WidgetPreview({ html }: { html: string }) {
       </div>
     </div>
   );
-}
+});
+
+TeacherCreateAssignment.displayName = "TeacherCreateAssignment";
+
+export default TeacherCreateAssignment;

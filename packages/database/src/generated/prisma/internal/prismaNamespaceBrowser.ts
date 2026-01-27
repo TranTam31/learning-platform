@@ -63,6 +63,7 @@ export const ModelName = {
   Class: 'Class',
   ClassMember: 'ClassMember',
   ClassLessonNode: 'ClassLessonNode',
+  StudentAssignment: 'StudentAssignment',
   GitHubAccount: 'GitHubAccount',
   Widget: 'Widget',
   WidgetBuild: 'WidgetBuild'
@@ -242,6 +243,19 @@ export const ClassLessonNodeScalarFieldEnum = {
 } as const
 
 export type ClassLessonNodeScalarFieldEnum = (typeof ClassLessonNodeScalarFieldEnum)[keyof typeof ClassLessonNodeScalarFieldEnum]
+
+
+export const StudentAssignmentScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  assignmentId: 'assignmentId',
+  submissionData: 'submissionData',
+  submittedAt: 'submittedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type StudentAssignmentScalarFieldEnum = (typeof StudentAssignmentScalarFieldEnum)[keyof typeof StudentAssignmentScalarFieldEnum]
 
 
 export const GitHubAccountScalarFieldEnum = {

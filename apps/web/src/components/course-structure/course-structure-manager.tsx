@@ -26,7 +26,10 @@ import {
   useCourseStructure,
 } from "@/components/providers/course-structure-provider";
 import WidgetMarketplaceDialog from "../widget/marketplace/WidgetMarketplaceDialog";
-import AssignmentDialog from "../widget/homework/AssignmentDialog";
+import TeacherAssignmentDialog from "../widget/homework/TeacherCreateAssignmentDialog";
+import StudentAssignmentDialog from "../widget/homework/TeacherViewAssignmentDialog";
+import TeacherViewAssignmentDialog from "../widget/homework/TeacherViewAssignmentDialog";
+import StudentViewAssignmentDialog from "../widget/homework/StudentViewAssignmentDialog";
 
 // ===== PROPS =====
 interface CourseStructureManagerProps {
@@ -509,16 +512,26 @@ const CourseStructureContent: React.FC = () => {
                                   //   + Add Assignment
                                   // </button>
 
-                                  <AssignmentDialog hwId={hw.id} />
+                                  <TeacherAssignmentDialog hwId={hw.id} />
                                 )}
                                 {hwAddons.map((addon) => (
                                   <div
                                     key={addon.id}
                                     className="flex items-center gap-2 p-2 bg-orange-100 rounded text-xs group"
                                   >
-                                    <span className="flex-1">
+                                    {isTeacher && (
+                                      <TeacherViewAssignmentDialog
+                                        assignmentId={addon.id}
+                                      />
+                                    )}
+                                    {isStudent && (
+                                      <StudentViewAssignmentDialog
+                                        assignmentId={addon.id}
+                                      />
+                                    )}
+                                    {/* <span className="flex-1">
                                       📋 {addon.content?.text || "Assignment"}
-                                    </span>
+                                    </span> */}
                                     {isTeacher && (
                                       <button
                                         onClick={() =>

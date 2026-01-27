@@ -34,6 +34,7 @@ model User {
   classMembers  ClassMember[]
   invitations   Invitation[]
 
+  assignments    StudentAssignment[] @relation("StudentAssignments")
   githubAccounts GitHubAccount[]
   widgets        Widget[]
 
@@ -246,6 +247,8 @@ model ClassLessonNode {
   lessonNodeId String
   lessonNode   LessonNode @relation("NodeRoot", fields: [lessonNodeId], references: [id])
 
+  submissions StudentAssignment[] @relation("AssignmentSubmissions")
+
   createdAt DateTime @default(now())
 
   @@map("class_lesson_node")
@@ -254,6 +257,27 @@ model ClassLessonNode {
 enum ClassAddonType {
   lesson_note
   homework_imp
+}
+
+model StudentAssignment {
+  id String @id @default(cuid())
+
+  studentId String
+  student   User   @relation("StudentAssignments", fields: [studentId], references: [id], onDelete: Cascade)
+
+  assignmentId String
+  assignment   ClassLessonNode @relation("AssignmentSubmissions", fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  submissionData Json?
+
+  submittedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([studentId, assignmentId])
+  @@index([studentId])
+  @@index([assignmentId])
+  @@map("student_assignment")
 }
 
 model GitHubAccount {

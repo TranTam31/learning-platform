@@ -3,10 +3,16 @@
 import { useState, useEffect, useRef } from "react";
 import { Pane } from "tweakpane";
 import * as TweakpaneImagePlugin from "@kitschpatrol/tweakpane-plugin-image";
-import { ArrowLeft, AlertCircle, Link } from "lucide-react";
+import {
+  ArrowLeft,
+  AlertCircle,
+  Link,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 import { SchemaProcessor } from "@/components/widget/core/SchemaProcessor";
 import { TweakpaneBuilder } from "@/components/widget/core/TweakpaneBuilder";
-import { WidgetDefinition } from "@/components/widget/core/types";
+import { Submission, WidgetDefinition } from "@/components/widget/core/types";
 
 // ============================================================
 // WIDGET VALIDATOR - CHỈ SỬA HÀM NÀY
@@ -204,12 +210,15 @@ function WidgetHost({
   const [loading, setLoading] = useState(true);
   const [iframeReady, setIframeReady] = useState(false);
 
+  // NEW: Submission state
+  const [submission, setSubmission] = useState<Submission | null>(null);
+  const [isReviewMode, setIsReviewMode] = useState(false);
+
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const paneRef = useRef<HTMLDivElement>(null);
   const paneInstanceRef = useRef<any>(null);
   const messageQueueRef = useRef<any[]>([]);
 
-  // SỬA: Load widget bằng src thay vì fetch + srcdoc
   useEffect(() => {
     if (!iframeRef.current) return;
 
@@ -218,11 +227,9 @@ function WidgetHost({
     setError(null);
     setIframeReady(false);
 
-    // Load URL trực tiếp - cho phép hot reload
     iframeRef.current.src = widgetUrl;
   }, [widgetUrl]);
 
-  // Handle iframe load
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
@@ -233,7 +240,6 @@ function WidgetHost({
       setTimeout(() => {
         setIframeReady(true);
 
-        // Flush message queue
         if (messageQueueRef.current.length > 0) {
           console.log(
             `📨 Flushing ${messageQueueRef.current.length} queued messages`,
@@ -261,7 +267,6 @@ function WidgetHost({
     };
   }, []);
 
-  // Listen to widget messages
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === "WIDGET_READY") {
@@ -270,6 +275,21 @@ function WidgetHost({
         setWidgetDef(def);
         setLoading(false);
         setError(null);
+      }
+
+      // NEW: Handle submission
+      if (event.data.type === "SUBMIT") {
+        const submissionData: Submission = event.data.payload;
+        console.log("✅ Submission received:", submissionData);
+
+        setSubmission(submissionData);
+
+        // In production: save to database
+        // For demo: show in console and alert
+        console.log(
+          "💾 SAVE TO DATABASE:",
+          JSON.stringify(submissionData, null, 2),
+        );
       }
 
       if (event.data.type === "EVENT") {
@@ -286,7 +306,6 @@ function WidgetHost({
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
-  // Helper to send messages
   const sendMessage = (message: any) => {
     if (iframeRef.current?.contentWindow && iframeReady) {
       console.log("📤 Sending to widget:", message.type);
@@ -297,7 +316,40 @@ function WidgetHost({
     }
   };
 
-  // Setup Tweakpane when widget definition is ready
+  // NEW: Enter review mode
+  const enterReviewMode = () => {
+    if (!submission || !config) return;
+
+    console.log("🔍 Entering review mode with:", { config, submission });
+
+    setIsReviewMode(true);
+
+    // Gửi config + answer (không gửi evaluation!)
+    sendMessage({
+      type: "PARAMS_UPDATE",
+      payload: {
+        ...config,
+        __answer: submission.answer, // Chỉ gửi answer
+      },
+    });
+  };
+
+  // NEW: Exit review mode
+  const exitReviewMode = () => {
+    console.log("🔙 Exiting review mode");
+    setIsReviewMode(false);
+
+    // Chỉ cần gửi lại config KHÔNG CÓ __answer
+    // Widget sẽ tự reset về practice mode
+    sendMessage({
+      type: "PARAMS_UPDATE",
+      payload: config, // Config gốc, không có __answer
+    });
+
+    // Clear submission để có thể submit lại
+    setSubmission(null);
+  };
+
   useEffect(() => {
     if (!widgetDef || !paneRef.current) return;
 
@@ -323,7 +375,6 @@ function WidgetHost({
       const handleConfigChange = (newConfig: Record<string, any>) => {
         console.log("🔄 Config changed, sending to widget");
         setConfig(newConfig);
-        console.log(config);
         sendMessage({
           type: "PARAMS_UPDATE",
           payload: newConfig,
@@ -358,10 +409,8 @@ function WidgetHost({
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 flex">
-      {/* MAIN CONTENT */}
       <div className="flex-1 px-12 py-2">
         <div className="max-w-3xl mx-auto">
-          {/* Back button */}
           <button
             onClick={onExit}
             className="inline-flex items-center gap-2 mb-3 px-4 py-2 rounded-full 
@@ -385,7 +434,6 @@ function WidgetHost({
           </div>
         </div>
 
-        {/* Loading */}
         {loading && !error && (
           <div className="mt-6 flex items-center justify-center gap-3 text-slate-500">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
@@ -393,7 +441,6 @@ function WidgetHost({
           </div>
         )}
 
-        {/* Error */}
         {error && (
           <div className="mt-6 max-w-3xl mx-auto bg-red-50 border border-red-200 rounded-2xl p-4 flex gap-3">
             <AlertCircle className="text-red-500 mt-0.5" size={20} />
@@ -407,18 +454,77 @@ function WidgetHost({
 
       {/* RIGHT SIDEBAR */}
       <div className="w-80 bg-white border-l border-slate-200 flex flex-col">
-        {/* Sidebar header */}
         <div className="px-4 py-3 border-b border-slate-200">
           <h3 className="text-sm font-semibold text-slate-700">
-            Thông tin / Cấu hình
+            Cấu hình & Kết quả
           </h3>
         </div>
 
-        {/* Sidebar content */}
         <div
           ref={paneRef}
           className="flex-1 overflow-y-auto p-4 text-sm text-slate-600"
         />
+
+        {/* NEW: Submission Info */}
+        {submission && (
+          <div className="border-t border-slate-200 p-4 space-y-3">
+            <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+              📊 Kết quả nộp bài
+            </div>
+
+            <div
+              className={`p-3 rounded-lg ${
+                submission.evaluation.isCorrect
+                  ? "bg-green-50 border border-green-200"
+                  : "bg-red-50 border border-red-200"
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                {submission.evaluation.isCorrect ? (
+                  <CheckCircle className="text-green-600" size={18} />
+                ) : (
+                  <XCircle className="text-red-600" size={18} />
+                )}
+                <span
+                  className={`font-semibold ${
+                    submission.evaluation.isCorrect
+                      ? "text-green-700"
+                      : "text-red-700"
+                  }`}
+                >
+                  {submission.evaluation.isCorrect ? "Đúng" : "Sai"}
+                </span>
+              </div>
+
+              <div className="text-sm space-y-1">
+                <div className="text-slate-700">
+                  Điểm:{" "}
+                  <strong>
+                    {submission.evaluation.score}/
+                    {submission.evaluation.maxScore}
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Review Mode Toggle */}
+            {!isReviewMode ? (
+              <button
+                onClick={enterReviewMode}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition"
+              >
+                🔍 Xem lại bài làm
+              </button>
+            ) : (
+              <button
+                onClick={exitReviewMode}
+                className="w-full bg-slate-600 hover:bg-slate-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition"
+              >
+                ← Quay lại chế độ làm bài
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -11,10 +11,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import WidgetPreviewConfig, { WidgetPreviewRef } from "./WidgetPreviewConfig";
 import { useCourseStructure } from "@/components/providers/course-structure-provider";
+import TeacherCreateAssignment, {
+  TeacherCreateAssignmentRef,
+} from "./TeacherCreateAssignment";
 
-export default function AssignmentDialog({ hwId }: { hwId: string }) {
+export default function TeacherAssignmentDialog({ hwId }: { hwId: string }) {
   const { handleAddClassAddon } = useCourseStructure();
 
   const [widgetId, setWidgetId] = useState<string | null>(null);
@@ -30,7 +32,7 @@ export default function AssignmentDialog({ hwId }: { hwId: string }) {
   const [open, setOpen] = useState(false);
 
   const fetchedAssignmentRef = useRef(false);
-  const widgetPreviewRef = useRef<WidgetPreviewRef>(null);
+  const widgetPreviewRef = useRef<TeacherCreateAssignmentRef>(null);
 
   // 1️⃣ Load widget info + saved config
   useEffect(() => {
@@ -166,10 +168,9 @@ export default function AssignmentDialog({ hwId }: { hwId: string }) {
           </div>
         ) : widgetId && widgetHtmlCache[widgetId] ? (
           <div className="flex-1 overflow-auto min-h-0">
-            <WidgetPreviewConfig
+            <TeacherCreateAssignment
               ref={widgetPreviewRef}
               html={widgetHtmlCache[widgetId]}
-              initialConfig={savedConfig}
             />
           </div>
         ) : (

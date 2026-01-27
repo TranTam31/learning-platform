@@ -1,0 +1,97 @@
+// app/api/student/assignment/[assignmentId]/route.ts
+
+import { auth } from "@/lib/auth-server";
+import prisma from "@/lib/prisma";
+import { getBuildRunIdFromLessonNode } from "@/server/class-addons";
+import { headers } from "next/headers";
+import { NextResponse } from "next/server";
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ assignmentId: string }> },
+) {
+  try {
+    const { assignmentId } = await params;
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    if (!session) throw new Error("Unauthorized");
+
+    // 1️⃣ Lấy thông tin assignment (ClassLessonNode)
+    const assignment = await prisma.classLessonNode.findUnique({
+      where: { id: assignmentId },
+      select: {
+        id: true,
+        classId: true,
+        lessonNodeId: true,
+        content: true, // Config từ teacher
+        type: true,
+      },
+    });
+
+    if (!assignment) {
+      return NextResponse.json(
+        { error: "Assignment not found" },
+        { status: 404 },
+      );
+    }
+
+    if (!assignment.content) {
+      return NextResponse.json(
+        { error: "Assignment không có cấu hình từ giáo viên" },
+        { status: 400 },
+      );
+    }
+
+    // 2️⃣ Lấy widgetId và buildRunId từ LessonNode
+    const { widgetId, buildRunId } = await getBuildRunIdFromLessonNode(
+      assignment.lessonNodeId,
+    );
+
+    if (!widgetId || !buildRunId) {
+      return NextResponse.json(
+        { error: "Widget not found for this assignment" },
+        { status: 404 },
+      );
+    }
+
+    // 3️⃣ Kiểm tra xem student đã làm chưa
+    const studentSubmission = await prisma.studentAssignment.findUnique({
+      where: {
+        studentId_assignmentId: {
+          studentId: session.user.id,
+          assignmentId: assignmentId,
+        },
+      },
+      select: {
+        id: true,
+        submissionData: true,
+        submittedAt: true,
+      },
+    });
+
+    // 4️⃣ Trả về đầy đủ thông tin
+    return NextResponse.json({
+      // Assignment info
+      assignmentId: assignment.id,
+      classId: assignment.classId,
+      lessonNodeId: assignment.lessonNodeId,
+      assignmentConfig: assignment.content, // Config từ teacher
+
+      // Widget info
+      widgetId,
+      buildRunId,
+
+      // Student submission status
+      hasSubmitted: !!studentSubmission?.submittedAt,
+      submissionData: studentSubmission?.submissionData || null,
+      submittedAt: studentSubmission?.submittedAt || null,
+    });
+  } catch (error) {
+    console.error("[GET_STUDENT_ASSIGNMENT_ERROR]", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
