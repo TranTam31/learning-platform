@@ -17,7 +17,8 @@ import TeacherCreateAssignment, {
 } from "./TeacherCreateAssignment";
 
 export default function TeacherAssignmentDialog({ hwId }: { hwId: string }) {
-  const { handleAddClassAddon } = useCourseStructure();
+  const { handleAddClassLessonNode: handleAddClassAddon } =
+    useCourseStructure();
 
   const [widgetId, setWidgetId] = useState<string | null>(null);
   const [buildRunId, setBuildRunId] = useState<string | null>(null);

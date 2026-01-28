@@ -1,4 +1,4 @@
-import { getBuildRunIdFromLessonNode } from "@/server/class-addons";
+import { getBuildRunIdFromLessonNode } from "@/server/class-lesson-node";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {

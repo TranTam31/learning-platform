@@ -34,7 +34,8 @@ model User {
   classMembers  ClassMember[]
   invitations   Invitation[]
 
-  assignments    StudentAssignment[] @relation("StudentAssignments")
+  assignments    StudentAssignment[] @relation("UserStudentAssignments")
+  Notes          StudentNote[]       @relation("UserStudentNotes")
   githubAccounts GitHubAccount[]
   widgets        Widget[]
 
@@ -247,7 +248,8 @@ model ClassLessonNode {
   lessonNodeId String
   lessonNode   LessonNode @relation("NodeRoot", fields: [lessonNodeId], references: [id])
 
-  submissions StudentAssignment[] @relation("AssignmentSubmissions")
+  studentAssignment StudentAssignment[] @relation("StudentAssignments")
+  notes             StudentNote[]       @relation("StudentNotes")
 
   createdAt DateTime @default(now())
 
@@ -263,10 +265,10 @@ model StudentAssignment {
   id String @id @default(cuid())
 
   studentId String
-  student   User   @relation("StudentAssignments", fields: [studentId], references: [id], onDelete: Cascade)
+  student   User   @relation("UserStudentAssignments", fields: [studentId], references: [id], onDelete: Cascade)
 
   assignmentId String
-  assignment   ClassLessonNode @relation("AssignmentSubmissions", fields: [assignmentId], references: [id], onDelete: Cascade)
+  assignment   ClassLessonNode @relation("StudentAssignments", fields: [assignmentId], references: [id], onDelete: Cascade)
 
   submissionData Json?
 
@@ -278,6 +280,24 @@ model StudentAssignment {
   @@index([studentId])
   @@index([assignmentId])
   @@map("student_assignment")
+}
+
+model StudentNote {
+  id String @id @default(cuid())
+
+  studentId String
+  student   User   @relation("UserStudentNotes", fields: [studentId], references: [id], onDelete: Cascade)
+
+  noteId String
+  note   ClassLessonNode @relation("StudentNotes", fields: [noteId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, noteId])
+  @@index([studentId])
+  @@index([noteId])
+  @@map("student_note")
 }
 
 model GitHubAccount {

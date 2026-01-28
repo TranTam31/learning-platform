@@ -204,6 +204,7 @@ export type UserWhereInput = {
   classMembers?: Prisma.ClassMemberListRelationFilter
   invitations?: Prisma.InvitationListRelationFilter
   assignments?: Prisma.StudentAssignmentListRelationFilter
+  Notes?: Prisma.StudentNoteListRelationFilter
   githubAccounts?: Prisma.GitHubAccountListRelationFilter
   widgets?: Prisma.WidgetListRelationFilter
 }
@@ -222,6 +223,7 @@ export type UserOrderByWithRelationInput = {
   classMembers?: Prisma.ClassMemberOrderByRelationAggregateInput
   invitations?: Prisma.InvitationOrderByRelationAggregateInput
   assignments?: Prisma.StudentAssignmentOrderByRelationAggregateInput
+  Notes?: Prisma.StudentNoteOrderByRelationAggregateInput
   githubAccounts?: Prisma.GitHubAccountOrderByRelationAggregateInput
   widgets?: Prisma.WidgetOrderByRelationAggregateInput
 }
@@ -243,6 +245,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   classMembers?: Prisma.ClassMemberListRelationFilter
   invitations?: Prisma.InvitationListRelationFilter
   assignments?: Prisma.StudentAssignmentListRelationFilter
+  Notes?: Prisma.StudentNoteListRelationFilter
   githubAccounts?: Prisma.GitHubAccountListRelationFilter
   widgets?: Prisma.WidgetListRelationFilter
 }, "id" | "email">
@@ -287,6 +290,7 @@ export type UserCreateInput = {
   classMembers?: Prisma.ClassMemberCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
   assignments?: Prisma.StudentAssignmentCreateNestedManyWithoutStudentInput
+  Notes?: Prisma.StudentNoteCreateNestedManyWithoutStudentInput
   githubAccounts?: Prisma.GitHubAccountCreateNestedManyWithoutUserInput
   widgets?: Prisma.WidgetCreateNestedManyWithoutUserInput
 }
@@ -305,6 +309,7 @@ export type UserUncheckedCreateInput = {
   classMembers?: Prisma.ClassMemberUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
   assignments?: Prisma.StudentAssignmentUncheckedCreateNestedManyWithoutStudentInput
+  Notes?: Prisma.StudentNoteUncheckedCreateNestedManyWithoutStudentInput
   githubAccounts?: Prisma.GitHubAccountUncheckedCreateNestedManyWithoutUserInput
   widgets?: Prisma.WidgetUncheckedCreateNestedManyWithoutUserInput
 }
@@ -323,6 +328,7 @@ export type UserUpdateInput = {
   classMembers?: Prisma.ClassMemberUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
   assignments?: Prisma.StudentAssignmentUpdateManyWithoutStudentNestedInput
+  Notes?: Prisma.StudentNoteUpdateManyWithoutStudentNestedInput
   githubAccounts?: Prisma.GitHubAccountUpdateManyWithoutUserNestedInput
   widgets?: Prisma.WidgetUpdateManyWithoutUserNestedInput
 }
@@ -341,6 +347,7 @@ export type UserUncheckedUpdateInput = {
   classMembers?: Prisma.ClassMemberUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
   assignments?: Prisma.StudentAssignmentUncheckedUpdateManyWithoutStudentNestedInput
+  Notes?: Prisma.StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
   githubAccounts?: Prisma.GitHubAccountUncheckedUpdateManyWithoutUserNestedInput
   widgets?: Prisma.WidgetUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -510,6 +517,20 @@ export type UserUpdateOneRequiredWithoutAssignmentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAssignmentsInput, Prisma.UserUpdateWithoutAssignmentsInput>, Prisma.UserUncheckedUpdateWithoutAssignmentsInput>
 }
 
+export type UserCreateNestedOneWithoutNotesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutNotesInput, Prisma.UserUncheckedCreateWithoutNotesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutNotesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutNotesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutNotesInput, Prisma.UserUncheckedCreateWithoutNotesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutNotesInput
+  upsert?: Prisma.UserUpsertWithoutNotesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutNotesInput, Prisma.UserUpdateWithoutNotesInput>, Prisma.UserUncheckedUpdateWithoutNotesInput>
+}
+
 export type UserCreateNestedOneWithoutGithubAccountsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutGithubAccountsInput, Prisma.UserUncheckedCreateWithoutGithubAccountsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutGithubAccountsInput
@@ -551,6 +572,7 @@ export type UserCreateWithoutSessionsInput = {
   classMembers?: Prisma.ClassMemberCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
   assignments?: Prisma.StudentAssignmentCreateNestedManyWithoutStudentInput
+  Notes?: Prisma.StudentNoteCreateNestedManyWithoutStudentInput
   githubAccounts?: Prisma.GitHubAccountCreateNestedManyWithoutUserInput
   widgets?: Prisma.WidgetCreateNestedManyWithoutUserInput
 }
@@ -568,6 +590,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   classMembers?: Prisma.ClassMemberUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
   assignments?: Prisma.StudentAssignmentUncheckedCreateNestedManyWithoutStudentInput
+  Notes?: Prisma.StudentNoteUncheckedCreateNestedManyWithoutStudentInput
   githubAccounts?: Prisma.GitHubAccountUncheckedCreateNestedManyWithoutUserInput
   widgets?: Prisma.WidgetUncheckedCreateNestedManyWithoutUserInput
 }
@@ -601,6 +624,7 @@ export type UserUpdateWithoutSessionsInput = {
   classMembers?: Prisma.ClassMemberUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
   assignments?: Prisma.StudentAssignmentUpdateManyWithoutStudentNestedInput
+  Notes?: Prisma.StudentNoteUpdateManyWithoutStudentNestedInput
   githubAccounts?: Prisma.GitHubAccountUpdateManyWithoutUserNestedInput
   widgets?: Prisma.WidgetUpdateManyWithoutUserNestedInput
 }
@@ -618,6 +642,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   classMembers?: Prisma.ClassMemberUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
   assignments?: Prisma.StudentAssignmentUncheckedUpdateManyWithoutStudentNestedInput
+  Notes?: Prisma.StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
   githubAccounts?: Prisma.GitHubAccountUncheckedUpdateManyWithoutUserNestedInput
   widgets?: Prisma.WidgetUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -635,6 +660,7 @@ export type UserCreateWithoutAccountsInput = {
   classMembers?: Prisma.ClassMemberCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
   assignments?: Prisma.StudentAssignmentCreateNestedManyWithoutStudentInput
+  Notes?: Prisma.StudentNoteCreateNestedManyWithoutStudentInput
   githubAccounts?: Prisma.GitHubAccountCreateNestedManyWithoutUserInput
   widgets?: Prisma.WidgetCreateNestedManyWithoutUserInput
 }
@@ -652,6 +678,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   classMembers?: Prisma.ClassMemberUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
   assignments?: Prisma.StudentAssignmentUncheckedCreateNestedManyWithoutStudentInput
+  Notes?: Prisma.StudentNoteUncheckedCreateNestedManyWithoutStudentInput
   githubAccounts?: Prisma.GitHubAccountUncheckedCreateNestedManyWithoutUserInput
   widgets?: Prisma.WidgetUncheckedCreateNestedManyWithoutUserInput
 }
@@ -685,6 +712,7 @@ export type UserUpdateWithoutAccountsInput = {
   classMembers?: Prisma.ClassMemberUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
   assignments?: Prisma.StudentAssignmentUpdateManyWithoutStudentNestedInput
+  Notes?: Prisma.StudentNoteUpdateManyWithoutStudentNestedInput
   githubAccounts?: Prisma.GitHubAccountUpdateManyWithoutUserNestedInput
   widgets?: Prisma.WidgetUpdateManyWithoutUserNestedInput
 }
@@ -702,6 +730,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   classMembers?: Prisma.ClassMemberUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
   assignments?: Prisma.StudentAssignmentUncheckedUpdateManyWithoutStudentNestedInput
+  Notes?: Prisma.StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
   githubAccounts?: Prisma.GitHubAccountUncheckedUpdateManyWithoutUserNestedInput
   widgets?: Prisma.WidgetUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -719,6 +748,7 @@ export type UserCreateWithoutMembersInput = {
   classMembers?: Prisma.ClassMemberCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
   assignments?: Prisma.StudentAssignmentCreateNestedManyWithoutStudentInput
+  Notes?: Prisma.StudentNoteCreateNestedManyWithoutStudentInput
   githubAccounts?: Prisma.GitHubAccountCreateNestedManyWithoutUserInput
   widgets?: Prisma.WidgetCreateNestedManyWithoutUserInput
 }
@@ -736,6 +766,7 @@ export type UserUncheckedCreateWithoutMembersInput = {
   classMembers?: Prisma.ClassMemberUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
   assignments?: Prisma.StudentAssignmentUncheckedCreateNestedManyWithoutStudentInput
+  Notes?: Prisma.StudentNoteUncheckedCreateNestedManyWithoutStudentInput
   githubAccounts?: Prisma.GitHubAccountUncheckedCreateNestedManyWithoutUserInput
   widgets?: Prisma.WidgetUncheckedCreateNestedManyWithoutUserInput
 }
@@ -769,6 +800,7 @@ export type UserUpdateWithoutMembersInput = {
   classMembers?: Prisma.ClassMemberUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
   assignments?: Prisma.StudentAssignmentUpdateManyWithoutStudentNestedInput
+  Notes?: Prisma.StudentNoteUpdateManyWithoutStudentNestedInput
   githubAccounts?: Prisma.GitHubAccountUpdateManyWithoutUserNestedInput
   widgets?: Prisma.WidgetUpdateManyWithoutUserNestedInput
 }
@@ -786,6 +818,7 @@ export type UserUncheckedUpdateWithoutMembersInput = {
   classMembers?: Prisma.ClassMemberUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
   assignments?: Prisma.StudentAssignmentUncheckedUpdateManyWithoutStudentNestedInput
+  Notes?: Prisma.StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
   githubAccounts?: Prisma.GitHubAccountUncheckedUpdateManyWithoutUserNestedInput
   widgets?: Prisma.WidgetUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -803,6 +836,7 @@ export type UserCreateWithoutInvitationsInput = {
   members?: Prisma.MemberCreateNestedManyWithoutUserInput
   classMembers?: Prisma.ClassMemberCreateNestedManyWithoutUserInput
   assignments?: Prisma.StudentAssignmentCreateNestedManyWithoutStudentInput
+  Notes?: Prisma.StudentNoteCreateNestedManyWithoutStudentInput
   githubAccounts?: Prisma.GitHubAccountCreateNestedManyWithoutUserInput
   widgets?: Prisma.WidgetCreateNestedManyWithoutUserInput
 }
@@ -820,6 +854,7 @@ export type UserUncheckedCreateWithoutInvitationsInput = {
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
   classMembers?: Prisma.ClassMemberUncheckedCreateNestedManyWithoutUserInput
   assignments?: Prisma.StudentAssignmentUncheckedCreateNestedManyWithoutStudentInput
+  Notes?: Prisma.StudentNoteUncheckedCreateNestedManyWithoutStudentInput
   githubAccounts?: Prisma.GitHubAccountUncheckedCreateNestedManyWithoutUserInput
   widgets?: Prisma.WidgetUncheckedCreateNestedManyWithoutUserInput
 }
@@ -853,6 +888,7 @@ export type UserUpdateWithoutInvitationsInput = {
   members?: Prisma.MemberUpdateManyWithoutUserNestedInput
   classMembers?: Prisma.ClassMemberUpdateManyWithoutUserNestedInput
   assignments?: Prisma.StudentAssignmentUpdateManyWithoutStudentNestedInput
+  Notes?: Prisma.StudentNoteUpdateManyWithoutStudentNestedInput
   githubAccounts?: Prisma.GitHubAccountUpdateManyWithoutUserNestedInput
   widgets?: Prisma.WidgetUpdateManyWithoutUserNestedInput
 }
@@ -870,6 +906,7 @@ export type UserUncheckedUpdateWithoutInvitationsInput = {
   members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
   classMembers?: Prisma.ClassMemberUncheckedUpdateManyWithoutUserNestedInput
   assignments?: Prisma.StudentAssignmentUncheckedUpdateManyWithoutStudentNestedInput
+  Notes?: Prisma.StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
   githubAccounts?: Prisma.GitHubAccountUncheckedUpdateManyWithoutUserNestedInput
   widgets?: Prisma.WidgetUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -887,6 +924,7 @@ export type UserCreateWithoutClassMembersInput = {
   members?: Prisma.MemberCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
   assignments?: Prisma.StudentAssignmentCreateNestedManyWithoutStudentInput
+  Notes?: Prisma.StudentNoteCreateNestedManyWithoutStudentInput
   githubAccounts?: Prisma.GitHubAccountCreateNestedManyWithoutUserInput
   widgets?: Prisma.WidgetCreateNestedManyWithoutUserInput
 }
@@ -904,6 +942,7 @@ export type UserUncheckedCreateWithoutClassMembersInput = {
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
   assignments?: Prisma.StudentAssignmentUncheckedCreateNestedManyWithoutStudentInput
+  Notes?: Prisma.StudentNoteUncheckedCreateNestedManyWithoutStudentInput
   githubAccounts?: Prisma.GitHubAccountUncheckedCreateNestedManyWithoutUserInput
   widgets?: Prisma.WidgetUncheckedCreateNestedManyWithoutUserInput
 }
@@ -937,6 +976,7 @@ export type UserUpdateWithoutClassMembersInput = {
   members?: Prisma.MemberUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
   assignments?: Prisma.StudentAssignmentUpdateManyWithoutStudentNestedInput
+  Notes?: Prisma.StudentNoteUpdateManyWithoutStudentNestedInput
   githubAccounts?: Prisma.GitHubAccountUpdateManyWithoutUserNestedInput
   widgets?: Prisma.WidgetUpdateManyWithoutUserNestedInput
 }
@@ -954,6 +994,7 @@ export type UserUncheckedUpdateWithoutClassMembersInput = {
   members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
   assignments?: Prisma.StudentAssignmentUncheckedUpdateManyWithoutStudentNestedInput
+  Notes?: Prisma.StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
   githubAccounts?: Prisma.GitHubAccountUncheckedUpdateManyWithoutUserNestedInput
   widgets?: Prisma.WidgetUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -971,6 +1012,7 @@ export type UserCreateWithoutAssignmentsInput = {
   members?: Prisma.MemberCreateNestedManyWithoutUserInput
   classMembers?: Prisma.ClassMemberCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
+  Notes?: Prisma.StudentNoteCreateNestedManyWithoutStudentInput
   githubAccounts?: Prisma.GitHubAccountCreateNestedManyWithoutUserInput
   widgets?: Prisma.WidgetCreateNestedManyWithoutUserInput
 }
@@ -988,6 +1030,7 @@ export type UserUncheckedCreateWithoutAssignmentsInput = {
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
   classMembers?: Prisma.ClassMemberUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
+  Notes?: Prisma.StudentNoteUncheckedCreateNestedManyWithoutStudentInput
   githubAccounts?: Prisma.GitHubAccountUncheckedCreateNestedManyWithoutUserInput
   widgets?: Prisma.WidgetUncheckedCreateNestedManyWithoutUserInput
 }
@@ -1021,6 +1064,7 @@ export type UserUpdateWithoutAssignmentsInput = {
   members?: Prisma.MemberUpdateManyWithoutUserNestedInput
   classMembers?: Prisma.ClassMemberUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
+  Notes?: Prisma.StudentNoteUpdateManyWithoutStudentNestedInput
   githubAccounts?: Prisma.GitHubAccountUpdateManyWithoutUserNestedInput
   widgets?: Prisma.WidgetUpdateManyWithoutUserNestedInput
 }
@@ -1038,6 +1082,95 @@ export type UserUncheckedUpdateWithoutAssignmentsInput = {
   members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
   classMembers?: Prisma.ClassMemberUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
+  Notes?: Prisma.StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
+  githubAccounts?: Prisma.GitHubAccountUncheckedUpdateManyWithoutUserNestedInput
+  widgets?: Prisma.WidgetUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutNotesInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  members?: Prisma.MemberCreateNestedManyWithoutUserInput
+  classMembers?: Prisma.ClassMemberCreateNestedManyWithoutUserInput
+  invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
+  assignments?: Prisma.StudentAssignmentCreateNestedManyWithoutStudentInput
+  githubAccounts?: Prisma.GitHubAccountCreateNestedManyWithoutUserInput
+  widgets?: Prisma.WidgetCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutNotesInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  classMembers?: Prisma.ClassMemberUncheckedCreateNestedManyWithoutUserInput
+  invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
+  assignments?: Prisma.StudentAssignmentUncheckedCreateNestedManyWithoutStudentInput
+  githubAccounts?: Prisma.GitHubAccountUncheckedCreateNestedManyWithoutUserInput
+  widgets?: Prisma.WidgetUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutNotesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutNotesInput, Prisma.UserUncheckedCreateWithoutNotesInput>
+}
+
+export type UserUpsertWithoutNotesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutNotesInput, Prisma.UserUncheckedUpdateWithoutNotesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutNotesInput, Prisma.UserUncheckedCreateWithoutNotesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutNotesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutNotesInput, Prisma.UserUncheckedUpdateWithoutNotesInput>
+}
+
+export type UserUpdateWithoutNotesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  members?: Prisma.MemberUpdateManyWithoutUserNestedInput
+  classMembers?: Prisma.ClassMemberUpdateManyWithoutUserNestedInput
+  invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
+  assignments?: Prisma.StudentAssignmentUpdateManyWithoutStudentNestedInput
+  githubAccounts?: Prisma.GitHubAccountUpdateManyWithoutUserNestedInput
+  widgets?: Prisma.WidgetUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutNotesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  classMembers?: Prisma.ClassMemberUncheckedUpdateManyWithoutUserNestedInput
+  invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
+  assignments?: Prisma.StudentAssignmentUncheckedUpdateManyWithoutStudentNestedInput
   githubAccounts?: Prisma.GitHubAccountUncheckedUpdateManyWithoutUserNestedInput
   widgets?: Prisma.WidgetUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -1056,6 +1189,7 @@ export type UserCreateWithoutGithubAccountsInput = {
   classMembers?: Prisma.ClassMemberCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
   assignments?: Prisma.StudentAssignmentCreateNestedManyWithoutStudentInput
+  Notes?: Prisma.StudentNoteCreateNestedManyWithoutStudentInput
   widgets?: Prisma.WidgetCreateNestedManyWithoutUserInput
 }
 
@@ -1073,6 +1207,7 @@ export type UserUncheckedCreateWithoutGithubAccountsInput = {
   classMembers?: Prisma.ClassMemberUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
   assignments?: Prisma.StudentAssignmentUncheckedCreateNestedManyWithoutStudentInput
+  Notes?: Prisma.StudentNoteUncheckedCreateNestedManyWithoutStudentInput
   widgets?: Prisma.WidgetUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -1106,6 +1241,7 @@ export type UserUpdateWithoutGithubAccountsInput = {
   classMembers?: Prisma.ClassMemberUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
   assignments?: Prisma.StudentAssignmentUpdateManyWithoutStudentNestedInput
+  Notes?: Prisma.StudentNoteUpdateManyWithoutStudentNestedInput
   widgets?: Prisma.WidgetUpdateManyWithoutUserNestedInput
 }
 
@@ -1123,6 +1259,7 @@ export type UserUncheckedUpdateWithoutGithubAccountsInput = {
   classMembers?: Prisma.ClassMemberUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
   assignments?: Prisma.StudentAssignmentUncheckedUpdateManyWithoutStudentNestedInput
+  Notes?: Prisma.StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
   widgets?: Prisma.WidgetUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -1140,6 +1277,7 @@ export type UserCreateWithoutWidgetsInput = {
   classMembers?: Prisma.ClassMemberCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationCreateNestedManyWithoutUserInput
   assignments?: Prisma.StudentAssignmentCreateNestedManyWithoutStudentInput
+  Notes?: Prisma.StudentNoteCreateNestedManyWithoutStudentInput
   githubAccounts?: Prisma.GitHubAccountCreateNestedManyWithoutUserInput
 }
 
@@ -1157,6 +1295,7 @@ export type UserUncheckedCreateWithoutWidgetsInput = {
   classMembers?: Prisma.ClassMemberUncheckedCreateNestedManyWithoutUserInput
   invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutUserInput
   assignments?: Prisma.StudentAssignmentUncheckedCreateNestedManyWithoutStudentInput
+  Notes?: Prisma.StudentNoteUncheckedCreateNestedManyWithoutStudentInput
   githubAccounts?: Prisma.GitHubAccountUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -1190,6 +1329,7 @@ export type UserUpdateWithoutWidgetsInput = {
   classMembers?: Prisma.ClassMemberUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUpdateManyWithoutUserNestedInput
   assignments?: Prisma.StudentAssignmentUpdateManyWithoutStudentNestedInput
+  Notes?: Prisma.StudentNoteUpdateManyWithoutStudentNestedInput
   githubAccounts?: Prisma.GitHubAccountUpdateManyWithoutUserNestedInput
 }
 
@@ -1207,6 +1347,7 @@ export type UserUncheckedUpdateWithoutWidgetsInput = {
   classMembers?: Prisma.ClassMemberUncheckedUpdateManyWithoutUserNestedInput
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutUserNestedInput
   assignments?: Prisma.StudentAssignmentUncheckedUpdateManyWithoutStudentNestedInput
+  Notes?: Prisma.StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
   githubAccounts?: Prisma.GitHubAccountUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -1222,6 +1363,7 @@ export type UserCountOutputType = {
   classMembers: number
   invitations: number
   assignments: number
+  Notes: number
   githubAccounts: number
   widgets: number
 }
@@ -1233,6 +1375,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   classMembers?: boolean | UserCountOutputTypeCountClassMembersArgs
   invitations?: boolean | UserCountOutputTypeCountInvitationsArgs
   assignments?: boolean | UserCountOutputTypeCountAssignmentsArgs
+  Notes?: boolean | UserCountOutputTypeCountNotesArgs
   githubAccounts?: boolean | UserCountOutputTypeCountGithubAccountsArgs
   widgets?: boolean | UserCountOutputTypeCountWidgetsArgs
 }
@@ -1292,6 +1435,13 @@ export type UserCountOutputTypeCountAssignmentsArgs<ExtArgs extends runtime.Type
 /**
  * UserCountOutputType without action
  */
+export type UserCountOutputTypeCountNotesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.StudentNoteWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
 export type UserCountOutputTypeCountGithubAccountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.GitHubAccountWhereInput
 }
@@ -1318,6 +1468,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   classMembers?: boolean | Prisma.User$classMembersArgs<ExtArgs>
   invitations?: boolean | Prisma.User$invitationsArgs<ExtArgs>
   assignments?: boolean | Prisma.User$assignmentsArgs<ExtArgs>
+  Notes?: boolean | Prisma.User$NotesArgs<ExtArgs>
   githubAccounts?: boolean | Prisma.User$githubAccountsArgs<ExtArgs>
   widgets?: boolean | Prisma.User$widgetsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1361,6 +1512,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   classMembers?: boolean | Prisma.User$classMembersArgs<ExtArgs>
   invitations?: boolean | Prisma.User$invitationsArgs<ExtArgs>
   assignments?: boolean | Prisma.User$assignmentsArgs<ExtArgs>
+  Notes?: boolean | Prisma.User$NotesArgs<ExtArgs>
   githubAccounts?: boolean | Prisma.User$githubAccountsArgs<ExtArgs>
   widgets?: boolean | Prisma.User$widgetsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1377,6 +1529,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     classMembers: Prisma.$ClassMemberPayload<ExtArgs>[]
     invitations: Prisma.$InvitationPayload<ExtArgs>[]
     assignments: Prisma.$StudentAssignmentPayload<ExtArgs>[]
+    Notes: Prisma.$StudentNotePayload<ExtArgs>[]
     githubAccounts: Prisma.$GitHubAccountPayload<ExtArgs>[]
     widgets: Prisma.$WidgetPayload<ExtArgs>[]
   }
@@ -1788,6 +1941,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   classMembers<T extends Prisma.User$classMembersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$classMembersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClassMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   invitations<T extends Prisma.User$invitationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$invitationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   assignments<T extends Prisma.User$assignmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$assignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StudentAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  Notes<T extends Prisma.User$NotesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$NotesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StudentNotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   githubAccounts<T extends Prisma.User$githubAccountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$githubAccountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GitHubAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   widgets<T extends Prisma.User$widgetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$widgetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WidgetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -2355,6 +2509,30 @@ export type User$assignmentsArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.StudentAssignmentScalarFieldEnum | Prisma.StudentAssignmentScalarFieldEnum[]
+}
+
+/**
+ * User.Notes
+ */
+export type User$NotesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the StudentNote
+   */
+  select?: Prisma.StudentNoteSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the StudentNote
+   */
+  omit?: Prisma.StudentNoteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.StudentNoteInclude<ExtArgs> | null
+  where?: Prisma.StudentNoteWhereInput
+  orderBy?: Prisma.StudentNoteOrderByWithRelationInput | Prisma.StudentNoteOrderByWithRelationInput[]
+  cursor?: Prisma.StudentNoteWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.StudentNoteScalarFieldEnum | Prisma.StudentNoteScalarFieldEnum[]
 }
 
 /**

@@ -1,7 +1,7 @@
 // app/api/class/assignment/[assignmentId]/route.ts
 
 import prisma from "@/lib/prisma";
-import { getBuildRunIdFromLessonNode } from "@/server/class-addons";
+import { getBuildRunIdFromLessonNode } from "@/server/class-lesson-node";
 import { NextResponse } from "next/server";
 
 export async function GET(

@@ -188,7 +188,8 @@ export type ClassLessonNodeWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"ClassLessonNode"> | Date | string
   class?: Prisma.XOR<Prisma.ClassScalarRelationFilter, Prisma.ClassWhereInput>
   lessonNode?: Prisma.XOR<Prisma.LessonNodeScalarRelationFilter, Prisma.LessonNodeWhereInput>
-  submissions?: Prisma.StudentAssignmentListRelationFilter
+  studentAssignment?: Prisma.StudentAssignmentListRelationFilter
+  notes?: Prisma.StudentNoteListRelationFilter
 }
 
 export type ClassLessonNodeOrderByWithRelationInput = {
@@ -200,7 +201,8 @@ export type ClassLessonNodeOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   class?: Prisma.ClassOrderByWithRelationInput
   lessonNode?: Prisma.LessonNodeOrderByWithRelationInput
-  submissions?: Prisma.StudentAssignmentOrderByRelationAggregateInput
+  studentAssignment?: Prisma.StudentAssignmentOrderByRelationAggregateInput
+  notes?: Prisma.StudentNoteOrderByRelationAggregateInput
 }
 
 export type ClassLessonNodeWhereUniqueInput = Prisma.AtLeast<{
@@ -215,7 +217,8 @@ export type ClassLessonNodeWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"ClassLessonNode"> | Date | string
   class?: Prisma.XOR<Prisma.ClassScalarRelationFilter, Prisma.ClassWhereInput>
   lessonNode?: Prisma.XOR<Prisma.LessonNodeScalarRelationFilter, Prisma.LessonNodeWhereInput>
-  submissions?: Prisma.StudentAssignmentListRelationFilter
+  studentAssignment?: Prisma.StudentAssignmentListRelationFilter
+  notes?: Prisma.StudentNoteListRelationFilter
 }, "id">
 
 export type ClassLessonNodeOrderByWithAggregationInput = {
@@ -249,7 +252,8 @@ export type ClassLessonNodeCreateInput = {
   createdAt?: Date | string
   class: Prisma.ClassCreateNestedOneWithoutClassLessonNodesInput
   lessonNode: Prisma.LessonNodeCreateNestedOneWithoutClassChildrenInput
-  submissions?: Prisma.StudentAssignmentCreateNestedManyWithoutAssignmentInput
+  studentAssignment?: Prisma.StudentAssignmentCreateNestedManyWithoutAssignmentInput
+  notes?: Prisma.StudentNoteCreateNestedManyWithoutNoteInput
 }
 
 export type ClassLessonNodeUncheckedCreateInput = {
@@ -259,7 +263,8 @@ export type ClassLessonNodeUncheckedCreateInput = {
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lessonNodeId: string
   createdAt?: Date | string
-  submissions?: Prisma.StudentAssignmentUncheckedCreateNestedManyWithoutAssignmentInput
+  studentAssignment?: Prisma.StudentAssignmentUncheckedCreateNestedManyWithoutAssignmentInput
+  notes?: Prisma.StudentNoteUncheckedCreateNestedManyWithoutNoteInput
 }
 
 export type ClassLessonNodeUpdateInput = {
@@ -269,7 +274,8 @@ export type ClassLessonNodeUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   class?: Prisma.ClassUpdateOneRequiredWithoutClassLessonNodesNestedInput
   lessonNode?: Prisma.LessonNodeUpdateOneRequiredWithoutClassChildrenNestedInput
-  submissions?: Prisma.StudentAssignmentUpdateManyWithoutAssignmentNestedInput
+  studentAssignment?: Prisma.StudentAssignmentUpdateManyWithoutAssignmentNestedInput
+  notes?: Prisma.StudentNoteUpdateManyWithoutNoteNestedInput
 }
 
 export type ClassLessonNodeUncheckedUpdateInput = {
@@ -279,7 +285,8 @@ export type ClassLessonNodeUncheckedUpdateInput = {
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lessonNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  submissions?: Prisma.StudentAssignmentUncheckedUpdateManyWithoutAssignmentNestedInput
+  studentAssignment?: Prisma.StudentAssignmentUncheckedUpdateManyWithoutAssignmentNestedInput
+  notes?: Prisma.StudentNoteUncheckedUpdateManyWithoutNoteNestedInput
 }
 
 export type ClassLessonNodeCreateManyInput = {
@@ -435,18 +442,32 @@ export type EnumClassAddonTypeFieldUpdateOperationsInput = {
   set?: $Enums.ClassAddonType
 }
 
-export type ClassLessonNodeCreateNestedOneWithoutSubmissionsInput = {
-  create?: Prisma.XOR<Prisma.ClassLessonNodeCreateWithoutSubmissionsInput, Prisma.ClassLessonNodeUncheckedCreateWithoutSubmissionsInput>
-  connectOrCreate?: Prisma.ClassLessonNodeCreateOrConnectWithoutSubmissionsInput
+export type ClassLessonNodeCreateNestedOneWithoutStudentAssignmentInput = {
+  create?: Prisma.XOR<Prisma.ClassLessonNodeCreateWithoutStudentAssignmentInput, Prisma.ClassLessonNodeUncheckedCreateWithoutStudentAssignmentInput>
+  connectOrCreate?: Prisma.ClassLessonNodeCreateOrConnectWithoutStudentAssignmentInput
   connect?: Prisma.ClassLessonNodeWhereUniqueInput
 }
 
-export type ClassLessonNodeUpdateOneRequiredWithoutSubmissionsNestedInput = {
-  create?: Prisma.XOR<Prisma.ClassLessonNodeCreateWithoutSubmissionsInput, Prisma.ClassLessonNodeUncheckedCreateWithoutSubmissionsInput>
-  connectOrCreate?: Prisma.ClassLessonNodeCreateOrConnectWithoutSubmissionsInput
-  upsert?: Prisma.ClassLessonNodeUpsertWithoutSubmissionsInput
+export type ClassLessonNodeUpdateOneRequiredWithoutStudentAssignmentNestedInput = {
+  create?: Prisma.XOR<Prisma.ClassLessonNodeCreateWithoutStudentAssignmentInput, Prisma.ClassLessonNodeUncheckedCreateWithoutStudentAssignmentInput>
+  connectOrCreate?: Prisma.ClassLessonNodeCreateOrConnectWithoutStudentAssignmentInput
+  upsert?: Prisma.ClassLessonNodeUpsertWithoutStudentAssignmentInput
   connect?: Prisma.ClassLessonNodeWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ClassLessonNodeUpdateToOneWithWhereWithoutSubmissionsInput, Prisma.ClassLessonNodeUpdateWithoutSubmissionsInput>, Prisma.ClassLessonNodeUncheckedUpdateWithoutSubmissionsInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ClassLessonNodeUpdateToOneWithWhereWithoutStudentAssignmentInput, Prisma.ClassLessonNodeUpdateWithoutStudentAssignmentInput>, Prisma.ClassLessonNodeUncheckedUpdateWithoutStudentAssignmentInput>
+}
+
+export type ClassLessonNodeCreateNestedOneWithoutNotesInput = {
+  create?: Prisma.XOR<Prisma.ClassLessonNodeCreateWithoutNotesInput, Prisma.ClassLessonNodeUncheckedCreateWithoutNotesInput>
+  connectOrCreate?: Prisma.ClassLessonNodeCreateOrConnectWithoutNotesInput
+  connect?: Prisma.ClassLessonNodeWhereUniqueInput
+}
+
+export type ClassLessonNodeUpdateOneRequiredWithoutNotesNestedInput = {
+  create?: Prisma.XOR<Prisma.ClassLessonNodeCreateWithoutNotesInput, Prisma.ClassLessonNodeUncheckedCreateWithoutNotesInput>
+  connectOrCreate?: Prisma.ClassLessonNodeCreateOrConnectWithoutNotesInput
+  upsert?: Prisma.ClassLessonNodeUpsertWithoutNotesInput
+  connect?: Prisma.ClassLessonNodeWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ClassLessonNodeUpdateToOneWithWhereWithoutNotesInput, Prisma.ClassLessonNodeUpdateWithoutNotesInput>, Prisma.ClassLessonNodeUncheckedUpdateWithoutNotesInput>
 }
 
 export type ClassLessonNodeCreateWithoutLessonNodeInput = {
@@ -455,7 +476,8 @@ export type ClassLessonNodeCreateWithoutLessonNodeInput = {
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   class: Prisma.ClassCreateNestedOneWithoutClassLessonNodesInput
-  submissions?: Prisma.StudentAssignmentCreateNestedManyWithoutAssignmentInput
+  studentAssignment?: Prisma.StudentAssignmentCreateNestedManyWithoutAssignmentInput
+  notes?: Prisma.StudentNoteCreateNestedManyWithoutNoteInput
 }
 
 export type ClassLessonNodeUncheckedCreateWithoutLessonNodeInput = {
@@ -464,7 +486,8 @@ export type ClassLessonNodeUncheckedCreateWithoutLessonNodeInput = {
   type: $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
-  submissions?: Prisma.StudentAssignmentUncheckedCreateNestedManyWithoutAssignmentInput
+  studentAssignment?: Prisma.StudentAssignmentUncheckedCreateNestedManyWithoutAssignmentInput
+  notes?: Prisma.StudentNoteUncheckedCreateNestedManyWithoutNoteInput
 }
 
 export type ClassLessonNodeCreateOrConnectWithoutLessonNodeInput = {
@@ -511,7 +534,8 @@ export type ClassLessonNodeCreateWithoutClassInput = {
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   lessonNode: Prisma.LessonNodeCreateNestedOneWithoutClassChildrenInput
-  submissions?: Prisma.StudentAssignmentCreateNestedManyWithoutAssignmentInput
+  studentAssignment?: Prisma.StudentAssignmentCreateNestedManyWithoutAssignmentInput
+  notes?: Prisma.StudentNoteCreateNestedManyWithoutNoteInput
 }
 
 export type ClassLessonNodeUncheckedCreateWithoutClassInput = {
@@ -520,7 +544,8 @@ export type ClassLessonNodeUncheckedCreateWithoutClassInput = {
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lessonNodeId: string
   createdAt?: Date | string
-  submissions?: Prisma.StudentAssignmentUncheckedCreateNestedManyWithoutAssignmentInput
+  studentAssignment?: Prisma.StudentAssignmentUncheckedCreateNestedManyWithoutAssignmentInput
+  notes?: Prisma.StudentNoteUncheckedCreateNestedManyWithoutNoteInput
 }
 
 export type ClassLessonNodeCreateOrConnectWithoutClassInput = {
@@ -549,56 +574,116 @@ export type ClassLessonNodeUpdateManyWithWhereWithoutClassInput = {
   data: Prisma.XOR<Prisma.ClassLessonNodeUpdateManyMutationInput, Prisma.ClassLessonNodeUncheckedUpdateManyWithoutClassInput>
 }
 
-export type ClassLessonNodeCreateWithoutSubmissionsInput = {
+export type ClassLessonNodeCreateWithoutStudentAssignmentInput = {
   id?: string
   type: $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   class: Prisma.ClassCreateNestedOneWithoutClassLessonNodesInput
   lessonNode: Prisma.LessonNodeCreateNestedOneWithoutClassChildrenInput
+  notes?: Prisma.StudentNoteCreateNestedManyWithoutNoteInput
 }
 
-export type ClassLessonNodeUncheckedCreateWithoutSubmissionsInput = {
+export type ClassLessonNodeUncheckedCreateWithoutStudentAssignmentInput = {
   id?: string
   classId: string
   type: $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lessonNodeId: string
   createdAt?: Date | string
+  notes?: Prisma.StudentNoteUncheckedCreateNestedManyWithoutNoteInput
 }
 
-export type ClassLessonNodeCreateOrConnectWithoutSubmissionsInput = {
+export type ClassLessonNodeCreateOrConnectWithoutStudentAssignmentInput = {
   where: Prisma.ClassLessonNodeWhereUniqueInput
-  create: Prisma.XOR<Prisma.ClassLessonNodeCreateWithoutSubmissionsInput, Prisma.ClassLessonNodeUncheckedCreateWithoutSubmissionsInput>
+  create: Prisma.XOR<Prisma.ClassLessonNodeCreateWithoutStudentAssignmentInput, Prisma.ClassLessonNodeUncheckedCreateWithoutStudentAssignmentInput>
 }
 
-export type ClassLessonNodeUpsertWithoutSubmissionsInput = {
-  update: Prisma.XOR<Prisma.ClassLessonNodeUpdateWithoutSubmissionsInput, Prisma.ClassLessonNodeUncheckedUpdateWithoutSubmissionsInput>
-  create: Prisma.XOR<Prisma.ClassLessonNodeCreateWithoutSubmissionsInput, Prisma.ClassLessonNodeUncheckedCreateWithoutSubmissionsInput>
+export type ClassLessonNodeUpsertWithoutStudentAssignmentInput = {
+  update: Prisma.XOR<Prisma.ClassLessonNodeUpdateWithoutStudentAssignmentInput, Prisma.ClassLessonNodeUncheckedUpdateWithoutStudentAssignmentInput>
+  create: Prisma.XOR<Prisma.ClassLessonNodeCreateWithoutStudentAssignmentInput, Prisma.ClassLessonNodeUncheckedCreateWithoutStudentAssignmentInput>
   where?: Prisma.ClassLessonNodeWhereInput
 }
 
-export type ClassLessonNodeUpdateToOneWithWhereWithoutSubmissionsInput = {
+export type ClassLessonNodeUpdateToOneWithWhereWithoutStudentAssignmentInput = {
   where?: Prisma.ClassLessonNodeWhereInput
-  data: Prisma.XOR<Prisma.ClassLessonNodeUpdateWithoutSubmissionsInput, Prisma.ClassLessonNodeUncheckedUpdateWithoutSubmissionsInput>
+  data: Prisma.XOR<Prisma.ClassLessonNodeUpdateWithoutStudentAssignmentInput, Prisma.ClassLessonNodeUncheckedUpdateWithoutStudentAssignmentInput>
 }
 
-export type ClassLessonNodeUpdateWithoutSubmissionsInput = {
+export type ClassLessonNodeUpdateWithoutStudentAssignmentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumClassAddonTypeFieldUpdateOperationsInput | $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   class?: Prisma.ClassUpdateOneRequiredWithoutClassLessonNodesNestedInput
   lessonNode?: Prisma.LessonNodeUpdateOneRequiredWithoutClassChildrenNestedInput
+  notes?: Prisma.StudentNoteUpdateManyWithoutNoteNestedInput
 }
 
-export type ClassLessonNodeUncheckedUpdateWithoutSubmissionsInput = {
+export type ClassLessonNodeUncheckedUpdateWithoutStudentAssignmentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   classId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumClassAddonTypeFieldUpdateOperationsInput | $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lessonNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.StudentNoteUncheckedUpdateManyWithoutNoteNestedInput
+}
+
+export type ClassLessonNodeCreateWithoutNotesInput = {
+  id?: string
+  type: $Enums.ClassAddonType
+  content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  class: Prisma.ClassCreateNestedOneWithoutClassLessonNodesInput
+  lessonNode: Prisma.LessonNodeCreateNestedOneWithoutClassChildrenInput
+  studentAssignment?: Prisma.StudentAssignmentCreateNestedManyWithoutAssignmentInput
+}
+
+export type ClassLessonNodeUncheckedCreateWithoutNotesInput = {
+  id?: string
+  classId: string
+  type: $Enums.ClassAddonType
+  content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lessonNodeId: string
+  createdAt?: Date | string
+  studentAssignment?: Prisma.StudentAssignmentUncheckedCreateNestedManyWithoutAssignmentInput
+}
+
+export type ClassLessonNodeCreateOrConnectWithoutNotesInput = {
+  where: Prisma.ClassLessonNodeWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClassLessonNodeCreateWithoutNotesInput, Prisma.ClassLessonNodeUncheckedCreateWithoutNotesInput>
+}
+
+export type ClassLessonNodeUpsertWithoutNotesInput = {
+  update: Prisma.XOR<Prisma.ClassLessonNodeUpdateWithoutNotesInput, Prisma.ClassLessonNodeUncheckedUpdateWithoutNotesInput>
+  create: Prisma.XOR<Prisma.ClassLessonNodeCreateWithoutNotesInput, Prisma.ClassLessonNodeUncheckedCreateWithoutNotesInput>
+  where?: Prisma.ClassLessonNodeWhereInput
+}
+
+export type ClassLessonNodeUpdateToOneWithWhereWithoutNotesInput = {
+  where?: Prisma.ClassLessonNodeWhereInput
+  data: Prisma.XOR<Prisma.ClassLessonNodeUpdateWithoutNotesInput, Prisma.ClassLessonNodeUncheckedUpdateWithoutNotesInput>
+}
+
+export type ClassLessonNodeUpdateWithoutNotesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumClassAddonTypeFieldUpdateOperationsInput | $Enums.ClassAddonType
+  content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  class?: Prisma.ClassUpdateOneRequiredWithoutClassLessonNodesNestedInput
+  lessonNode?: Prisma.LessonNodeUpdateOneRequiredWithoutClassChildrenNestedInput
+  studentAssignment?: Prisma.StudentAssignmentUpdateManyWithoutAssignmentNestedInput
+}
+
+export type ClassLessonNodeUncheckedUpdateWithoutNotesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  classId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumClassAddonTypeFieldUpdateOperationsInput | $Enums.ClassAddonType
+  content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lessonNodeId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  studentAssignment?: Prisma.StudentAssignmentUncheckedUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ClassLessonNodeCreateManyLessonNodeInput = {
@@ -615,7 +700,8 @@ export type ClassLessonNodeUpdateWithoutLessonNodeInput = {
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   class?: Prisma.ClassUpdateOneRequiredWithoutClassLessonNodesNestedInput
-  submissions?: Prisma.StudentAssignmentUpdateManyWithoutAssignmentNestedInput
+  studentAssignment?: Prisma.StudentAssignmentUpdateManyWithoutAssignmentNestedInput
+  notes?: Prisma.StudentNoteUpdateManyWithoutNoteNestedInput
 }
 
 export type ClassLessonNodeUncheckedUpdateWithoutLessonNodeInput = {
@@ -624,7 +710,8 @@ export type ClassLessonNodeUncheckedUpdateWithoutLessonNodeInput = {
   type?: Prisma.EnumClassAddonTypeFieldUpdateOperationsInput | $Enums.ClassAddonType
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  submissions?: Prisma.StudentAssignmentUncheckedUpdateManyWithoutAssignmentNestedInput
+  studentAssignment?: Prisma.StudentAssignmentUncheckedUpdateManyWithoutAssignmentNestedInput
+  notes?: Prisma.StudentNoteUncheckedUpdateManyWithoutNoteNestedInput
 }
 
 export type ClassLessonNodeUncheckedUpdateManyWithoutLessonNodeInput = {
@@ -649,7 +736,8 @@ export type ClassLessonNodeUpdateWithoutClassInput = {
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lessonNode?: Prisma.LessonNodeUpdateOneRequiredWithoutClassChildrenNestedInput
-  submissions?: Prisma.StudentAssignmentUpdateManyWithoutAssignmentNestedInput
+  studentAssignment?: Prisma.StudentAssignmentUpdateManyWithoutAssignmentNestedInput
+  notes?: Prisma.StudentNoteUpdateManyWithoutNoteNestedInput
 }
 
 export type ClassLessonNodeUncheckedUpdateWithoutClassInput = {
@@ -658,7 +746,8 @@ export type ClassLessonNodeUncheckedUpdateWithoutClassInput = {
   content?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lessonNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  submissions?: Prisma.StudentAssignmentUncheckedUpdateManyWithoutAssignmentNestedInput
+  studentAssignment?: Prisma.StudentAssignmentUncheckedUpdateManyWithoutAssignmentNestedInput
+  notes?: Prisma.StudentNoteUncheckedUpdateManyWithoutNoteNestedInput
 }
 
 export type ClassLessonNodeUncheckedUpdateManyWithoutClassInput = {
@@ -675,11 +764,13 @@ export type ClassLessonNodeUncheckedUpdateManyWithoutClassInput = {
  */
 
 export type ClassLessonNodeCountOutputType = {
-  submissions: number
+  studentAssignment: number
+  notes: number
 }
 
 export type ClassLessonNodeCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  submissions?: boolean | ClassLessonNodeCountOutputTypeCountSubmissionsArgs
+  studentAssignment?: boolean | ClassLessonNodeCountOutputTypeCountStudentAssignmentArgs
+  notes?: boolean | ClassLessonNodeCountOutputTypeCountNotesArgs
 }
 
 /**
@@ -695,8 +786,15 @@ export type ClassLessonNodeCountOutputTypeDefaultArgs<ExtArgs extends runtime.Ty
 /**
  * ClassLessonNodeCountOutputType without action
  */
-export type ClassLessonNodeCountOutputTypeCountSubmissionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type ClassLessonNodeCountOutputTypeCountStudentAssignmentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.StudentAssignmentWhereInput
+}
+
+/**
+ * ClassLessonNodeCountOutputType without action
+ */
+export type ClassLessonNodeCountOutputTypeCountNotesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.StudentNoteWhereInput
 }
 
 
@@ -709,7 +807,8 @@ export type ClassLessonNodeSelect<ExtArgs extends runtime.Types.Extensions.Inter
   createdAt?: boolean
   class?: boolean | Prisma.ClassDefaultArgs<ExtArgs>
   lessonNode?: boolean | Prisma.LessonNodeDefaultArgs<ExtArgs>
-  submissions?: boolean | Prisma.ClassLessonNode$submissionsArgs<ExtArgs>
+  studentAssignment?: boolean | Prisma.ClassLessonNode$studentAssignmentArgs<ExtArgs>
+  notes?: boolean | Prisma.ClassLessonNode$notesArgs<ExtArgs>
   _count?: boolean | Prisma.ClassLessonNodeCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["classLessonNode"]>
 
@@ -748,7 +847,8 @@ export type ClassLessonNodeOmit<ExtArgs extends runtime.Types.Extensions.Interna
 export type ClassLessonNodeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   class?: boolean | Prisma.ClassDefaultArgs<ExtArgs>
   lessonNode?: boolean | Prisma.LessonNodeDefaultArgs<ExtArgs>
-  submissions?: boolean | Prisma.ClassLessonNode$submissionsArgs<ExtArgs>
+  studentAssignment?: boolean | Prisma.ClassLessonNode$studentAssignmentArgs<ExtArgs>
+  notes?: boolean | Prisma.ClassLessonNode$notesArgs<ExtArgs>
   _count?: boolean | Prisma.ClassLessonNodeCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ClassLessonNodeIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -765,7 +865,8 @@ export type $ClassLessonNodePayload<ExtArgs extends runtime.Types.Extensions.Int
   objects: {
     class: Prisma.$ClassPayload<ExtArgs>
     lessonNode: Prisma.$LessonNodePayload<ExtArgs>
-    submissions: Prisma.$StudentAssignmentPayload<ExtArgs>[]
+    studentAssignment: Prisma.$StudentAssignmentPayload<ExtArgs>[]
+    notes: Prisma.$StudentNotePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1170,7 +1271,8 @@ export interface Prisma__ClassLessonNodeClient<T, Null = never, ExtArgs extends 
   readonly [Symbol.toStringTag]: "PrismaPromise"
   class<T extends Prisma.ClassDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClassDefaultArgs<ExtArgs>>): Prisma.Prisma__ClassClient<runtime.Types.Result.GetResult<Prisma.$ClassPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   lessonNode<T extends Prisma.LessonNodeDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LessonNodeDefaultArgs<ExtArgs>>): Prisma.Prisma__LessonNodeClient<runtime.Types.Result.GetResult<Prisma.$LessonNodePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  submissions<T extends Prisma.ClassLessonNode$submissionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClassLessonNode$submissionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StudentAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  studentAssignment<T extends Prisma.ClassLessonNode$studentAssignmentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClassLessonNode$studentAssignmentArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StudentAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  notes<T extends Prisma.ClassLessonNode$notesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClassLessonNode$notesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StudentNotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1602,9 +1704,9 @@ export type ClassLessonNodeDeleteManyArgs<ExtArgs extends runtime.Types.Extensio
 }
 
 /**
- * ClassLessonNode.submissions
+ * ClassLessonNode.studentAssignment
  */
-export type ClassLessonNode$submissionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type ClassLessonNode$studentAssignmentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the StudentAssignment
    */
@@ -1623,6 +1725,30 @@ export type ClassLessonNode$submissionsArgs<ExtArgs extends runtime.Types.Extens
   take?: number
   skip?: number
   distinct?: Prisma.StudentAssignmentScalarFieldEnum | Prisma.StudentAssignmentScalarFieldEnum[]
+}
+
+/**
+ * ClassLessonNode.notes
+ */
+export type ClassLessonNode$notesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the StudentNote
+   */
+  select?: Prisma.StudentNoteSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the StudentNote
+   */
+  omit?: Prisma.StudentNoteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.StudentNoteInclude<ExtArgs> | null
+  where?: Prisma.StudentNoteWhereInput
+  orderBy?: Prisma.StudentNoteOrderByWithRelationInput | Prisma.StudentNoteOrderByWithRelationInput[]
+  cursor?: Prisma.StudentNoteWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.StudentNoteScalarFieldEnum | Prisma.StudentNoteScalarFieldEnum[]
 }
 
 /**

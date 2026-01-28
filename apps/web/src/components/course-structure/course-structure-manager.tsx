@@ -144,9 +144,9 @@ const CourseStructureContent: React.FC = () => {
     loadedNodeIds,
     loadingNodeIds,
 
-    // Class addon states
-    addonCounts,
-    expandedAddons,
+    // Class lesson node states
+    classLessonNodeCounts: classLessonNodeCounts,
+    expandedClassLessonNodes: expandedClassLessonNodes,
 
     // Loading
     isPending,
@@ -159,10 +159,10 @@ const CourseStructureContent: React.FC = () => {
     toggleNodeExpanded,
     handleAddNode,
     handleDeleteNode,
-    handleToggleAddons,
-    handleAddClassAddon,
-    handleDeleteClassAddon,
-    getAddonsByType,
+    handleToggleClassLessonNodes: handleToggleClassLessonNodes,
+    handleAddClassLessonNode: handleAddClassLessonNode,
+    handleDeleteClassLessonNode: handleDeleteClassLessonNode,
+    getClassLessonNodesByType: getClassLessonNodesByType,
   } = useCourseStructure();
 
   // ===== HELPER: Get icon for node type =====
@@ -446,9 +446,14 @@ const CourseStructureContent: React.FC = () => {
                     <div className="space-y-2">
                       {homeworkNodes.map((hw) => {
                         const hwImplCount =
-                          addonCounts.get(hw.id)?.homework_imp || 0;
-                        const hwAddons = getAddonsByType(hw.id, "homework_imp");
-                        const isHwExpanded = expandedAddons.has(hw.id);
+                          classLessonNodeCounts.get(hw.id)?.homework_imp || 0;
+                        const hwClassLessonNodes = getClassLessonNodesByType(
+                          hw.id,
+                          "homework_imp",
+                        );
+                        const isHwExpanded = expandedClassLessonNodes.has(
+                          hw.id,
+                        );
 
                         return (
                           <div key={hw.id}>
@@ -484,10 +489,14 @@ const CourseStructureContent: React.FC = () => {
 
                               {(isTeacher || isStudent) && (
                                 <button
-                                  onClick={() => handleToggleAddons(hw.id)}
+                                  onClick={() =>
+                                    handleToggleClassLessonNodes(hw.id)
+                                  }
                                   className="p-1 hover:bg-orange-200 rounded"
                                 >
-                                  {loadingNodeIds.has(`${hw.id}-addons`) ? (
+                                  {loadingNodeIds.has(
+                                    `${hw.id}-classlessonnodes`,
+                                  ) ? (
                                     <Loader2 className="w-3 h-3 animate-spin" />
                                   ) : isHwExpanded ? (
                                     <ChevronDown className="w-3 h-3" />
@@ -512,7 +521,7 @@ const CourseStructureContent: React.FC = () => {
                                 {isTeacher && (
                                   // <button
                                   //   onClick={() =>
-                                  //     handleAddClassAddon(hw.id, "homework_imp")
+                                  //     handleAddClassLessonNode(hw.id, "homework_imp")
                                   //   }
                                   //   className="w-full px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded hover:bg-orange-200"
                                   // >
@@ -521,30 +530,30 @@ const CourseStructureContent: React.FC = () => {
 
                                   <TeacherAssignmentDialog hwId={hw.id} />
                                 )}
-                                {hwAddons.map((addon) => (
+                                {hwClassLessonNodes.map((classLessonNode) => (
                                   <div
-                                    key={addon.id}
+                                    key={classLessonNode.id}
                                     className="flex items-center gap-2 p-2 bg-orange-100 rounded text-xs group"
                                   >
                                     {isTeacher && (
                                       <TeacherViewAssignmentDialog
-                                        assignmentId={addon.id}
+                                        assignmentId={classLessonNode.id}
                                       />
                                     )}
                                     {isStudent && (
                                       <StudentViewAssignmentDialog
-                                        assignmentId={addon.id}
+                                        assignmentId={classLessonNode.id}
                                       />
                                     )}
                                     {/* <span className="flex-1">
-                                      📋 {addon.content?.text || "Assignment"}
+                                      📋 {classLessonNode.content?.text || "Assignment"}
                                     </span> */}
                                     {isTeacher && (
                                       <button
                                         onClick={() =>
-                                          handleDeleteClassAddon(
+                                          handleDeleteClassLessonNode(
                                             hw.id,
-                                            addon.id,
+                                            classLessonNode.id,
                                             "homework_imp",
                                           )
                                         }
@@ -569,10 +578,13 @@ const CourseStructureContent: React.FC = () => {
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-sm font-semibold text-gray-700">
                           Notes
-                          {(addonCounts.get(selectedNode.id)?.lesson_note ||
-                            0) > 0 && (
+                          {(classLessonNodeCounts.get(selectedNode.id)
+                            ?.lesson_note || 0) > 0 && (
                             <span className="ml-2 text-xs text-gray-500 bg-blue-100 px-2 py-0.5 rounded">
-                              {addonCounts.get(selectedNode.id)?.lesson_note}
+                              {
+                                classLessonNodeCounts.get(selectedNode.id)
+                                  ?.lesson_note
+                              }
                             </span>
                           )}
                         </h3>
@@ -580,7 +592,7 @@ const CourseStructureContent: React.FC = () => {
                           {isTeacher && (
                             <button
                               onClick={() =>
-                                handleAddClassAddon(
+                                handleAddClassLessonNode(
                                   selectedNode.id,
                                   "lesson_note",
                                 )
@@ -592,12 +604,18 @@ const CourseStructureContent: React.FC = () => {
                             </button>
                           )}
                           <button
-                            onClick={() => handleToggleAddons(selectedNode.id)}
+                            onClick={() =>
+                              handleToggleClassLessonNodes(selectedNode.id)
+                            }
                             className="p-1 hover:bg-gray-200 rounded"
                           >
-                            {loadingNodeIds.has(`${selectedNode.id}-addons`) ? (
+                            {loadingNodeIds.has(
+                              `${selectedNode.id}-classlessonnodes`,
+                            ) ? (
                               <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : expandedAddons.has(selectedNode.id) ? (
+                            ) : expandedClassLessonNodes.has(
+                                selectedNode.id,
+                              ) ? (
                               <ChevronDown className="w-3 h-3" />
                             ) : (
                               <ChevronRight className="w-3 h-3" />
@@ -606,34 +624,35 @@ const CourseStructureContent: React.FC = () => {
                         </div>
                       </div>
 
-                      {expandedAddons.has(selectedNode.id) && (
+                      {expandedClassLessonNodes.has(selectedNode.id) && (
                         <div className="space-y-2">
-                          {getAddonsByType(selectedNode.id, "lesson_note").map(
-                            (note) => (
-                              <div
-                                key={note.id}
-                                className="flex items-center gap-2 p-2 bg-blue-50 rounded group"
-                              >
-                                <span className="text-sm flex-1">
-                                  📝 {note.content?.text || "Note"}
-                                </span>
-                                {isTeacher && (
-                                  <button
-                                    onClick={() =>
-                                      handleDeleteClassAddon(
-                                        selectedNode.id,
-                                        note.id,
-                                        "lesson_note",
-                                      )
-                                    }
-                                    className="p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100"
-                                  >
-                                    <Trash2 className="w-3 h-3 text-red-500" />
-                                  </button>
-                                )}
-                              </div>
-                            ),
-                          )}
+                          {getClassLessonNodesByType(
+                            selectedNode.id,
+                            "lesson_note",
+                          ).map((note) => (
+                            <div
+                              key={note.id}
+                              className="flex items-center gap-2 p-2 bg-blue-50 rounded group"
+                            >
+                              <span className="text-sm flex-1">
+                                📝 {note.content?.text || "Note"}
+                              </span>
+                              {isTeacher && (
+                                <button
+                                  onClick={() =>
+                                    handleDeleteClassLessonNode(
+                                      selectedNode.id,
+                                      note.id,
+                                      "lesson_note",
+                                    )
+                                  }
+                                  className="p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100"
+                                >
+                                  <Trash2 className="w-3 h-3 text-red-500" />
+                                </button>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>

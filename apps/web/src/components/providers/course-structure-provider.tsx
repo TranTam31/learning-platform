@@ -17,10 +17,10 @@ import {
 } from "@/server/courses";
 import {
   loadClassLessonNode,
-  getClassAddonCounts,
-  addClassAddon,
-  deleteClassAddon,
-} from "@/server/class-addons";
+  getClassLessonNodeCounts,
+  addClassLessonNode,
+  deleteClassLessonNode,
+} from "@/server/class-lesson-node";
 import {
   AddNodeInputType,
   CourseUI,
@@ -55,10 +55,13 @@ interface CourseStructureContextValue {
   loadedNodeIds: Set<string>;
   loadingNodeIds: Set<string>;
 
-  // ===== CLASS ADDON STATES =====
-  classAddons: Map<string, any[]>;
-  addonCounts: Map<string, { lesson_note: number; homework_imp: number }>;
-  expandedAddons: Set<string>;
+  // ===== CLASS LESSON NODE STATES =====
+  classLessonNodes: Map<string, any[]>;
+  classLessonNodeCounts: Map<
+    string,
+    { lesson_note: number; homework_imp: number }
+  >;
+  expandedClassLessonNodes: Set<string>;
 
   // ===== LOADING STATES =====
   isPending: boolean;
@@ -73,19 +76,19 @@ interface CourseStructureContextValue {
   ) => Promise<void>;
   handleDeleteNode: (nodeId: string) => Promise<void>;
 
-  // ===== CLASS ADDON ACTIONS =====
-  handleToggleAddons: (nodeId: string) => Promise<void>;
-  handleAddClassAddon: (
+  // ===== CLASS LESSON NODE ACTIONS =====
+  handleToggleClassLessonNodes: (nodeId: string) => Promise<void>;
+  handleAddClassLessonNode: (
     nodeId: string,
     type: "lesson_note" | "homework_imp",
     content?: Record<string, any>,
   ) => Promise<void>;
-  handleDeleteClassAddon: (
+  handleDeleteClassLessonNode: (
     nodeId: string,
-    addonId: string,
+    classLessonNodeId: string,
     type: "lesson_note" | "homework_imp",
   ) => Promise<void>;
-  getAddonsByType: (
+  getClassLessonNodesByType: (
     nodeId: string,
     type: "lesson_note" | "homework_imp",
   ) => any[];
@@ -153,12 +156,16 @@ export const CourseStructureProvider: React.FC<
   const [loadingNodeIds, setLoadingNodeIds] = useState<Set<string>>(new Set());
   const [isUpdatingNode, setIsUpdatingNode] = useState<string | null>(null);
 
-  // ===== CLASS ADDON STATES =====
-  const [classAddons, setClassAddons] = useState<Map<string, any[]>>(new Map());
-  const [addonCounts, setAddonCounts] = useState<
+  // ===== CLASS LESSON NODE STATES =====
+  const [classLessonNodes, setClassLessonNodes] = useState<Map<string, any[]>>(
+    new Map(),
+  );
+  const [classLessonNodeCounts, setClassLessonNodeCounts] = useState<
     Map<string, { lesson_note: number; homework_imp: number }>
   >(new Map());
-  const [expandedAddons, setExpandedAddons] = useState<Set<string>>(new Set());
+  const [expandedClassLessonNodes, setExpandedClassLessonNodes] = useState<
+    Set<string>
+  >(new Set());
 
   // ===== LOADING STATES =====
   const [isPending, startTransition] = useTransition();
@@ -173,7 +180,7 @@ export const CourseStructureProvider: React.FC<
     return findNodeById(course.rootLessonNode, selectedNodeId);
   }, [selectedNodeId, course.rootLessonNode]);
 
-  // ===== HELPER: Load children với addon counts =====
+  // ===== HELPER: Load children với class lesson node counts =====
   const fetchAndLoadChildren = useCallback(
     async (nodeId: string): Promise<{ success: boolean }> => {
       if (loadedNodeIds.has(nodeId)) {
@@ -216,16 +223,16 @@ export const CourseStructureProvider: React.FC<
             };
           });
 
-          // Auto-load addon counts nếu là Class view
+          // Auto-load class lesson node counts nếu là Class view
           if (config.classId && childrenUI.length > 0) {
             const childIds = childrenUI.map((c) => c.id);
-            const countsResult = await getClassAddonCounts(
+            const countsResult = await getClassLessonNodeCounts(
               childIds,
               config.classId,
             );
 
             if (countsResult.success && countsResult.data) {
-              setAddonCounts((prev) => {
+              setClassLessonNodeCounts((prev) => {
                 const newMap = new Map(prev);
                 Object.entries(countsResult.data).forEach(([id, counts]) => {
                   newMap.set(id, counts as any);
@@ -458,14 +465,14 @@ export const CourseStructureProvider: React.FC<
     [course.id],
   );
 
-  // ===== ACTION: Toggle addons =====
-  const handleToggleAddons = useCallback(
+  // ===== ACTION: Toggle classLessonNodes =====
+  const handleToggleClassLessonNodes = useCallback(
     async (nodeId: string) => {
       if (!config.classId) return;
 
-      const isExpanded = expandedAddons.has(nodeId);
+      const isExpanded = expandedClassLessonNodes.has(nodeId);
       if (isExpanded) {
-        setExpandedAddons((prev) => {
+        setExpandedClassLessonNodes((prev) => {
           const newSet = new Set(prev);
           newSet.delete(nodeId);
           return newSet;
@@ -473,26 +480,28 @@ export const CourseStructureProvider: React.FC<
         return;
       }
 
-      setLoadingNodeIds((prev) => new Set([...prev, `${nodeId}-addons`]));
+      setLoadingNodeIds(
+        (prev) => new Set([...prev, `${nodeId}-classlessonnodes`]),
+      );
 
       const result = await loadClassLessonNode(nodeId, config.classId);
 
       setLoadingNodeIds((prev) => {
         const newSet = new Set(prev);
-        newSet.delete(`${nodeId}-addons`);
+        newSet.delete(`${nodeId}-classlessonnodes`);
         return newSet;
       });
 
       if (result.success && result.data) {
-        setClassAddons((prev) => new Map(prev).set(nodeId, result.data));
-        setExpandedAddons((prev) => new Set([...prev, nodeId]));
+        setClassLessonNodes((prev) => new Map(prev).set(nodeId, result.data));
+        setExpandedClassLessonNodes((prev) => new Set([...prev, nodeId]));
       }
     },
-    [config.classId, expandedAddons],
+    [config.classId, expandedClassLessonNodes],
   );
 
-  // ===== ACTION: Add class addon =====
-  const handleAddClassAddon = useCallback(
+  // ===== ACTION: Add class lesson node =====
+  const handleAddClassLessonNode = useCallback(
     async (
       nodeId: string,
       type: "lesson_note" | "homework_imp",
@@ -500,10 +509,10 @@ export const CourseStructureProvider: React.FC<
     ) => {
       if (!config.classId) return;
 
-      setLoadingAction(`add-addon-${nodeId}`);
+      setLoadingAction(`add-classlessonnode-${nodeId}`);
 
       startTransition(async () => {
-        const result = await addClassAddon({
+        const result = await addClassLessonNode({
           lessonNodeId: nodeId,
           classId: config.classId!,
           type,
@@ -511,14 +520,14 @@ export const CourseStructureProvider: React.FC<
         });
 
         if (result.success && result.data) {
-          setClassAddons((prev) => {
+          setClassLessonNodes((prev) => {
             const newMap = new Map(prev);
             const existing = newMap.get(nodeId) || [];
             newMap.set(nodeId, [...existing, result.data]);
             return newMap;
           });
 
-          setAddonCounts((prev) => {
+          setClassLessonNodeCounts((prev) => {
             const newMap = new Map(prev);
             const current = newMap.get(nodeId) || {
               lesson_note: 0,
@@ -531,7 +540,7 @@ export const CourseStructureProvider: React.FC<
             return newMap;
           });
 
-          setExpandedAddons((prev) => new Set([...prev, nodeId]));
+          setExpandedClassLessonNodes((prev) => new Set([...prev, nodeId]));
         } else {
           alert(result.error || "Có lỗi xảy ra");
         }
@@ -542,37 +551,37 @@ export const CourseStructureProvider: React.FC<
     [config.classId],
   );
 
-  // ===== ACTION: Delete class addon =====
-  const handleDeleteClassAddon = useCallback(
+  // ===== ACTION: Delete class lesson node =====
+  const handleDeleteClassLessonNode = useCallback(
     async (
       nodeId: string,
-      addonId: string,
+      classLessonNodeId: string,
       type: "lesson_note" | "homework_imp",
     ) => {
       if (!config.classId) return;
 
       if (!confirm("Bạn có chắc muốn xóa?")) return;
 
-      setLoadingAction(`delete-addon-${addonId}`);
+      setLoadingAction(`delete-classlessonnode-${classLessonNodeId}`);
 
       startTransition(async () => {
-        const result = await deleteClassAddon({
-          addonId,
+        const result = await deleteClassLessonNode({
+          classLessonNodeId: classLessonNodeId,
           classId: config.classId!,
         });
 
         if (result.success) {
-          setClassAddons((prev) => {
+          setClassLessonNodes((prev) => {
             const newMap = new Map(prev);
             const existing = newMap.get(nodeId) || [];
             newMap.set(
               nodeId,
-              existing.filter((a) => a.id !== addonId),
+              existing.filter((a) => a.id !== classLessonNodeId),
             );
             return newMap;
           });
 
-          setAddonCounts((prev) => {
+          setClassLessonNodeCounts((prev) => {
             const newMap = new Map(prev);
             const current = newMap.get(nodeId) || {
               lesson_note: 0,
@@ -594,13 +603,13 @@ export const CourseStructureProvider: React.FC<
     [config.classId],
   );
 
-  // ===== HELPER: Get addons by type =====
-  const getAddonsByType = useCallback(
+  // ===== HELPER: Get classLessonNodes by type =====
+  const getClassLessonNodesByType = useCallback(
     (nodeId: string, type: "lesson_note" | "homework_imp") => {
-      const allAddons = classAddons.get(nodeId) || [];
-      return allAddons.filter((a) => a.type === type);
+      const allClassLessonNodes = classLessonNodes.get(nodeId) || [];
+      return allClassLessonNodes.filter((a) => a.type === type);
     },
-    [classAddons],
+    [classLessonNodes],
   );
 
   // ===== AUTO-LOAD homework khi select lesson =====
@@ -630,10 +639,10 @@ export const CourseStructureProvider: React.FC<
     loadedNodeIds,
     loadingNodeIds,
 
-    // Class addon states
-    classAddons,
-    addonCounts,
-    expandedAddons,
+    // Class lesson node states
+    classLessonNodes: classLessonNodes,
+    classLessonNodeCounts: classLessonNodeCounts,
+    expandedClassLessonNodes: expandedClassLessonNodes,
 
     // Loading states
     isPending,
@@ -646,10 +655,10 @@ export const CourseStructureProvider: React.FC<
     toggleNodeExpanded,
     handleAddNode,
     handleDeleteNode,
-    handleToggleAddons,
-    handleAddClassAddon,
-    handleDeleteClassAddon,
-    getAddonsByType,
+    handleToggleClassLessonNodes: handleToggleClassLessonNodes,
+    handleAddClassLessonNode: handleAddClassLessonNode,
+    handleDeleteClassLessonNode: handleDeleteClassLessonNode,
+    getClassLessonNodesByType: getClassLessonNodesByType,
   };
 
   return (

@@ -2,7 +2,7 @@
 
 import { auth } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
-import { getBuildRunIdFromLessonNode } from "@/server/class-addons";
+import { getBuildRunIdFromLessonNode } from "@/server/class-lesson-node";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 

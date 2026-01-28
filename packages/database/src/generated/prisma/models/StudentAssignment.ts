@@ -259,7 +259,7 @@ export type StudentAssignmentCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   student: Prisma.UserCreateNestedOneWithoutAssignmentsInput
-  assignment: Prisma.ClassLessonNodeCreateNestedOneWithoutSubmissionsInput
+  assignment: Prisma.ClassLessonNodeCreateNestedOneWithoutStudentAssignmentInput
 }
 
 export type StudentAssignmentUncheckedCreateInput = {
@@ -279,7 +279,7 @@ export type StudentAssignmentUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   student?: Prisma.UserUpdateOneRequiredWithoutAssignmentsNestedInput
-  assignment?: Prisma.ClassLessonNodeUpdateOneRequiredWithoutSubmissionsNestedInput
+  assignment?: Prisma.ClassLessonNodeUpdateOneRequiredWithoutStudentAssignmentNestedInput
 }
 
 export type StudentAssignmentUncheckedUpdateInput = {
@@ -453,7 +453,7 @@ export type StudentAssignmentCreateWithoutStudentInput = {
   submittedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  assignment: Prisma.ClassLessonNodeCreateNestedOneWithoutSubmissionsInput
+  assignment: Prisma.ClassLessonNodeCreateNestedOneWithoutStudentAssignmentInput
 }
 
 export type StudentAssignmentUncheckedCreateWithoutStudentInput = {
@@ -563,7 +563,7 @@ export type StudentAssignmentUpdateWithoutStudentInput = {
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  assignment?: Prisma.ClassLessonNodeUpdateOneRequiredWithoutSubmissionsNestedInput
+  assignment?: Prisma.ClassLessonNodeUpdateOneRequiredWithoutStudentAssignmentNestedInput
 }
 
 export type StudentAssignmentUncheckedUpdateWithoutStudentInput = {

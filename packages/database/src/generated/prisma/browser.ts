@@ -83,6 +83,11 @@ export type ClassLessonNode = Prisma.ClassLessonNodeModel
  */
 export type StudentAssignment = Prisma.StudentAssignmentModel
 /**
+ * Model StudentNote
+ * 
+ */
+export type StudentNote = Prisma.StudentNoteModel
+/**
  * Model GitHubAccount
  * 
  */

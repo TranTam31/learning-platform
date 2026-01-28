@@ -1,4 +1,4 @@
-// server/class-addons.ts
+// server/class-lesson-node.ts
 "use server";
 
 import { auth } from "@/lib/auth-server";
@@ -175,12 +175,15 @@ export async function loadClassLessonNode(
  * ✅ UNIFIED: Get counts cho nhiều nodes
  * Trả về grouped by nodeId và type
  */
-export async function getClassAddonCounts(nodeIds: string[], classId: string) {
+export async function getClassLessonNodeCounts(
+  lessonNodeIds: string[],
+  classId: string,
+) {
   try {
     const counts = await prisma.classLessonNode.groupBy({
       by: ["lessonNodeId", "type"],
       where: {
-        lessonNodeId: { in: nodeIds },
+        lessonNodeId: { in: lessonNodeIds },
         classId,
       },
       _count: { id: true },
@@ -192,7 +195,7 @@ export async function getClassAddonCounts(nodeIds: string[], classId: string) {
       { lesson_note: number; homework_imp: number }
     > = {};
 
-    nodeIds.forEach((nodeId) => {
+    lessonNodeIds.forEach((nodeId) => {
       result[nodeId] = { lesson_note: 0, homework_imp: 0 };
     });
 
@@ -205,7 +208,7 @@ export async function getClassAddonCounts(nodeIds: string[], classId: string) {
       data: result,
     };
   } catch (error) {
-    console.error("Error getting class addon counts:", error);
+    console.error("Error getting class lesson node counts:", error);
     return {
       success: false,
       error: "Có lỗi xảy ra",
@@ -217,7 +220,7 @@ export async function getClassAddonCounts(nodeIds: string[], classId: string) {
  * ✅ UNIFIED: Add ClassLessonNode
  * Type validation ở đây
  */
-export async function addClassAddon(input: {
+export async function addClassLessonNode(input: {
   lessonNodeId: string;
   classId: string;
   type: "lesson_note" | "homework_imp";
@@ -226,7 +229,7 @@ export async function addClassAddon(input: {
   try {
     const { lessonNodeId, classId, type, content } = input;
 
-    // Validate lessonNode type matches addon type
+    // Validate lessonNode type matches class lesson node type
     const lessonNode = await prisma.lessonNode.findUnique({
       where: { id: lessonNodeId },
       select: { id: true, type: true },
@@ -245,7 +248,7 @@ export async function addClassAddon(input: {
       return { success: false, error: "homework_imp chỉ dành cho Homework" };
     }
 
-    const addon = await prisma.classLessonNode.create({
+    const classLessonNode = await prisma.classLessonNode.create({
       data: {
         lessonNodeId,
         classId,
@@ -264,13 +267,13 @@ export async function addClassAddon(input: {
 
     return {
       success: true,
-      data: addon,
+      data: classLessonNode,
     };
   } catch (error) {
-    console.error("Error adding class addon:", error);
+    console.error("Error adding class lesson node:", error);
     return {
       success: false,
-      error: "Có lỗi xảy ra khi thêm addon",
+      error: "Có lỗi xảy ra khi thêm class lesson node",
     };
   }
 }
@@ -278,35 +281,35 @@ export async function addClassAddon(input: {
 /**
  * ✅ UNIFIED: Delete ClassLessonNode
  */
-export async function deleteClassAddon(input: {
-  addonId: string;
+export async function deleteClassLessonNode(input: {
+  classLessonNodeId: string;
   classId: string;
 }) {
   try {
-    const { addonId, classId } = input;
+    const { classLessonNodeId: classLessonNodeId, classId } = input;
 
     // Verify ownership
-    const addon = await prisma.classLessonNode.findUnique({
-      where: { id: addonId },
+    const classLessonNode = await prisma.classLessonNode.findUnique({
+      where: { id: classLessonNodeId },
       select: { classId: true },
     });
 
-    if (!addon || addon.classId !== classId) {
+    if (!classLessonNode || classLessonNode.classId !== classId) {
       return { success: false, error: "Không có quyền xóa" };
     }
 
     await prisma.classLessonNode.delete({
-      where: { id: addonId },
+      where: { id: classLessonNodeId },
     });
 
     revalidatePath(`/classes/${classId}`);
 
     return {
       success: true,
-      data: { deletedId: addonId },
+      data: { deletedId: classLessonNodeId },
     };
   } catch (error) {
-    console.error("Error deleting class addon:", error);
+    console.error("Error deleting class lesson node:", error);
     return {
       success: false,
       error: "Có lỗi xảy ra khi xóa",

@@ -47,10 +47,10 @@ import {
 
 import {
   loadClassLessonNode,
-  getClassAddonCounts,
-  addClassAddon,
-  deleteClassAddon,
-} from "@/server/class-addons";
+  getClassLessonNodeCounts,
+  addClassLessonNode,
+  deleteClassLessonNode,
+} from "@/server/class-lesson-node";
 
 interface CourseStructureManagerProps {
   initialCourse: CourseUI;
@@ -153,7 +153,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
       setLoadingAction(`add-addon-${nodeId}`);
 
       startTransition(async () => {
-        const result = await addClassAddon({
+        const result = await addClassLessonNode({
           lessonNodeId: nodeId,
           classId,
           type,
@@ -211,7 +211,10 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
       setLoadingAction(`delete-addon-${addonId}`);
 
       startTransition(async () => {
-        const result = await deleteClassAddon({ addonId, classId });
+        const result = await deleteClassLessonNode({
+          classLessonNodeId: addonId,
+          classId,
+        });
 
         if (result.success) {
           // Update local state
@@ -312,7 +315,10 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
           // Điều kiện: Đang ở chế độ xem lớp học, có classId và có danh sách node con
           if (isClassView && classId && childrenUI.length > 0) {
             const childIds = childrenUI.map((c) => c.id);
-            const countsResult = await getClassAddonCounts(childIds, classId);
+            const countsResult = await getClassLessonNodeCounts(
+              childIds,
+              classId,
+            );
 
             if (countsResult.success && countsResult.data) {
               setAddonCounts((prev) => {
@@ -350,7 +356,7 @@ const CourseStructureManager: React.FC<CourseStructureManagerProps> = ({
       classId,
       loadNodeChildren,
       transformToUINode,
-      getClassAddonCounts,
+      getClassLessonNodeCounts,
     ],
   );
 
