@@ -509,3 +509,176 @@ export async function getCourseBySlug(orgSlug: string, slug: string) {
     },
   });
 }
+
+// server/courses.ts - THÊM VÀO FILE HIỆN TẠI
+
+/**
+ * Load toàn bộ course structure (chỉ metadata, không có content)
+ * để tính homework counts cho student
+ */
+export async function loadCourseStructureMetadata(courseId: string) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) throw new Error("Unauthorized");
+
+    // Load tất cả nodes của course (chỉ metadata)
+    const nodes = await prisma.lessonNode.findMany({
+      where: { courseId },
+      orderBy: { order: "asc" },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        order: true,
+        parentId: true,
+        courseId: true,
+        createdAt: true,
+        updatedAt: true,
+        // KHÔNG lấy content để giảm bandwidth
+        _count: {
+          select: { children: true },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      data: nodes,
+    };
+  } catch (error) {
+    console.error("Error loading course structure metadata:", error);
+    return {
+      success: false,
+      error: "Có lỗi xảy ra khi load structure",
+    };
+  }
+}
+
+/**
+ * Load homework counts cho student trong một class
+ * Trả về Map: LessonNode.id (homework) → { totalAssigned, pending }
+ */
+export async function getStudentHomeworkStatusByClass(
+  courseId: string,
+  classId: string,
+) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) throw new Error("Unauthorized");
+
+    const userId = session.user.id;
+
+    // Verify student in class
+    const membership = await prisma.classMember.findUnique({
+      where: {
+        classId_userId: {
+          classId,
+          userId,
+        },
+      },
+      select: { role: true },
+    });
+
+    if (!membership || membership.role !== "student") {
+      return {
+        success: false,
+        error: "Not a student of this class",
+      };
+    }
+
+    // 1️⃣ Lấy tất cả ClassLessonNode (homework_imp) của class này
+    const classLessonNodes = await prisma.classLessonNode.findMany({
+      where: {
+        classId: classId,
+        type: "homework_imp",
+      },
+      select: {
+        id: true,
+        lessonNodeId: true, // LessonNode.id (homework template)
+      },
+    });
+
+    if (classLessonNodes.length === 0) {
+      return {
+        success: true,
+        data: {
+          assignedByLessonNode: {}, // lessonNodeId → count
+          submittedByLessonNode: {}, // lessonNodeId → count
+        },
+      };
+    }
+
+    // 2️⃣ Lấy StudentAssignments của student này cho các assignments trên
+    const classLessonNodeIds = classLessonNodes.map((cln) => cln.id);
+
+    const studentAssignments = await prisma.studentAssignment.findMany({
+      where: {
+        studentId: userId,
+        assignmentId: {
+          in: classLessonNodeIds,
+        },
+      },
+      select: {
+        assignmentId: true, // ClassLessonNode.id
+        submissionData: true,
+      },
+    });
+
+    // 3️⃣ Build Maps: ClassLessonNode.id → status
+    const assignedSet = new Set(
+      studentAssignments.map((sa) => sa.assignmentId),
+    );
+    const submittedSet = new Set(
+      studentAssignments
+        .filter((sa) => sa.submissionData !== null)
+        .map((sa) => sa.assignmentId),
+    );
+
+    // 4️⃣ Group by LessonNode.id
+    const assignedByLessonNode: Record<string, number> = {};
+    const submittedByLessonNode: Record<string, number> = {};
+
+    classLessonNodes.forEach((cln) => {
+      const lessonNodeId = cln.lessonNodeId;
+      const classLessonNodeId = cln.id;
+
+      // Chỉ đếm nếu student được giao
+      if (assignedSet.has(classLessonNodeId)) {
+        assignedByLessonNode[lessonNodeId] =
+          (assignedByLessonNode[lessonNodeId] || 0) + 1;
+
+        if (submittedSet.has(classLessonNodeId)) {
+          submittedByLessonNode[lessonNodeId] =
+            (submittedByLessonNode[lessonNodeId] || 0) + 1;
+        }
+      }
+    });
+
+    console.log("📊 Student homework status:", {
+      totalClassLessonNodes: classLessonNodes.length,
+      assignedToStudent: assignedSet.size,
+      submitted: submittedSet.size,
+      byLessonNode: assignedByLessonNode,
+    });
+
+    return {
+      success: true,
+      data: {
+        assignedByLessonNode, // { "hw_1": 1, "hw_2": 2 }
+        submittedByLessonNode, // { "hw_1": 1 }
+      },
+    };
+  } catch (error) {
+    console.error("Error getting student homework status:", error);
+    return {
+      success: false,
+      error: "Có lỗi xảy ra",
+    };
+  }
+}

@@ -162,6 +162,7 @@ const CourseStructureContent: React.FC = () => {
     handleAddClassLessonNode: handleAddClassLessonNode,
     handleDeleteClassLessonNode: handleDeleteClassLessonNode,
     getClassLessonNodesByType: getClassLessonNodesByType,
+    getHomeworkCounts,
   } = useCourseStructure();
 
   // ===== HELPER: Get icon for node type =====
@@ -196,6 +197,10 @@ const CourseStructureContent: React.FC = () => {
     const isLoading = loadingNodeIds.has(node.id);
     const isLoaded = loadedNodeIds.has(node.id);
 
+    // NEW: Get homework counts (chỉ cho student)
+    const homeworkCounts = isStudent ? getHomeworkCounts(node.id) : null;
+    const hasPendingHomework = homeworkCounts && homeworkCounts.pending > 0;
+
     return (
       <div key={node.id} className="group">
         <div
@@ -228,6 +233,25 @@ const CourseStructureContent: React.FC = () => {
             )}
             {getNodeIcon(node, isExpanded)}
             <span className="text-sm">{node.title}</span>
+
+            {/* Badge số bài tập (FIX: hiển thị pending/total) */}
+            {isStudent &&
+              homeworkCounts &&
+              homeworkCounts.totalAssigned > 0 && (
+                <span
+                  className={`ml-2 text-xs px-2 py-0.5 rounded-full font-semibold ${
+                    hasPendingHomework
+                      ? "bg-red-500 text-white"
+                      : "bg-green-100 text-green-700"
+                  }`}
+                  title={`${homeworkCounts.pending} chưa làm / ${homeworkCounts.totalAssigned} tổng`}
+                >
+                  {hasPendingHomework
+                    ? `${homeworkCounts.pending} chưa làm`
+                    : "✓"}
+                </span>
+              )}
+
             {hasChildren && !isLoaded && (
               <span className="text-xs text-gray-400 ml-1">
                 ({node._count.children})

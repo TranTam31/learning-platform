@@ -15,7 +15,7 @@ export const transformToUINode = (node: LessonNodeWithCount): LessonNodeUI => ({
  */
 export const findNodeById = (
   root: LessonNodeUI | null,
-  targetId: string
+  targetId: string,
 ): LessonNodeUI | null => {
   if (!root) return null;
   if (root.id === targetId) return root;
@@ -39,7 +39,7 @@ export const findNodeById = (
 export const updateNodeInTree = (
   root: LessonNodeUI,
   targetId: string,
-  updater: (node: LessonNodeUI) => LessonNodeUI
+  updater: (node: LessonNodeUI) => LessonNodeUI,
 ): LessonNodeUI => {
   if (root.id === targetId) {
     return updater(root);
@@ -53,7 +53,7 @@ export const updateNodeInTree = (
   return {
     ...root,
     children: root.children.map((child) =>
-      updateNodeInTree(child, targetId, updater)
+      updateNodeInTree(child, targetId, updater),
     ),
   };
 };
@@ -63,7 +63,7 @@ export const updateNodeInTree = (
  */
 export const removeNodeFromTree = (
   root: LessonNodeUI,
-  targetId: string
+  targetId: string,
 ): LessonNodeUI => {
   // Guard against undefined/null children
   if (!root.children || root.children.length === 0) {
@@ -89,7 +89,7 @@ export const removeNodeFromTree = (
 export const addChildToNode = (
   root: LessonNodeUI,
   parentId: string,
-  newChild: LessonNodeUI
+  newChild: LessonNodeUI,
 ): LessonNodeUI => {
   if (root.id === parentId) {
     return {
@@ -110,7 +110,7 @@ export const addChildToNode = (
   return {
     ...root,
     children: root.children.map((child) =>
-      addChildToNode(child, parentId, newChild)
+      addChildToNode(child, parentId, newChild),
     ),
   };
 };
@@ -121,13 +121,70 @@ export const addChildToNode = (
 export const isDescendant = (
   root: LessonNodeUI,
   ancestorId: string,
-  descendantId: string
+  descendantId: string,
 ): boolean => {
   if (root.id === ancestorId) {
     return findNodeById(root, descendantId) !== null;
   }
 
   return root.children.some((child) =>
-    isDescendant(child, ancestorId, descendantId)
+    isDescendant(child, ancestorId, descendantId),
   );
 };
+
+/**
+ * Build tree từ flat list of nodes (dùng khi load full structure)
+ */
+export function buildTreeFromFlatList(
+  nodes: LessonNodeWithCount[],
+): LessonNodeUI | null {
+  if (nodes.length === 0) return null;
+
+  // Create a map for quick lookup
+  const nodeMap = new Map<string, LessonNodeUI>();
+
+  // Initialize all nodes với empty children
+  nodes.forEach((node) => {
+    nodeMap.set(node.id, {
+      ...node,
+      children: [],
+      childrenLoaded: true, // Đánh dấu đã load (vì load full tree)
+    });
+  });
+
+  // Build tree structure
+  let root: LessonNodeUI | null = null;
+
+  nodes.forEach((node) => {
+    const uiNode = nodeMap.get(node.id)!;
+
+    if (node.parentId === null) {
+      // Root node
+      root = uiNode;
+    } else {
+      // Add to parent's children
+      const parent = nodeMap.get(node.parentId);
+      if (parent) {
+        parent.children.push(uiNode);
+      }
+    }
+  });
+
+  return root;
+}
+
+/**
+ * Merge loaded children vào node trong tree
+ * (Dùng khi lazy load content cho một node cụ thể)
+ */
+export function mergeLoadedChildren(
+  root: LessonNodeUI,
+  targetId: string,
+  loadedChildren: LessonNodeUI[],
+): LessonNodeUI {
+  return updateNodeInTree(root, targetId, (node) => ({
+    ...node,
+    children: loadedChildren,
+    childrenLoaded: true,
+  }));
+}

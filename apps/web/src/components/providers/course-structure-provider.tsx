@@ -11,6 +11,8 @@ import React, {
 import {
   addLessonNode,
   deleteLessonNode,
+  getStudentHomeworkStatusByClass,
+  loadCourseStructureMetadata,
   loadNodeChildren,
   updateLessonNode,
 } from "@/server/courses";
@@ -33,7 +35,12 @@ import {
   updateNodeInTree,
   removeNodeFromTree,
   addChildToNode,
+  buildTreeFromFlatList,
 } from "@/components/course-structure/utils/course-structure-utiles";
+import {
+  buildHomeworkCountsMap,
+  HomeworkCountResult,
+} from "../course-structure/utils/homework-count-utils";
 
 // ===== TYPES =====
 interface CourseStructureContextValue {
@@ -98,6 +105,10 @@ interface CourseStructureContextValue {
     updates: { title?: string; content?: any },
   ) => Promise<void>;
   isUpdatingNode: string | null; // Track which node is being updated
+
+  homeworkCountsMap: Map<string, HomeworkCountResult>;
+  getHomeworkCounts: (nodeId: string) => HomeworkCountResult;
+  isLoadingHomeworkCounts: boolean;
 }
 
 export interface AddNodeOptions {
@@ -179,10 +190,113 @@ export const CourseStructureProvider: React.FC<
     return findNodeById(course.rootLessonNode, selectedNodeId);
   }, [selectedNodeId, course.rootLessonNode]);
 
+  const [homeworkCountsMap, setHomeworkCountsMap] = useState<
+    Map<string, HomeworkCountResult>
+  >(new Map());
+  const [isLoadingHomeworkCounts, setIsLoadingHomeworkCounts] = useState(false);
+
+  useEffect(() => {
+    if (!config.isStudent || !classId) return;
+
+    const loadFullStructureForStudent = async () => {
+      setIsLoadingHomeworkCounts(true);
+
+      try {
+        console.log("🔄 Loading full structure for student...");
+
+        // 1. Load full structure metadata
+        const structureResult = await loadCourseStructureMetadata(course.id);
+
+        if (!structureResult.success || !structureResult.data) {
+          throw new Error("Failed to load structure");
+        }
+
+        // 2. Build tree
+        const fullTree = buildTreeFromFlatList(structureResult.data);
+
+        if (!fullTree) {
+          throw new Error("Failed to build tree");
+        }
+
+        console.log(`✅ Built tree with ${structureResult.data.length} nodes`);
+
+        // 3. Load student homework status (SỬA TÊN HÀM)
+        const statusResult = await getStudentHomeworkStatusByClass(
+          course.id,
+          classId,
+        );
+
+        if (!statusResult.success || !statusResult.data) {
+          throw new Error("Failed to load homework status");
+        }
+
+        const { assignedByLessonNode, submittedByLessonNode } =
+          statusResult.data;
+
+        console.log("📊 Homework status:", {
+          assigned: Object.keys(assignedByLessonNode).length,
+          submitted: Object.keys(submittedByLessonNode).length,
+        });
+
+        // 4. Calculate counts
+        const countsMap = buildHomeworkCountsMap(
+          fullTree,
+          assignedByLessonNode,
+          submittedByLessonNode,
+        );
+
+        setHomeworkCountsMap(countsMap);
+
+        // 5. Update course với full tree
+        setCourse((prev) => ({
+          ...prev,
+          rootLessonNode: fullTree,
+        }));
+
+        // 6. Mark all nodes as loaded
+        const allNodeIds = structureResult.data.map((n) => n.id);
+        setLoadedNodeIds(new Set(allNodeIds));
+
+        console.log(
+          `✅ Homework counts calculated for ${countsMap.size} nodes`,
+        );
+
+        // Debug: Log một số counts
+        countsMap.forEach((counts, nodeId) => {
+          if (counts.totalAssigned > 0) {
+            const node = structureResult.data.find((n) => n.id === nodeId);
+            console.log(
+              `  - ${node?.title}: ${counts.pending}/${counts.totalAssigned} pending`,
+            );
+          }
+        });
+      } catch (error) {
+        console.error("❌ Error loading full structure for student:", error);
+      } finally {
+        setIsLoadingHomeworkCounts(false);
+      }
+    };
+
+    loadFullStructureForStudent();
+  }, [course.id, classId, config.isStudent]);
+
+  // NEW: Helper để get homework counts
+  const getHomeworkCounts = useCallback(
+    (nodeId: string): HomeworkCountResult => {
+      return (
+        homeworkCountsMap.get(nodeId) || {
+          totalAssigned: 0,
+          pending: 0,
+        }
+      );
+    },
+    [homeworkCountsMap],
+  );
+
   // ===== HELPER: Load children với class lesson node counts =====
   const fetchAndLoadChildren = useCallback(
     async (nodeId: string): Promise<{ success: boolean }> => {
-      if (loadedNodeIds.has(nodeId)) {
+      if (config.isStudent && loadedNodeIds.has(nodeId)) {
         return { success: true };
       }
 
@@ -658,6 +772,9 @@ export const CourseStructureProvider: React.FC<
     handleAddClassLessonNode: handleAddClassLessonNode,
     handleDeleteClassLessonNode: handleDeleteClassLessonNode,
     getClassLessonNodesByType: getClassLessonNodesByType,
+    homeworkCountsMap,
+    getHomeworkCounts,
+    isLoadingHomeworkCounts,
   };
 
   return (
