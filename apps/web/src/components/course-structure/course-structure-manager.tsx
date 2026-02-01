@@ -27,7 +27,6 @@ import {
 } from "@/components/providers/course-structure-provider";
 import WidgetMarketplaceDialog from "../widget/marketplace/WidgetMarketplaceDialog";
 import TeacherAssignmentDialog from "../widget/homework/TeacherCreateAssignmentDialog";
-import StudentAssignmentDialog from "../widget/homework/TeacherViewAssignmentDialog";
 import TeacherViewAssignmentDialog from "../widget/homework/TeacherViewAssignmentDialog";
 import StudentViewAssignmentDialog from "../widget/homework/StudentViewAssignmentDialog";
 import CourseStructureSettings from "./CourseStructureSettings";
@@ -519,15 +518,6 @@ const CourseStructureContent: React.FC = () => {
                             {(isTeacher || isStudent) && isHwExpanded && (
                               <div className="ml-6 mt-2 space-y-1">
                                 {isTeacher && (
-                                  // <button
-                                  //   onClick={() =>
-                                  //     handleAddClassLessonNode(hw.id, "homework_imp")
-                                  //   }
-                                  //   className="w-full px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded hover:bg-orange-200"
-                                  // >
-                                  //   + Add Assignment
-                                  // </button>
-
                                   <TeacherAssignmentDialog hwId={hw.id} />
                                 )}
                                 {hwClassLessonNodes.map((classLessonNode) => (

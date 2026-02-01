@@ -1,6 +1,5 @@
 "use server";
 
-// import slugify from "slugify";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";

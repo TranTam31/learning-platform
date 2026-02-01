@@ -5,6 +5,7 @@ import {
   CreditCard,
   LayoutDashboard,
   LogOutIcon,
+  Notebook,
   ShieldIcon,
   UserIcon,
 } from "lucide-react";
@@ -52,6 +53,11 @@ export function UserDropdown({ user }: UserDropdownProps) {
         <DropdownMenuItem asChild>
           <Link href="/profile">
             <UserIcon className="size-4" /> <span>Profile</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard/classes">
+            <Notebook className="size-4" /> <span>Classes</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

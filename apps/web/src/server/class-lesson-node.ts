@@ -6,42 +6,6 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
-/**
- * ✅ UNIFIED: Load ClassLessonNode cho một LessonNode
- * Dùng chung cho cả lesson_note VÀ homework_imp
- */
-// export async function loadClassLessonNode(
-//   lessonNodeId: string,
-//   classId: string,
-// ) {
-//   try {
-//     const classLessonNodes = await prisma.classLessonNode.findMany({
-//       where: {
-//         lessonNodeId,
-//         classId,
-//       },
-//       orderBy: { createdAt: "asc" },
-//       select: {
-//         id: true,
-//         type: true,
-//         content: true,
-//         createdAt: true,
-//       },
-//     });
-
-//     return {
-//       success: true,
-//       data: classLessonNodes,
-//     };
-//   } catch (error) {
-//     console.error("Error loading class lesson node:", error);
-//     return {
-//       success: false,
-//       error: "Có lỗi xảy ra khi load class lesson node",
-//     };
-//   }
-// }
-
 export async function loadClassLessonNode(
   lessonNodeId: string,
   classId: string,
@@ -124,31 +88,64 @@ export async function loadClassLessonNode(
         };
       }
 
-      // Lấy các assignmentId của student này
-      const studentAssignments = await prisma.studentAssignment.findMany({
-        where: {
-          studentId: userId,
-          assignmentId: {
-            in: allClassLessonNodes.map((node) => node.id),
+      // Phân loại theo type
+      const homeworkNodes = allClassLessonNodes.filter(
+        (node) => node.type === "homework_imp",
+      );
+      const noteNodes = allClassLessonNodes.filter(
+        (node) => node.type === "lesson_note",
+      );
+
+      // Check homework_imp trong StudentAssignment
+      const assignedHomeworkIds = new Set<string>();
+      if (homeworkNodes.length > 0) {
+        const studentAssignments = await prisma.studentAssignment.findMany({
+          where: {
+            studentId: userId,
+            assignmentId: {
+              in: homeworkNodes.map((node) => node.id),
+            },
           },
-        },
-        select: {
-          assignmentId: true,
-        },
+          select: {
+            assignmentId: true,
+          },
+        });
+
+        studentAssignments.forEach((sa) =>
+          assignedHomeworkIds.add(sa.assignmentId),
+        );
+      }
+
+      // Check lesson_note trong StudentNote
+      const assignedNoteIds = new Set<string>();
+      if (noteNodes.length > 0) {
+        const studentNotes = await prisma.studentNote.findMany({
+          where: {
+            studentId: userId,
+            noteId: {
+              in: noteNodes.map((node) => node.id),
+            },
+          },
+          select: {
+            noteId: true,
+          },
+        });
+
+        studentNotes.forEach((sn) => assignedNoteIds.add(sn.noteId));
+      }
+
+      // Filter: Chỉ giữ lại những node đã được giao
+      const assignedClassLessonNodes = allClassLessonNodes.filter((node) => {
+        if (node.type === "homework_imp") {
+          return assignedHomeworkIds.has(node.id);
+        } else if (node.type === "lesson_note") {
+          return assignedNoteIds.has(node.id);
+        }
+        return false; // Type khác → không hiển thị
       });
 
-      // Tạo Set các assignmentId đã được giao
-      const assignedIds = new Set(
-        studentAssignments.map((sa) => sa.assignmentId),
-      );
-
-      // Filter: Chỉ giữ lại ClassLessonNode đã được giao
-      const assignedClassLessonNodes = allClassLessonNodes.filter((node) =>
-        assignedIds.has(node.id),
-      );
-
       console.log(
-        `✅ Student has ${assignedClassLessonNodes.length}/${allClassLessonNodes.length} assignments`,
+        `✅ Student has ${assignedClassLessonNodes.length}/${allClassLessonNodes.length} items (homework: ${assignedHomeworkIds.size}/${homeworkNodes.length}, notes: ${assignedNoteIds.size}/${noteNodes.length})`,
       );
 
       return {
@@ -171,25 +168,45 @@ export async function loadClassLessonNode(
   }
 }
 
-/**
- * ✅ UNIFIED: Get counts cho nhiều nodes
- * Trả về grouped by nodeId và type
- */
 export async function getClassLessonNodeCounts(
   lessonNodeIds: string[],
   classId: string,
 ) {
   try {
-    const counts = await prisma.classLessonNode.groupBy({
-      by: ["lessonNodeId", "type"],
-      where: {
-        lessonNodeId: { in: lessonNodeIds },
-        classId,
-      },
-      _count: { id: true },
+    // 1️⃣ Lấy session và userId
+    const session = await auth.api.getSession({
+      headers: await headers(),
     });
 
-    // Transform: { nodeId: { lesson_note: N, homework_imp: M } }
+    if (!session) throw new Error("Unauthorized");
+
+    const userId = session.user.id;
+
+    // 2️⃣ Kiểm tra membership và role
+    const membership = await prisma.classMember.findUnique({
+      where: {
+        classId_userId: {
+          classId: classId,
+          userId: userId,
+        },
+      },
+      select: {
+        role: true,
+      },
+    });
+
+    if (!membership) {
+      return {
+        success: false,
+        error: "Forbidden: Not a member of this class",
+      };
+    }
+
+    const isTeacher =
+      membership.role === "teacher" || membership.role === "owner";
+    const isStudent = membership.role === "student";
+
+    // 3️⃣ Initialize result structure
     const result: Record<
       string,
       { lesson_note: number; homework_imp: number }
@@ -199,14 +216,121 @@ export async function getClassLessonNodeCounts(
       result[nodeId] = { lesson_note: 0, homework_imp: 0 };
     });
 
-    counts.forEach((item) => {
-      result[item.lessonNodeId][item.type] = item._count.id;
-    });
+    // 4️⃣ LOGIC KHÁC NHAU DỰA TRÊN ROLE
 
-    return {
-      success: true,
-      data: result,
-    };
+    if (isTeacher) {
+      // 🎓 TEACHER: Đếm TẤT CẢ ClassLessonNode
+      const counts = await prisma.classLessonNode.groupBy({
+        by: ["lessonNodeId", "type"],
+        where: {
+          lessonNodeId: { in: lessonNodeIds },
+          classId,
+        },
+        _count: { id: true },
+      });
+
+      counts.forEach((item) => {
+        result[item.lessonNodeId][item.type] = item._count.id;
+      });
+
+      return {
+        success: true,
+        data: result,
+      };
+    } else if (isStudent) {
+      // 🎒 STUDENT: Chỉ đếm những item đã được giao
+
+      // Lấy tất cả ClassLessonNode
+      const allClassLessonNodes = await prisma.classLessonNode.findMany({
+        where: {
+          lessonNodeId: { in: lessonNodeIds },
+          classId,
+        },
+        select: {
+          id: true,
+          lessonNodeId: true,
+          type: true,
+        },
+      });
+
+      if (allClassLessonNodes.length === 0) {
+        return {
+          success: true,
+          data: result,
+        };
+      }
+
+      // Phân loại theo type
+      const homeworkNodes = allClassLessonNodes.filter(
+        (node) => node.type === "homework_imp",
+      );
+      const noteNodes = allClassLessonNodes.filter(
+        (node) => node.type === "lesson_note",
+      );
+
+      // 📝 Check homework_imp trong StudentAssignment
+      const assignedHomeworkIds = new Set<string>();
+      if (homeworkNodes.length > 0) {
+        const studentAssignments = await prisma.studentAssignment.findMany({
+          where: {
+            studentId: userId,
+            assignmentId: {
+              in: homeworkNodes.map((node) => node.id),
+            },
+          },
+          select: {
+            assignmentId: true,
+          },
+        });
+
+        studentAssignments.forEach((sa) =>
+          assignedHomeworkIds.add(sa.assignmentId),
+        );
+      }
+
+      // 📔 Check lesson_note trong StudentNote
+      const assignedNoteIds = new Set<string>();
+      if (noteNodes.length > 0) {
+        const studentNotes = await prisma.studentNote.findMany({
+          where: {
+            studentId: userId,
+            noteId: {
+              in: noteNodes.map((node) => node.id),
+            },
+          },
+          select: {
+            noteId: true,
+          },
+        });
+
+        studentNotes.forEach((sn) => assignedNoteIds.add(sn.noteId));
+      }
+
+      // Đếm số lượng đã được giao cho từng lessonNodeId
+      allClassLessonNodes.forEach((node) => {
+        const isAssigned =
+          (node.type === "homework_imp" && assignedHomeworkIds.has(node.id)) ||
+          (node.type === "lesson_note" && assignedNoteIds.has(node.id));
+
+        if (isAssigned) {
+          result[node.lessonNodeId][node.type]++;
+        }
+      });
+
+      console.log(
+        `✅ Student counts: homework ${assignedHomeworkIds.size}/${homeworkNodes.length}, notes ${assignedNoteIds.size}/${noteNodes.length}`,
+      );
+
+      return {
+        success: true,
+        data: result,
+      };
+    } else {
+      return {
+        success: false,
+        error: "Invalid role",
+      };
+    }
   } catch (error) {
     console.error("Error getting class lesson node counts:", error);
     return {
@@ -216,10 +340,6 @@ export async function getClassLessonNodeCounts(
   }
 }
 
-/**
- * ✅ UNIFIED: Add ClassLessonNode
- * Type validation ở đây
- */
 export async function addClassLessonNode(input: {
   lessonNodeId: string;
   classId: string;
@@ -278,9 +398,6 @@ export async function addClassLessonNode(input: {
   }
 }
 
-/**
- * ✅ UNIFIED: Delete ClassLessonNode
- */
 export async function deleteClassLessonNode(input: {
   classLessonNodeId: string;
   classId: string;

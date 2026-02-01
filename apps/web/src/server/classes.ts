@@ -5,11 +5,6 @@ import { headers } from "next/headers";
 import { checkUserInOrg } from "./members";
 import prisma from "@/lib/prisma";
 import { ClassRole } from "@repo/db";
-import {
-  ClassAddonType,
-  CreateClassLessonNodeInput,
-  DeleteClassLessonNodeInput,
-} from "@/types/class";
 import { revalidatePath } from "next/cache";
 
 export async function checkUserInClass(classId: string) {
@@ -325,4 +320,196 @@ export async function addClassMember(
       role,
     },
   });
+}
+
+export async function getUserClasses() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) throw new Error("Unauthorized");
+
+  const classMembers = await prisma.classMember.findMany({
+    where: {
+      userId: session.user.id,
+    },
+    include: {
+      class: {
+        include: {
+          course: true,
+          _count: {
+            select: {
+              members: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      joinedAt: "desc",
+    },
+  });
+
+  // Nhóm classes theo role
+  const groupedClasses = {
+    owner: classMembers
+      .filter((cm) => cm.role === ClassRole.owner)
+      .map((cm) => ({
+        ...cm.class,
+        role: cm.role,
+        joinedAt: cm.joinedAt,
+      })),
+    teacher: classMembers
+      .filter((cm) => cm.role === ClassRole.teacher)
+      .map((cm) => ({
+        ...cm.class,
+        role: cm.role,
+        joinedAt: cm.joinedAt,
+      })),
+    student: classMembers
+      .filter((cm) => cm.role === ClassRole.student)
+      .map((cm) => ({
+        ...cm.class,
+        role: cm.role,
+        joinedAt: cm.joinedAt,
+      })),
+  };
+
+  return groupedClasses;
+}
+
+export async function getStudentPendingAssignments(classId: string) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) throw new Error("Unauthorized");
+
+    const userId = session.user.id;
+
+    // 1️⃣ Kiểm tra user có phải student của class này không
+    const membership = await prisma.classMember.findUnique({
+      where: {
+        classId_userId: {
+          classId: classId,
+          userId: userId,
+        },
+      },
+      select: {
+        role: true,
+      },
+    });
+
+    // Nếu không phải student, return 0
+    if (!membership || membership.role !== "student") {
+      return {
+        success: true,
+        data: {
+          pending: 0,
+          total: 0,
+        },
+      };
+    }
+
+    // 2️⃣ Lấy tất cả assignments đã được giao cho student này
+    const studentAssignments = await prisma.studentAssignment.findMany({
+      where: {
+        studentId: userId,
+        assignment: {
+          classId: classId,
+          type: "homework_imp", // Chỉ đếm homework
+        },
+      },
+      select: {
+        id: true,
+        submissionData: true,
+      },
+    });
+
+    // 3️⃣ Đếm số lượng chưa làm (submissionData = null)
+    const pendingCount = studentAssignments.filter(
+      (sa) => sa.submissionData === null,
+    ).length;
+
+    const totalCount = studentAssignments.length;
+
+    return {
+      success: true,
+      data: {
+        pending: pendingCount,
+        total: totalCount,
+      },
+    };
+  } catch (error) {
+    console.error("Error getting student pending assignments:", error);
+    return {
+      success: false,
+      error: "Có lỗi xảy ra",
+    };
+  }
+}
+
+export async function getStudentPendingAssignmentsForClasses(
+  classIds: string[],
+) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) throw new Error("Unauthorized");
+
+    const userId = session.user.id;
+
+    // 1️⃣ Lấy tất cả StudentAssignments của user trong các classes này
+    const studentAssignments = await prisma.studentAssignment.findMany({
+      where: {
+        studentId: userId,
+        assignment: {
+          classId: { in: classIds },
+          type: "homework_imp",
+        },
+      },
+      select: {
+        id: true,
+        submissionData: true,
+        assignment: {
+          select: {
+            classId: true,
+          },
+        },
+      },
+    });
+
+    // 2️⃣ Group by classId và đếm
+    const result: Record<string, { pending: number; total: number }> = {};
+
+    // Initialize all classes
+    classIds.forEach((classId) => {
+      result[classId] = { pending: 0, total: 0 };
+    });
+
+    // Count assignments per class
+    studentAssignments.forEach((sa) => {
+      const classId = sa.assignment.classId;
+      result[classId].total++;
+      if (sa.submissionData === null) {
+        result[classId].pending++;
+      }
+    });
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error(
+      "Error getting student pending assignments for classes:",
+      error,
+    );
+    return {
+      success: false,
+      error: "Có lỗi xảy ra",
+    };
+  }
 }

@@ -1,4 +1,3 @@
-// contexts/CourseStructureContext.tsx
 import React, {
   createContext,
   useContext,

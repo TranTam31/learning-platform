@@ -18,7 +18,7 @@ export default async function Dashboard() {
   });
 
   return (
-    <div className="flex flex-col gap-4 py-14 px-4 max-w-4xl mx-auto w-full">
+    <div className="flex flex-col gap-4 py-14 px-4 max-w-6xl mx-auto w-full">
       {/* Header Section: Tiêu đề và Nút Create nằm cùng hàng */}
       <div className="flex items-center justify-between">
         <h2 className="font-bold text-2xl text-gray-800">Your Organizations</h2>
@@ -51,22 +51,6 @@ export default async function Dashboard() {
             <span className="font-medium text-sm text-gray-700">
               {organization.name}
             </span>
-
-            {/* Icon mũi tên phía bên phải */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-gray-400 group-hover:translate-x-1 transition-all"
-            >
-              <path d="m9 18 6-6-6-6" />
-            </svg>
           </Link>
         ))}
       </div>
