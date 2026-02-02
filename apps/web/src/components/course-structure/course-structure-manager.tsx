@@ -140,8 +140,8 @@ const CourseStructureContent: React.FC = () => {
 
     // Tree UI states
     expandedNodeIds,
-    loadedNodeIds,
-    loadingNodeIds,
+    isInitialLoading,
+    loadingClassLessonNodeIds,
 
     // Class lesson node states
     classLessonNodeCounts: classLessonNodeCounts,
@@ -194,10 +194,8 @@ const CourseStructureContent: React.FC = () => {
     const isSelected = selectedNodeId === node.id;
     const hasChildren = node._count.children > 0;
     const isDeleting = loadingAction === `delete-${node.id}`;
-    const isLoading = loadingNodeIds.has(node.id);
-    const isLoaded = loadedNodeIds.has(node.id);
 
-    // NEW: Get homework counts (chỉ cho student)
+    // Get homework counts (student only)
     const homeworkCounts = isStudent ? getHomeworkCounts(node.id) : null;
     const hasPendingHomework = homeworkCounts && homeworkCounts.pending > 0;
 
@@ -211,18 +209,17 @@ const CourseStructureContent: React.FC = () => {
           onClick={() => setSelectedNodeId(node.id)}
         >
           <div className="flex items-center gap-1 flex-1">
+            {/* Expand/collapse button (ĐƠN GIẢN - không loading) */}
             {hasChildren && node.type !== LessonNodeType.lesson ? (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleNodeExpanded(node);
+                  toggleNodeExpanded(node); // Không async
                 }}
                 className="p-0.5 hover:bg-gray-200 rounded"
-                disabled={isDeleting || isLoading}
+                disabled={isDeleting}
               >
-                {isLoading ? (
-                  <Loader2 className="w-3 h-3 animate-spin text-gray-500" />
-                ) : isExpanded ? (
+                {isExpanded ? (
                   <ChevronDown className="w-3 h-3" />
                 ) : (
                   <ChevronRight className="w-3 h-3" />
@@ -231,10 +228,11 @@ const CourseStructureContent: React.FC = () => {
             ) : (
               <span className="w-4" />
             )}
+
             {getNodeIcon(node, isExpanded)}
             <span className="text-sm">{node.title}</span>
 
-            {/* Badge số bài tập (FIX: hiển thị pending/total) */}
+            {/* Badge homework counts (student only) */}
             {isStudent &&
               homeworkCounts &&
               homeworkCounts.totalAssigned > 0 && (
@@ -246,18 +244,12 @@ const CourseStructureContent: React.FC = () => {
                   }`}
                   title={`${homeworkCounts.pending} chưa làm / ${homeworkCounts.totalAssigned} tổng`}
                 >
-                  {hasPendingHomework
-                    ? `${homeworkCounts.pending} chưa làm`
-                    : "✓"}
+                  {hasPendingHomework ? `${homeworkCounts.pending}` : "✓"}
                 </span>
               )}
-
-            {hasChildren && !isLoaded && (
-              <span className="text-xs text-gray-400 ml-1">
-                ({node._count.children})
-              </span>
-            )}
           </div>
+
+          {/* Delete button */}
           {node.type !== LessonNodeType.course && isAdmin && (
             <button
               onClick={(e) => {
@@ -275,6 +267,8 @@ const CourseStructureContent: React.FC = () => {
             </button>
           )}
         </div>
+
+        {/* Render children - ĐƠN GIẢN */}
         {isExpanded && node.children && node.children.length > 0 && (
           <div>
             {node.children.map((child) => renderNode(child, level + 1))}
@@ -293,11 +287,6 @@ const CourseStructureContent: React.FC = () => {
     }
     return [];
   }, [selectedNode]);
-
-  const isLoadingHomework =
-    selectedNode &&
-    selectedNode.type === LessonNodeType.lesson &&
-    loadingNodeIds.has(selectedNode.id);
 
   const canAddToSelected =
     selectedNode && selectedNode.type !== LessonNodeType.lesson;
@@ -381,7 +370,18 @@ const CourseStructureContent: React.FC = () => {
           )}
         </div>
         <div className="flex-1 overflow-y-auto">
-          {course.rootLessonNode && renderNode(course.rootLessonNode)}
+          {isInitialLoading ? (
+            <div className="flex items-center justify-center p-8">
+              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              <span className="ml-2 text-sm text-gray-500">
+                Đang tải course...
+              </span>
+            </div>
+          ) : course.rootLessonNode ? (
+            renderNode(course.rootLessonNode)
+          ) : (
+            <div className="p-4 text-sm text-gray-500">Không có dữ liệu</div>
+          )}
         </div>
       </div>
 
@@ -459,9 +459,7 @@ const CourseStructureContent: React.FC = () => {
                     )} */}
                   </div>
 
-                  {isLoadingHomework ? (
-                    <div className="text-sm text-gray-500">Loading...</div>
-                  ) : homeworkNodes.length === 0 ? (
+                  {homeworkNodes.length === 0 ? (
                     <div className="text-sm text-gray-500">
                       Don't have homework now
                     </div>
@@ -517,9 +515,7 @@ const CourseStructureContent: React.FC = () => {
                                   }
                                   className="p-1 hover:bg-orange-200 rounded"
                                 >
-                                  {loadingNodeIds.has(
-                                    `${hw.id}-classlessonnodes`,
-                                  ) ? (
+                                  {loadingClassLessonNodeIds.has(hw.id) ? ( // ← ĐỔI TÊN
                                     <Loader2 className="w-3 h-3 animate-spin" />
                                   ) : isHwExpanded ? (
                                     <ChevronDown className="w-3 h-3" />
@@ -623,9 +619,7 @@ const CourseStructureContent: React.FC = () => {
                             }
                             className="p-1 hover:bg-gray-200 rounded"
                           >
-                            {loadingNodeIds.has(
-                              `${selectedNode.id}-classlessonnodes`,
-                            ) ? (
+                            {loadingClassLessonNodeIds.has(selectedNode.id) ? (
                               <Loader2 className="w-3 h-3 animate-spin" />
                             ) : expandedClassLessonNodes.has(
                                 selectedNode.id,

@@ -8,7 +8,7 @@ export default function ClassPage() {
   // console.log(classCourse);
   return (
     <CourseStructureManager
-      initialCourse={classCourse.course}
+      initialCourse={classCourse.courseUI}
       userRole={role}
       classId={classCourse.id}
     />

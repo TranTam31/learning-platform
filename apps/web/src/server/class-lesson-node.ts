@@ -144,9 +144,9 @@ export async function loadClassLessonNode(
         return false; // Type khác → không hiển thị
       });
 
-      console.log(
-        `✅ Student has ${assignedClassLessonNodes.length}/${allClassLessonNodes.length} items (homework: ${assignedHomeworkIds.size}/${homeworkNodes.length}, notes: ${assignedNoteIds.size}/${noteNodes.length})`,
-      );
+      // console.log(
+      //   `✅ Student has ${assignedClassLessonNodes.length}/${allClassLessonNodes.length} items (homework: ${assignedHomeworkIds.size}/${homeworkNodes.length}, notes: ${assignedNoteIds.size}/${noteNodes.length})`,
+      // );
 
       return {
         success: true,
