@@ -163,6 +163,7 @@ const CourseStructureContent: React.FC = () => {
     handleDeleteClassLessonNode: handleDeleteClassLessonNode,
     getClassLessonNodesByType: getClassLessonNodesByType,
     getHomeworkCounts,
+    studentSubmissionStatus,
   } = useCourseStructure();
 
   // ===== HELPER: Get icon for node type =====
@@ -432,7 +433,7 @@ const CourseStructureContent: React.FC = () => {
                     {isAdmin && (
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button className="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 disabled:bg-gray-300">
+                          <Button className="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600">
                             <Plus className="w-2 h-2" />
                             <span className="hidden sm:inline">
                               Add Homework
@@ -447,22 +448,10 @@ const CourseStructureContent: React.FC = () => {
                         </DialogContent>
                       </Dialog>
                     )}
-
-                    {/* {isAdmin && (
-                      <button
-                        onClick={() => handleAddNode(LessonNodeType.homework)}
-                        disabled={isPending}
-                        className="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 disabled:bg-gray-300"
-                      >
-                        + Add Homework
-                      </button>
-                    )} */}
                   </div>
 
                   {homeworkNodes.length === 0 ? (
-                    <div className="text-sm text-gray-500">
-                      Don't have homework now
-                    </div>
+                    <div className="text-sm text-gray-500">Chưa có bài tập</div>
                   ) : (
                     <div className="space-y-2">
                       {homeworkNodes.map((hw) => {
@@ -476,10 +465,20 @@ const CourseStructureContent: React.FC = () => {
                           hw.id,
                         );
 
+                        // Get homework counts (student only)
+                        const homeworkCounts = isStudent
+                          ? getHomeworkCounts(hw.id)
+                          : null;
+                        const hasPendingHomework =
+                          homeworkCounts && homeworkCounts.pending > 0;
+
                         return (
                           <div key={hw.id}>
+                            {/* Homework header */}
                             <div className="flex items-center gap-2 p-2 bg-orange-50 rounded group">
                               <File className="w-4 h-4 text-orange-500" />
+
+                              {/* Title */}
                               {isAdmin ? (
                                 <div
                                   className="flex-1"
@@ -502,12 +501,41 @@ const CourseStructureContent: React.FC = () => {
                                 </span>
                               )}
 
-                              {(isTeacher || isStudent) && hwImplCount > 0 && (
-                                <span className="text-xs text-gray-500 bg-orange-100 px-2 py-0.5 rounded">
-                                  {hwImplCount}
-                                </span>
-                              )}
+                              {/* Count badges */}
+                              <div className="flex items-center gap-1">
+                                {/* Total assignments count */}
+                                {(isTeacher || isStudent) &&
+                                  hwImplCount > 0 && (
+                                    <span className="text-xs text-gray-600 bg-orange-100 px-2 py-0.5 rounded">
+                                      {hwImplCount} bài
+                                    </span>
+                                  )}
 
+                                {/* Pending count (student only) */}
+                                {/* {isStudent && hasPendingHomework > 0 && (
+                                  <span className="text-xs text-white bg-red-500 px-2 py-0.5 rounded font-semibold">
+                                    {hasPendingHomework} chưa làm
+                                  </span>
+                                )} */}
+                                {isStudent &&
+                                  homeworkCounts &&
+                                  homeworkCounts.totalAssigned > 0 && (
+                                    <span
+                                      className={`ml-2 text-xs px-2 py-0.5 rounded-full font-semibold ${
+                                        hasPendingHomework
+                                          ? "bg-red-500 text-white"
+                                          : "bg-green-100 text-green-700"
+                                      }`}
+                                      title={`${homeworkCounts.pending} chưa làm / ${homeworkCounts.totalAssigned} tổng`}
+                                    >
+                                      {hasPendingHomework
+                                        ? `${homeworkCounts.pending}`
+                                        : "✓"}
+                                    </span>
+                                  )}
+                              </div>
+
+                              {/* Expand button */}
                               {(isTeacher || isStudent) && (
                                 <button
                                   onClick={() =>
@@ -515,7 +543,7 @@ const CourseStructureContent: React.FC = () => {
                                   }
                                   className="p-1 hover:bg-orange-200 rounded"
                                 >
-                                  {loadingClassLessonNodeIds.has(hw.id) ? ( // ← ĐỔI TÊN
+                                  {loadingClassLessonNodeIds.has(hw.id) ? (
                                     <Loader2 className="w-3 h-3 animate-spin" />
                                   ) : isHwExpanded ? (
                                     <ChevronDown className="w-3 h-3" />
@@ -525,6 +553,7 @@ const CourseStructureContent: React.FC = () => {
                                 </button>
                               )}
 
+                              {/* Delete button */}
                               {isAdmin && (
                                 <button
                                   onClick={() => handleDeleteNode(hw.id)}
@@ -535,45 +564,113 @@ const CourseStructureContent: React.FC = () => {
                               )}
                             </div>
 
+                            {/* Expanded: Show assignments */}
                             {(isTeacher || isStudent) && isHwExpanded && (
                               <div className="ml-6 mt-2 space-y-1">
+                                {/* Add button for teacher */}
                                 {isTeacher && (
-                                  <TeacherAssignmentDialog hwId={hw.id} />
-                                )}
-                                {hwClassLessonNodes.map((classLessonNode) => (
-                                  <div
-                                    key={classLessonNode.id}
-                                    className="flex items-center gap-2 p-2 bg-orange-100 rounded text-xs group"
-                                  >
-                                    {isTeacher && (
-                                      <TeacherViewAssignmentDialog
-                                        assignmentId={classLessonNode.id}
-                                      />
-                                    )}
-                                    {isStudent && (
-                                      <StudentViewAssignmentDialog
-                                        assignmentId={classLessonNode.id}
-                                      />
-                                    )}
-                                    {/* <span className="flex-1">
-                                      📋 {classLessonNode.content?.text || "Assignment"}
-                                    </span> */}
-                                    {isTeacher && (
-                                      <button
-                                        onClick={() =>
-                                          handleDeleteClassLessonNode(
-                                            hw.id,
-                                            classLessonNode.id,
-                                            "homework_imp",
-                                          )
-                                        }
-                                        className="p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100"
-                                      >
-                                        <Trash2 className="w-3 h-3 text-red-500" />
-                                      </button>
-                                    )}
+                                  <div className="mb-2">
+                                    <TeacherAssignmentDialog hwId={hw.id} />
                                   </div>
-                                ))}
+                                )}
+
+                                {/* List assignments */}
+                                {hwClassLessonNodes.length === 0 ? (
+                                  <div className="text-xs text-gray-400 italic py-2">
+                                    Chưa có bài tập nào
+                                  </div>
+                                ) : (
+                                  hwClassLessonNodes.map(
+                                    (classLessonNode, index) => {
+                                      // Check submission status
+                                      const submissionStatus =
+                                        studentSubmissionStatus.get(
+                                          classLessonNode.id,
+                                        );
+                                      const isPending =
+                                        isStudent &&
+                                        (!submissionStatus ||
+                                          !submissionStatus.hasSubmitted);
+
+                                      return (
+                                        <div
+                                          key={classLessonNode.id}
+                                          className={`flex items-center gap-2 p-2 rounded text-xs group transition-colors ${
+                                            isPending
+                                              ? "bg-yellow-50 border border-yellow-200"
+                                              : "bg-green-50 border border-green-200"
+                                          }`}
+                                        >
+                                          {/* Assignment number */}
+                                          <span className="font-semibold text-orange-700 min-w-12">
+                                            Bài {index + 1}
+                                          </span>
+
+                                          {/* Status badge */}
+                                          {isStudent && (
+                                            <span
+                                              className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                                                isPending
+                                                  ? "bg-yellow-500 text-white"
+                                                  : "bg-green-500 text-white"
+                                              }`}
+                                            >
+                                              {isPending
+                                                ? "Chưa làm"
+                                                : "Đã làm"}
+                                            </span>
+                                          )}
+
+                                          {/* View/Do button */}
+                                          <div className="flex-1">
+                                            {isTeacher && (
+                                              <TeacherViewAssignmentDialog
+                                                assignmentId={
+                                                  classLessonNode.id
+                                                }
+                                              />
+                                            )}
+                                            {isStudent && (
+                                              <StudentViewAssignmentDialog
+                                                assignmentId={
+                                                  classLessonNode.id
+                                                }
+                                              />
+                                            )}
+                                          </div>
+
+                                          {/* Submitted date (if submitted) */}
+                                          {isStudent &&
+                                            submissionStatus &&
+                                            submissionStatus.hasSubmitted &&
+                                            submissionStatus.submittedAt && (
+                                              <span className="text-xs text-gray-500">
+                                                {new Date(
+                                                  submissionStatus.submittedAt,
+                                                ).toLocaleDateString("vi-VN")}
+                                              </span>
+                                            )}
+
+                                          {/* Delete button (teacher only) */}
+                                          {isTeacher && (
+                                            <button
+                                              onClick={() =>
+                                                handleDeleteClassLessonNode(
+                                                  hw.id,
+                                                  classLessonNode.id,
+                                                  "homework_imp",
+                                                )
+                                              }
+                                              className="p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100"
+                                            >
+                                              <Trash2 className="w-3 h-3 text-red-500" />
+                                            </button>
+                                          )}
+                                        </div>
+                                      );
+                                    },
+                                  )
+                                )}
                               </div>
                             )}
                           </div>

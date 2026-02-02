@@ -435,6 +435,7 @@ export async function getStudentHomeworkStatusByClass(
         data: {
           assignedByLessonNode: {}, // lessonNodeId → count
           submittedByLessonNode: {}, // lessonNodeId → count
+          submissionsByAssignmentId: {}, // assignmentId → status
         },
       };
     }
@@ -452,6 +453,7 @@ export async function getStudentHomeworkStatusByClass(
       select: {
         assignmentId: true, // ClassLessonNode.id
         submissionData: true,
+        submittedAt: true,
       },
     });
 
@@ -492,11 +494,25 @@ export async function getStudentHomeworkStatusByClass(
     //   byLessonNode: assignedByLessonNode,
     // });
 
+    // 5️⃣ Build Map: assignmentId → submission status
+    const submissionsByAssignmentId: Record<
+      string,
+      { hasSubmitted: boolean; submittedAt: string | null }
+    > = {};
+
+    studentAssignments.forEach((sa) => {
+      submissionsByAssignmentId[sa.assignmentId] = {
+        hasSubmitted: sa.submissionData !== null,
+        submittedAt: sa.submittedAt ? sa.submittedAt.toISOString() : null,
+      };
+    });
+
     return {
       success: true,
       data: {
         assignedByLessonNode, // { "hw_1": 1, "hw_2": 2 }
         submittedByLessonNode, // { "hw_1": 1 }
+        submissionsByAssignmentId, // { "assignment_id" → { hasSubmitted, submittedAt } }
       },
     };
   } catch (error) {

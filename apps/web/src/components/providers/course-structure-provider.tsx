@@ -103,6 +103,10 @@ interface CourseStructureContextValue {
     nodeId: string,
     type: "lesson_note" | "homework_imp",
   ) => any[];
+  studentSubmissionStatus: Map<
+    string,
+    { hasSubmitted: boolean; submittedAt: string | null }
+  >;
 }
 
 export interface AddNodeOptions {
@@ -135,7 +139,7 @@ export const CourseStructureProvider: React.FC<
     classId,
     isAdmin: userRole === "org_admin",
     isMember: userRole === "org_member",
-    isTeacher: userRole === "class_teacher" || userRole === "class_owner",
+    isTeacher: userRole === "class_teacher",
     isStudent: userRole === "class_student",
   };
 
@@ -177,6 +181,10 @@ export const CourseStructureProvider: React.FC<
     Map<string, HomeworkCountResult>
   >(new Map());
 
+  const [studentSubmissionStatus, setStudentSubmissionStatus] = useState<
+    Map<string, { hasSubmitted: boolean; submittedAt: string | null }>
+  >(new Map());
+
   // ===== LOADING STATES =====
   const [isPending, startTransition] = useTransition();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
@@ -205,20 +213,18 @@ export const CourseStructureProvider: React.FC<
     // Nếu là student → Load homework counts
     const loadHomeworkCounts = async () => {
       try {
-        console.log("📊 Loading homework counts for student...");
-        console.log(
-          "Tree has nodes:",
-          initialCourse.rootLessonNode?.children?.length,
-        );
-
         const statusResult = await getStudentHomeworkStatusByClass(
           initialCourse.id,
           classId,
         );
+        console.log("statusResult", statusResult);
 
         if (statusResult.success && statusResult.data) {
-          const { assignedByLessonNode, submittedByLessonNode } =
-            statusResult.data;
+          const {
+            assignedByLessonNode,
+            submittedByLessonNode,
+            submissionsByAssignmentId,
+          } = statusResult.data;
 
           const countsMap = buildHomeworkCountsMap(
             initialCourse.rootLessonNode!,
@@ -227,6 +233,22 @@ export const CourseStructureProvider: React.FC<
           );
 
           setHomeworkCountsMap(countsMap);
+
+          // 🎯 Lưu submission status luôn (thay vì gọi getStudentSubmissionStatus sau)
+          if (submissionsByAssignmentId) {
+            const submissionStatusMap = new Map<
+              string,
+              { hasSubmitted: boolean; submittedAt: string | null }
+            >();
+
+            Object.entries(submissionsByAssignmentId).forEach(
+              ([assignmentId, status]) => {
+                submissionStatusMap.set(assignmentId, status);
+              },
+            );
+
+            setStudentSubmissionStatus(submissionStatusMap);
+          }
 
           console.log(`✅ Homework counts loaded for ${countsMap.size} nodes`);
 
@@ -246,6 +268,72 @@ export const CourseStructureProvider: React.FC<
 
     loadHomeworkCounts();
   }, [initialCourse.id, classId, config.isStudent]);
+
+  useEffect(() => {
+    // Chỉ load khi có classId (teacher hoặc student)
+    if (!classId || (!config.isTeacher && !config.isStudent)) {
+      return;
+    }
+
+    const loadClassLessonNodeCounts = async () => {
+      if (!initialCourse.rootLessonNode) return;
+
+      try {
+        // Lấy tất cả homework node IDs từ tree
+        const homeworkNodeIds: string[] = [];
+
+        function collectHomeworkIds(node: LessonNodeUI) {
+          if (node.type === "homework") {
+            homeworkNodeIds.push(node.id);
+          }
+          if (node.children && node.children.length > 0) {
+            node.children.forEach(collectHomeworkIds);
+          }
+        }
+
+        collectHomeworkIds(initialCourse.rootLessonNode);
+
+        if (homeworkNodeIds.length === 0) {
+          console.log("No homework nodes found");
+          return;
+        }
+
+        console.log(
+          `📊 Loading class lesson node counts for ${homeworkNodeIds.length} homework nodes...`,
+        );
+
+        // Load counts
+        const countsResult = await getClassLessonNodeCounts(
+          homeworkNodeIds,
+          classId,
+        );
+
+        if (countsResult.success && countsResult.data) {
+          const newMap = new Map<
+            string,
+            { lesson_note: number; homework_imp: number }
+          >();
+          Object.entries(countsResult.data).forEach(([id, counts]) => {
+            newMap.set(id, counts as any);
+          });
+          setClassLessonNodeCounts(newMap);
+
+          console.log(
+            `✅ Loaded class lesson node counts for ${newMap.size} nodes`,
+          );
+        }
+      } catch (error) {
+        console.error("Error loading class lesson node counts:", error);
+      }
+    };
+
+    loadClassLessonNodeCounts();
+  }, [
+    classId,
+    config.isTeacher,
+    config.isStudent,
+    initialCourse.rootLessonNode,
+  ]);
 
   // ===== ACTION: Toggle expand/collapse (ĐƠN GIẢN) =====
   const toggleNodeExpanded = useCallback((node: LessonNodeUI) => {
@@ -451,20 +539,30 @@ export const CourseStructureProvider: React.FC<
 
       setLoadingClassLessonNodeIds((prev) => new Set([...prev, nodeId]));
 
-      const result = await loadClassLessonNode(nodeId, classId);
+      try {
+        // 1. Load class lesson nodes
+        const result = await loadClassLessonNode(nodeId, classId);
 
-      setLoadingClassLessonNodeIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(nodeId);
-        return newSet;
-      });
+        if (!result.success || !result.data) {
+          throw new Error("Failed to load class lesson nodes");
+        }
 
-      if (result.success && result.data) {
         setClassLessonNodes((prev) => new Map(prev).set(nodeId, result.data));
         setExpandedClassLessonNodes((prev) => new Set([...prev, nodeId]));
+
+        // 🎯 Submission status đã được load từ getStudentHomeworkStatusByClass
+        // Không cần gọi API thêm nữa!
+      } catch (error) {
+        console.error("Error toggling class lesson nodes:", error);
+      } finally {
+        setLoadingClassLessonNodeIds((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(nodeId);
+          return newSet;
+        });
       }
     },
-    [classId, expandedClassLessonNodes],
+    [classId, expandedClassLessonNodes, config.isStudent],
   );
 
   const handleAddClassLessonNode = useCallback(
@@ -628,6 +726,7 @@ export const CourseStructureProvider: React.FC<
     handleAddClassLessonNode,
     handleDeleteClassLessonNode,
     getClassLessonNodesByType,
+    studentSubmissionStatus,
   };
 
   return (
