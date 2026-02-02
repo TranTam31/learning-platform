@@ -10,6 +10,8 @@ import {
   Plus,
   Trash2,
   Loader2,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import {
   Dialog,
@@ -29,6 +31,7 @@ import WidgetMarketplaceDialog from "../widget/marketplace/WidgetMarketplaceDial
 import TeacherAssignmentDialog from "../widget/homework/TeacherCreateAssignmentDialog";
 import TeacherViewAssignmentDialog from "../widget/homework/TeacherViewAssignmentDialog";
 import StudentViewAssignmentDialog from "../widget/homework/StudentViewAssignmentDialog";
+import StudentDoAllHomeworkDialog from "./StudentDoAllHomeworkDialog";
 import CourseStructureSettings from "./CourseStructureSettings";
 
 // ===== PROPS =====
@@ -311,8 +314,8 @@ const CourseStructureContent: React.FC = () => {
             <span className="font-medium text-gray-700">{course.name}</span>
           </div>
           {(isAdmin || isMember) && (
-            <div className="flex gap-2 w-full">
-              <div className="flex-1">
+            <div className="flex gap-2 w-full flex-col">
+              <div>
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button className="w-full bg-primary hover:bg-primary/90">
@@ -332,8 +335,9 @@ const CourseStructureContent: React.FC = () => {
                   </DialogContent>
                 </Dialog>
               </div>
+
               {isAdmin && (
-                <div className="flex-1 flex gap-2">
+                <div className="flex gap-2">
                   <button
                     onClick={() => handleAddNode(LessonNodeType.module)}
                     disabled={!canAddToSelected || isPending}
@@ -369,6 +373,9 @@ const CourseStructureContent: React.FC = () => {
               )}
             </div>
           )}
+
+          {/* Student: Do homework button */}
+          {isStudent && <StudentDoAllHomeworkDialog />}
         </div>
         <div className="flex-1 overflow-y-auto">
           {isInitialLoading ? (
@@ -602,54 +609,65 @@ const CourseStructureContent: React.FC = () => {
                                           }`}
                                         >
                                           {/* Assignment number */}
-                                          <span className="font-semibold text-orange-700 min-w-12">
+                                          <span className="font-semibold text-orange-700 min-w-fit">
                                             Bài {index + 1}
                                           </span>
 
-                                          {/* Status badge */}
+                                          {/* Status & Evaluation */}
                                           {isStudent && (
-                                            <span
-                                              className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                                                isPending
-                                                  ? "bg-yellow-500 text-white"
-                                                  : "bg-green-500 text-white"
-                                              }`}
-                                            >
-                                              {isPending
-                                                ? "Chưa làm"
-                                                : "Đã làm"}
-                                            </span>
+                                            <div className="flex items-center gap-2">
+                                              <span
+                                                className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                                                  isPending
+                                                    ? "bg-yellow-500 text-white"
+                                                    : "bg-green-500 text-white"
+                                                }`}
+                                              >
+                                                {isPending
+                                                  ? "Chưa làm"
+                                                  : "Đã làm"}
+                                              </span>
+
+                                              {/* Evaluation result (if submitted) */}
+                                              {!isPending &&
+                                                submissionStatus?.evaluation && (
+                                                  <div className="flex items-center gap-1">
+                                                    {submissionStatus.evaluation
+                                                      .isCorrect ? (
+                                                      <CheckCircle className="w-4 h-4 text-green-600" />
+                                                    ) : (
+                                                      <XCircle className="w-4 h-4 text-red-600" />
+                                                    )}
+                                                    <span className="font-semibold text-gray-700">
+                                                      {
+                                                        submissionStatus
+                                                          .evaluation.score
+                                                      }
+                                                      /
+                                                      {
+                                                        submissionStatus
+                                                          .evaluation.maxScore
+                                                      }
+                                                    </span>
+                                                  </div>
+                                                )}
+                                            </div>
                                           )}
 
-                                          {/* View/Do button */}
-                                          <div className="flex-1">
-                                            {isTeacher && (
-                                              <TeacherViewAssignmentDialog
-                                                assignmentId={
-                                                  classLessonNode.id
-                                                }
-                                              />
-                                            )}
-                                            {isStudent && (
-                                              <StudentViewAssignmentDialog
-                                                assignmentId={
-                                                  classLessonNode.id
-                                                }
-                                              />
-                                            )}
-                                          </div>
+                                          {/* Spacer */}
+                                          <div className="flex-1" />
 
-                                          {/* Submitted date (if submitted) */}
-                                          {isStudent &&
-                                            submissionStatus &&
-                                            submissionStatus.hasSubmitted &&
-                                            submissionStatus.submittedAt && (
-                                              <span className="text-xs text-gray-500">
-                                                {new Date(
-                                                  submissionStatus.submittedAt,
-                                                ).toLocaleDateString("vi-VN")}
-                                              </span>
-                                            )}
+                                          {/* View/Do button (on the right) */}
+                                          {isTeacher && (
+                                            <TeacherViewAssignmentDialog
+                                              assignmentId={classLessonNode.id}
+                                            />
+                                          )}
+                                          {isStudent && (
+                                            <StudentViewAssignmentDialog
+                                              assignmentId={classLessonNode.id}
+                                            />
+                                          )}
 
                                           {/* Delete button (teacher only) */}
                                           {isTeacher && (

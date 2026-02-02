@@ -105,8 +105,17 @@ interface CourseStructureContextValue {
   ) => any[];
   studentSubmissionStatus: Map<
     string,
-    { hasSubmitted: boolean; submittedAt: string | null }
+    {
+      hasSubmitted: boolean;
+      submittedAt: string | null;
+      evaluation?: {
+        isCorrect: boolean;
+        score: number;
+        maxScore: number;
+      };
+    }
   >;
+  updateAssignmentStatus: (assignmentId: string) => Promise<void>;
 }
 
 export interface AddNodeOptions {
@@ -182,7 +191,18 @@ export const CourseStructureProvider: React.FC<
   >(new Map());
 
   const [studentSubmissionStatus, setStudentSubmissionStatus] = useState<
-    Map<string, { hasSubmitted: boolean; submittedAt: string | null }>
+    Map<
+      string,
+      {
+        hasSubmitted: boolean;
+        submittedAt: string | null;
+        evaluation?: {
+          isCorrect: boolean;
+          score: number;
+          maxScore: number;
+        };
+      }
+    >
   >(new Map());
 
   // ===== LOADING STATES =====
@@ -238,7 +258,15 @@ export const CourseStructureProvider: React.FC<
           if (submissionsByAssignmentId) {
             const submissionStatusMap = new Map<
               string,
-              { hasSubmitted: boolean; submittedAt: string | null }
+              {
+                hasSubmitted: boolean;
+                submittedAt: string | null;
+                evaluation?: {
+                  isCorrect: boolean;
+                  score: number;
+                  maxScore: number;
+                };
+              }
             >();
 
             Object.entries(submissionsByAssignmentId).forEach(
@@ -687,6 +715,78 @@ export const CourseStructureProvider: React.FC<
     [homeworkCountsMap],
   );
 
+  // ===== ACTION: Update assignment status when completed =====
+  const updateAssignmentStatus = useCallback(
+    async (assignmentId: string): Promise<void> => {
+      // Update studentSubmissionStatus
+      setStudentSubmissionStatus((prev) => {
+        const newMap = new Map(prev);
+        const currentStatus = newMap.get(assignmentId);
+        if (currentStatus) {
+          newMap.set(assignmentId, {
+            ...currentStatus,
+            hasSubmitted: true,
+            submittedAt: new Date().toISOString(),
+          });
+        }
+        return newMap;
+      });
+
+      // Reload homework counts để đảm bảo chính xác
+      if (config.isStudent && classId && initialCourse.rootLessonNode) {
+        try {
+          const statusResult = await getStudentHomeworkStatusByClass(
+            initialCourse.id,
+            classId,
+          );
+
+          if (statusResult.success && statusResult.data) {
+            const {
+              assignedByLessonNode,
+              submittedByLessonNode,
+              submissionsByAssignmentId,
+            } = statusResult.data;
+
+            const countsMap = buildHomeworkCountsMap(
+              initialCourse.rootLessonNode,
+              assignedByLessonNode,
+              submittedByLessonNode,
+            );
+
+            setHomeworkCountsMap(countsMap);
+
+            // Cập nhật submission status từ dữ liệu mới
+            if (submissionsByAssignmentId) {
+              const submissionStatusMap = new Map<
+                string,
+                {
+                  hasSubmitted: boolean;
+                  submittedAt: string | null;
+                  evaluation?: {
+                    isCorrect: boolean;
+                    score: number;
+                    maxScore: number;
+                  };
+                }
+              >();
+
+              Object.entries(submissionsByAssignmentId).forEach(
+                ([id, status]) => {
+                  submissionStatusMap.set(id, status);
+                },
+              );
+
+              setStudentSubmissionStatus(submissionStatusMap);
+            }
+          }
+        } catch (error) {
+          console.error("Error reloading homework counts:", error);
+        }
+      }
+    },
+    [config.isStudent, classId, initialCourse.id, initialCourse.rootLessonNode],
+  );
+
   // ===== CONTEXT VALUE =====
   const value: CourseStructureContextValue = {
     // Config
@@ -727,6 +827,7 @@ export const CourseStructureProvider: React.FC<
     handleDeleteClassLessonNode,
     getClassLessonNodesByType,
     studentSubmissionStatus,
+    updateAssignmentStatus,
   };
 
   return (

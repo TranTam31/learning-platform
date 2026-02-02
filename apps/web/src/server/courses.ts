@@ -494,16 +494,26 @@ export async function getStudentHomeworkStatusByClass(
     //   byLessonNode: assignedByLessonNode,
     // });
 
-    // 5️⃣ Build Map: assignmentId → submission status
+    // 5️⃣ Build Map: assignmentId → submission status + evaluation
     const submissionsByAssignmentId: Record<
       string,
-      { hasSubmitted: boolean; submittedAt: string | null }
+      {
+        hasSubmitted: boolean;
+        submittedAt: string | null;
+        evaluation?: {
+          isCorrect: boolean;
+          score: number;
+          maxScore: number;
+        };
+      }
     > = {};
 
     studentAssignments.forEach((sa) => {
+      const submissionData = sa.submissionData as any;
       submissionsByAssignmentId[sa.assignmentId] = {
         hasSubmitted: sa.submissionData !== null,
         submittedAt: sa.submittedAt ? sa.submittedAt.toISOString() : null,
+        evaluation: submissionData?.evaluation,
       };
     });
 

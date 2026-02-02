@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { AlertCircle, CheckCircle, Loader2, XCircle } from "lucide-react";
 import { Submission, WidgetDefinition } from "../core/types";
+import { useCourseStructure } from "@/components/providers/course-structure-provider";
 
 interface StudentAssignmentViewProps {
   assignmentId: string;
+  onCompleted?: (assignmentId: string) => void; // NEW: Callback when assignment is completed
 }
 
 interface AssignmentData {
@@ -29,7 +31,9 @@ interface AssignmentData {
 
 export default function StudentAssignmentView({
   assignmentId,
+  onCompleted,
 }: StudentAssignmentViewProps) {
+  const { updateAssignmentStatus } = useCourseStructure();
   const [assignmentData, setAssignmentData] = useState<AssignmentData | null>(
     null,
   );
@@ -240,6 +244,16 @@ export default function StudentAssignmentView({
           },
         });
       }, 100);
+
+      // 🎯 Update provider state (update UI everywhere)
+      await updateAssignmentStatus(assignmentId);
+
+      // 🎯 Call callback to notify parent (for auto-next assignment)
+      if (onCompleted) {
+        setTimeout(() => {
+          onCompleted(assignmentId);
+        }, 1000);
+      }
     } catch (err) {
       console.error("❌ Submit error:", err);
       alert(
