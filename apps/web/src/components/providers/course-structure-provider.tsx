@@ -1,4 +1,3 @@
-// contexts/CourseStructureContext.tsx
 import React, {
   createContext,
   useContext,
@@ -6,23 +5,24 @@ import React, {
   useTransition,
   useMemo,
   useCallback,
-  useRef,
   useEffect,
 } from "react";
 import {
   addLessonNode,
   deleteLessonNode,
-  loadNodeChildren,
+  getStudentHomeworkStatusByClass,
+  updateLessonNode,
 } from "@/server/courses";
 import {
-  loadClassAddons,
-  getClassAddonCounts,
-  addClassAddon,
-  deleteClassAddon,
-} from "@/server/class-addons";
+  loadClassLessonNode,
+  getClassLessonNodeCounts,
+  addClassLessonNode,
+  deleteClassLessonNode,
+} from "@/server/class-lesson-node";
 import {
   AddNodeInputType,
   CourseUI,
+  LessonNodeContent,
   LessonNodeType,
   LessonNodeUI,
 } from "@/types/course";
@@ -33,56 +33,94 @@ import {
   removeNodeFromTree,
   addChildToNode,
 } from "@/components/course-structure/utils/course-structure-utiles";
+import {
+  buildHomeworkCountsMap,
+  HomeworkCountResult,
+} from "../course-structure/utils/homework-count-utils";
 
 // ===== TYPES =====
 interface CourseStructureContextValue {
-  // ===== READ-ONLY CONFIG =====
+  // Config
   classId?: string;
-  userRole: "org_admin" | "org_member" | "class_teacher" | "class_student";
-  isClassView: boolean;
   isAdmin: boolean;
+  isMember: boolean;
   isTeacher: boolean;
+  isStudent: boolean;
 
-  // ===== COURSE DATA =====
+  // Course data
   course: CourseUI;
   selectedNodeId: string | null;
-  selectedNode: LessonNodeUI | null; // derived
+  selectedNode: LessonNodeUI | null;
 
-  // ===== TREE UI STATES =====
+  // Tree UI states (ĐƠN GIẢN HƠN - không cần loadedNodeIds, loadingNodeIds)
   expandedNodeIds: Set<string>;
-  loadedNodeIds: Set<string>;
-  loadingNodeIds: Set<string>;
 
-  // ===== CLASS ADDON STATES =====
-  classAddons: Map<string, any[]>;
-  addonCounts: Map<string, { lesson_note: number; homework_imp: number }>;
-  expandedAddons: Set<string>;
+  // Class lesson node states
+  classLessonNodes: Map<string, any[]>;
+  classLessonNodeCounts: Map<
+    string,
+    { lesson_note: number; homework_imp: number }
+  >;
+  expandedClassLessonNodes: Set<string>;
 
-  // ===== LOADING STATES =====
+  // Homework counts (student only)
+  homeworkCountsMap: Map<string, HomeworkCountResult>;
+  getHomeworkCounts: (nodeId: string) => HomeworkCountResult;
+
+  // Loading states
   isPending: boolean;
   loadingAction: string | null;
+  isInitialLoading: boolean; // NEW: Track initial tree load
+  loadingClassLessonNodeIds: Set<string>; // NEW: Separate loading state
 
-  // ===== TREE ACTIONS =====
+  // Actions
   setSelectedNodeId: (id: string | null) => void;
-  toggleNodeExpanded: (node: LessonNodeUI) => Promise<void>;
-  handleAddNode: (type: AddNodeInputType) => Promise<void>;
+  toggleNodeExpanded: (node: LessonNodeUI) => void; // Đơn giản hơn - không async
+  handleAddNode: (
+    type: AddNodeInputType,
+    options?: AddNodeOptions,
+  ) => Promise<void>;
   handleDeleteNode: (nodeId: string) => Promise<void>;
+  handleUpdateNode: (
+    nodeId: string,
+    updates: { title?: string; content?: any },
+  ) => Promise<void>;
+  isUpdatingNode: string | null;
 
-  // ===== CLASS ADDON ACTIONS =====
-  handleToggleAddons: (nodeId: string) => Promise<void>;
-  handleAddClassAddon: (
+  // Class lesson node actions
+  handleToggleClassLessonNodes: (nodeId: string) => Promise<void>;
+  handleAddClassLessonNode: (
     nodeId: string,
-    type: "lesson_note" | "homework_imp"
+    type: "lesson_note" | "homework_imp",
+    content?: Record<string, any>,
   ) => Promise<void>;
-  handleDeleteClassAddon: (
+  handleDeleteClassLessonNode: (
     nodeId: string,
-    addonId: string,
-    type: "lesson_note" | "homework_imp"
+    classLessonNodeId: string,
+    type: "lesson_note" | "homework_imp",
   ) => Promise<void>;
-  getAddonsByType: (
+  getClassLessonNodesByType: (
     nodeId: string,
-    type: "lesson_note" | "homework_imp"
+    type: "lesson_note" | "homework_imp",
   ) => any[];
+  studentSubmissionStatus: Map<
+    string,
+    {
+      hasSubmitted: boolean;
+      submittedAt: string | null;
+      evaluation?: {
+        isCorrect: boolean;
+        score: number;
+        maxScore: number;
+      };
+    }
+  >;
+  updateAssignmentStatus: (assignmentId: string) => Promise<void>;
+}
+
+export interface AddNodeOptions {
+  title?: string;
+  content?: LessonNodeContent;
 }
 
 const CourseStructureContext = createContext<
@@ -94,56 +132,82 @@ interface CourseStructureProviderProps {
   children: React.ReactNode;
   initialCourse: CourseUI;
   classId?: string;
-  userRole: "org_admin" | "org_member" | "class_teacher" | "class_student";
+  userRole:
+    | "org_admin"
+    | "org_member"
+    | "class_teacher"
+    | "class_student"
+    | "class_owner";
 }
 
 export const CourseStructureProvider: React.FC<
   CourseStructureProviderProps
 > = ({ children, initialCourse, classId, userRole }) => {
-  // ===== READ-ONLY CONFIG (không bao giờ thay đổi) =====
-  const config = useMemo(
-    () => ({
-      classId,
-      userRole,
-      isClassView: !!classId,
-      isAdmin: userRole === "org_admin",
-      isTeacher: userRole === "class_teacher",
-    }),
-    [classId, userRole]
-  );
+  // ===== CONFIG =====
+  const config = {
+    classId,
+    isAdmin: userRole === "org_admin",
+    isMember: userRole === "org_member",
+    isTeacher: userRole === "class_teacher",
+    isStudent: userRole === "class_student",
+  };
 
   // ===== COURSE DATA =====
   const [course, setCourse] = useState<CourseUI>(initialCourse);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(
-    initialCourse.rootLessonNodeId
+    initialCourse.rootLessonNodeId,
+  );
+  const [isInitialLoading, setIsInitialLoading] = useState(
+    // Chỉ loading nếu là student (cần load homework counts)
+    config.isStudent && !!classId,
   );
 
-  // ===== TREE UI STATES =====
+  // ===== TREE UI STATES (ĐƠN GIẢN HƠN) =====
   const [expandedNodeIds, setExpandedNodeIds] = useState<Set<string>>(
     new Set(
-      initialCourse.rootLessonNodeId ? [initialCourse.rootLessonNodeId] : []
-    )
+      initialCourse.rootLessonNodeId ? [initialCourse.rootLessonNodeId] : [],
+    ),
   );
-  const [loadedNodeIds, setLoadedNodeIds] = useState<Set<string>>(
-    new Set(
-      initialCourse.rootLessonNodeId ? [initialCourse.rootLessonNodeId] : []
-    )
-  );
-  const [loadingNodeIds, setLoadingNodeIds] = useState<Set<string>>(new Set());
 
-  // ===== CLASS ADDON STATES =====
-  const [classAddons, setClassAddons] = useState<Map<string, any[]>>(new Map());
-  const [addonCounts, setAddonCounts] = useState<
+  const [isUpdatingNode, setIsUpdatingNode] = useState<string | null>(null);
+
+  // ===== CLASS LESSON NODE STATES =====
+  const [classLessonNodes, setClassLessonNodes] = useState<Map<string, any[]>>(
+    new Map(),
+  );
+  const [classLessonNodeCounts, setClassLessonNodeCounts] = useState<
     Map<string, { lesson_note: number; homework_imp: number }>
   >(new Map());
-  const [expandedAddons, setExpandedAddons] = useState<Set<string>>(new Set());
+  const [expandedClassLessonNodes, setExpandedClassLessonNodes] = useState<
+    Set<string>
+  >(new Set());
+  const [loadingClassLessonNodeIds, setLoadingClassLessonNodeIds] = useState<
+    Set<string>
+  >(new Set());
+
+  // ===== HOMEWORK COUNTS (STUDENT) =====
+  const [homeworkCountsMap, setHomeworkCountsMap] = useState<
+    Map<string, HomeworkCountResult>
+  >(new Map());
+
+  const [studentSubmissionStatus, setStudentSubmissionStatus] = useState<
+    Map<
+      string,
+      {
+        hasSubmitted: boolean;
+        submittedAt: string | null;
+        evaluation?: {
+          isCorrect: boolean;
+          score: number;
+          maxScore: number;
+        };
+      }
+    >
+  >(new Map());
 
   // ===== LOADING STATES =====
   const [isPending, startTransition] = useTransition();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
-
-  // ===== REFS (để tránh race conditions) =====
-  const pendingRequestsRef = useRef<Map<string, boolean>>(new Map());
 
   // ===== DERIVED VALUES =====
   const selectedNode = useMemo(() => {
@@ -151,117 +215,172 @@ export const CourseStructureProvider: React.FC<
     return findNodeById(course.rootLessonNode, selectedNodeId);
   }, [selectedNodeId, course.rootLessonNode]);
 
-  // ===== HELPER: Load children với addon counts =====
-  const fetchAndLoadChildren = useCallback(
-    async (nodeId: string): Promise<{ success: boolean }> => {
-      if (loadedNodeIds.has(nodeId)) {
-        return { success: true };
-      }
+  // ===== INITIAL LOAD: Load full tree =====
+  useEffect(() => {
+    // Nếu KHÔNG phải student → Skip
+    if (!config.isStudent || !classId) {
+      setIsInitialLoading(false);
+      return;
+    }
 
-      if (pendingRequestsRef.current.has(nodeId)) {
-        return { success: false };
-      }
+    // KIỂM TRA: Nếu initialCourse chưa có rootLessonNode → Có vấn đề
+    if (!initialCourse.rootLessonNode) {
+      console.error("❌ initialCourse.rootLessonNode is null!");
+      setIsInitialLoading(false);
+      return;
+    }
 
-      pendingRequestsRef.current.set(nodeId, true);
-      setLoadingNodeIds((prev) => new Set([...prev, nodeId]));
-
+    // Nếu là student → Load homework counts
+    const loadHomeworkCounts = async () => {
       try {
-        const result = await loadNodeChildren(nodeId);
+        const statusResult = await getStudentHomeworkStatusByClass(
+          initialCourse.id,
+          classId,
+        );
+        console.log("statusResult", statusResult);
 
-        if (!pendingRequestsRef.current.has(nodeId)) {
-          return { success: false };
-        }
+        if (statusResult.success && statusResult.data) {
+          const {
+            assignedByLessonNode,
+            submittedByLessonNode,
+            submissionsByAssignmentId,
+          } = statusResult.data;
 
-        if (result.success && result.data) {
-          const childrenUI: LessonNodeUI[] = result.data.map(transformToUINode);
+          const countsMap = buildHomeworkCountsMap(
+            initialCourse.rootLessonNode!,
+            assignedByLessonNode,
+            submittedByLessonNode,
+          );
 
-          setCourse((prev) => {
-            if (!prev.rootLessonNode) return prev;
+          setHomeworkCountsMap(countsMap);
 
-            const updatedRoot = updateNodeInTree(
-              prev.rootLessonNode,
-              nodeId,
-              (node) => ({
-                ...node,
-                children: childrenUI,
-                childrenLoaded: true,
-              })
+          // 🎯 Lưu submission status luôn (thay vì gọi getStudentSubmissionStatus sau)
+          if (submissionsByAssignmentId) {
+            const submissionStatusMap = new Map<
+              string,
+              {
+                hasSubmitted: boolean;
+                submittedAt: string | null;
+                evaluation?: {
+                  isCorrect: boolean;
+                  score: number;
+                  maxScore: number;
+                };
+              }
+            >();
+
+            Object.entries(submissionsByAssignmentId).forEach(
+              ([assignmentId, status]) => {
+                submissionStatusMap.set(assignmentId, status);
+              },
             );
 
-            return {
-              ...prev,
-              rootLessonNode: updatedRoot,
-            };
-          });
-
-          // Auto-load addon counts nếu là Class view
-          if (config.isClassView && config.classId && childrenUI.length > 0) {
-            const childIds = childrenUI.map((c) => c.id);
-            const countsResult = await getClassAddonCounts(
-              childIds,
-              config.classId
-            );
-
-            if (countsResult.success && countsResult.data) {
-              setAddonCounts((prev) => {
-                const newMap = new Map(prev);
-                Object.entries(countsResult.data).forEach(([id, counts]) => {
-                  newMap.set(id, counts as any);
-                });
-                return newMap;
-              });
-            }
+            setStudentSubmissionStatus(submissionStatusMap);
           }
 
-          setLoadedNodeIds((prev) => new Set([...prev, nodeId]));
-          return { success: true };
+          console.log(`✅ Homework counts loaded for ${countsMap.size} nodes`);
+
+          // Debug: Log một số counts
+          let totalPending = 0;
+          countsMap.forEach((counts) => {
+            totalPending += counts.pending;
+          });
+          console.log(`Total pending homeworks: ${totalPending}`);
+        }
+      } catch (error) {
+        console.error("❌ Error loading homework counts:", error);
+      } finally {
+        setIsInitialLoading(false);
+      }
+    };
+
+    loadHomeworkCounts();
+  }, [initialCourse.id, classId, config.isStudent]);
+
+  useEffect(() => {
+    // Chỉ load khi có classId (teacher hoặc student)
+    if (!classId || (!config.isTeacher && !config.isStudent)) {
+      return;
+    }
+
+    const loadClassLessonNodeCounts = async () => {
+      if (!initialCourse.rootLessonNode) return;
+
+      try {
+        // Lấy tất cả homework node IDs từ tree
+        const homeworkNodeIds: string[] = [];
+
+        function collectHomeworkIds(node: LessonNodeUI) {
+          if (node.type === "homework") {
+            homeworkNodeIds.push(node.id);
+          }
+          if (node.children && node.children.length > 0) {
+            node.children.forEach(collectHomeworkIds);
+          }
         }
 
-        return { success: false };
+        collectHomeworkIds(initialCourse.rootLessonNode);
+
+        if (homeworkNodeIds.length === 0) {
+          console.log("No homework nodes found");
+          return;
+        }
+
+        console.log(
+          `📊 Loading class lesson node counts for ${homeworkNodeIds.length} homework nodes...`,
+        );
+
+        // Load counts
+        const countsResult = await getClassLessonNodeCounts(
+          homeworkNodeIds,
+          classId,
+        );
+
+        if (countsResult.success && countsResult.data) {
+          const newMap = new Map<
+            string,
+            { lesson_note: number; homework_imp: number }
+          >();
+          Object.entries(countsResult.data).forEach(([id, counts]) => {
+            newMap.set(id, counts as any);
+          });
+          setClassLessonNodeCounts(newMap);
+
+          console.log(
+            `✅ Loaded class lesson node counts for ${newMap.size} nodes`,
+          );
+        }
       } catch (error) {
-        console.error("Error loading children:", error);
-        alert("Có lỗi xảy ra khi load children");
-        return { success: false };
-      } finally {
-        pendingRequestsRef.current.delete(nodeId);
-        setLoadingNodeIds((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(nodeId);
-          return newSet;
-        });
+        console.error("Error loading class lesson node counts:", error);
       }
-    },
-    [loadedNodeIds, config.isClassView, config.classId]
-  );
+    };
 
-  // ===== ACTION: Toggle expand/collapse =====
-  const toggleNodeExpanded = useCallback(
-    async (node: LessonNodeUI) => {
-      const nodeId = node.id;
-      const isCurrentlyExpanded = expandedNodeIds.has(nodeId);
+    loadClassLessonNodeCounts();
+  }, [
+    classId,
+    config.isTeacher,
+    config.isStudent,
+    initialCourse.rootLessonNode,
+  ]);
 
-      if (isCurrentlyExpanded) {
-        setExpandedNodeIds((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(nodeId);
-          return newSet;
-        });
-        return;
+  // ===== ACTION: Toggle expand/collapse (ĐƠN GIẢN) =====
+  const toggleNodeExpanded = useCallback((node: LessonNodeUI) => {
+    const nodeId = node.id;
+
+    setExpandedNodeIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(nodeId)) {
+        newSet.delete(nodeId);
+      } else {
+        newSet.add(nodeId);
       }
+      return newSet;
+    });
+  }, []);
 
-      setExpandedNodeIds((prev) => new Set([...prev, nodeId]));
-
-      const hasChildren = node._count.children > 0;
-      if (hasChildren) {
-        await fetchAndLoadChildren(nodeId);
-      }
-    },
-    [expandedNodeIds, fetchAndLoadChildren]
-  );
-
-  // ===== ACTION: Add LessonNode =====
+  // ===== ACTION: Add node =====
   const handleAddNode = useCallback(
-    async (type: AddNodeInputType) => {
+    async (type: AddNodeInputType, options?: AddNodeOptions): Promise<void> => {
       if (!selectedNode) {
         alert("Vui lòng chọn một node trước");
         return;
@@ -282,20 +401,27 @@ export const CourseStructureProvider: React.FC<
       setLoadingAction(`add-${type}`);
 
       startTransition(async () => {
+        const defaultTitle =
+          type === LessonNodeType.module
+            ? "New Module"
+            : type === LessonNodeType.lesson
+              ? "New Lesson"
+              : "New Homework";
+
         const result = await addLessonNode({
           courseId: course.id,
           parentId: selectedNode.id,
           type: type,
-          title:
-            type === LessonNodeType.module
-              ? "New Module"
-              : type === LessonNodeType.lesson
-                ? "New Lesson"
-                : "New Homework",
+          title: options?.title ?? defaultTitle,
+          content: options?.content,
         });
 
         if (result.success && result.data) {
-          const newNode: LessonNodeUI = transformToUINode(result.data);
+          const newNode: LessonNodeUI = {
+            ...transformToUINode(result.data),
+            children: [],
+            childrenLoaded: true,
+          };
 
           setCourse((prev) => {
             if (!prev.rootLessonNode) return prev;
@@ -303,7 +429,7 @@ export const CourseStructureProvider: React.FC<
             const updatedRoot = addChildToNode(
               prev.rootLessonNode,
               selectedNode.id,
-              newNode
+              newNode,
             );
 
             return {
@@ -312,11 +438,8 @@ export const CourseStructureProvider: React.FC<
             };
           });
 
-          if (type !== LessonNodeType.homework) {
-            setExpandedNodeIds((prev) => new Set([...prev, selectedNode.id]));
-          }
-
-          setLoadedNodeIds((prev) => new Set([...prev, selectedNode.id]));
+          // Auto expand parent
+          setExpandedNodeIds((prev) => new Set([...prev, selectedNode.id]));
         } else {
           alert(result.error || "Có lỗi xảy ra khi thêm node");
         }
@@ -324,10 +447,10 @@ export const CourseStructureProvider: React.FC<
         setLoadingAction(null);
       });
     },
-    [selectedNode, course.id]
+    [selectedNode, course.id],
   );
 
-  // ===== ACTION: Delete LessonNode =====
+  // ===== ACTION: Delete node =====
   const handleDeleteNode = useCallback(
     async (nodeId: string) => {
       if (nodeId === course.rootLessonNodeId) {
@@ -337,7 +460,7 @@ export const CourseStructureProvider: React.FC<
 
       if (
         !confirm(
-          "Bạn có chắc muốn xóa node này? Tất cả children cũng sẽ bị xóa."
+          "Bạn có chắc muốn xóa node này? Tất cả children cũng sẽ bị xóa.",
         )
       ) {
         return;
@@ -372,12 +495,6 @@ export const CourseStructureProvider: React.FC<
             newSet.delete(nodeId);
             return newSet;
           });
-
-          setLoadedNodeIds((prev) => {
-            const newSet = new Set(prev);
-            newSet.delete(nodeId);
-            return newSet;
-          });
         } else {
           alert(result.error || "Có lỗi xảy ra khi xóa node");
         }
@@ -385,17 +502,62 @@ export const CourseStructureProvider: React.FC<
         setLoadingAction(null);
       });
     },
-    [course.id, course.rootLessonNodeId, selectedNodeId]
+    [course.id, course.rootLessonNodeId, selectedNodeId],
   );
 
-  // ===== ACTION: Toggle addons =====
-  const handleToggleAddons = useCallback(
-    async (nodeId: string) => {
-      if (!config.classId) return;
+  // ===== ACTION: Update node =====
+  const handleUpdateNode = useCallback(
+    async (nodeId: string, updates: { title?: string; content?: any }) => {
+      setIsUpdatingNode(nodeId);
 
-      const isExpanded = expandedAddons.has(nodeId);
+      try {
+        const result = await updateLessonNode({
+          nodeId,
+          courseId: course.id,
+          ...updates,
+        });
+
+        if (result.success && result.data) {
+          setCourse((prev) => {
+            if (!prev.rootLessonNode) return prev;
+
+            const updatedRoot = updateNodeInTree(
+              prev.rootLessonNode,
+              nodeId,
+              (node) => ({
+                ...node,
+                title: result.data.title,
+                content: result.data.content,
+                updatedAt: result.data.updatedAt,
+              }),
+            );
+
+            return {
+              ...prev,
+              rootLessonNode: updatedRoot,
+            };
+          });
+        } else {
+          alert(result.error || "Có lỗi xảy ra khi cập nhật");
+        }
+      } catch (error) {
+        console.error("Error updating node:", error);
+        alert("Có lỗi xảy ra");
+      } finally {
+        setIsUpdatingNode(null);
+      }
+    },
+    [course.id],
+  );
+
+  // ===== CLASS LESSON NODE ACTIONS (GIỮ NGUYÊN) =====
+  const handleToggleClassLessonNodes = useCallback(
+    async (nodeId: string) => {
+      if (!classId) return;
+
+      const isExpanded = expandedClassLessonNodes.has(nodeId);
       if (isExpanded) {
-        setExpandedAddons((prev) => {
+        setExpandedClassLessonNodes((prev) => {
           const newSet = new Set(prev);
           newSet.delete(nodeId);
           return newSet;
@@ -403,50 +565,61 @@ export const CourseStructureProvider: React.FC<
         return;
       }
 
-      setLoadingNodeIds((prev) => new Set([...prev, `${nodeId}-addons`]));
+      setLoadingClassLessonNodeIds((prev) => new Set([...prev, nodeId]));
 
-      const result = await loadClassAddons(nodeId, config.classId);
+      try {
+        // 1. Load class lesson nodes
+        const result = await loadClassLessonNode(nodeId, classId);
 
-      setLoadingNodeIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(`${nodeId}-addons`);
-        return newSet;
-      });
+        if (!result.success || !result.data) {
+          throw new Error("Failed to load class lesson nodes");
+        }
 
-      if (result.success && result.data) {
-        setClassAddons((prev) => new Map(prev).set(nodeId, result.data));
-        setExpandedAddons((prev) => new Set([...prev, nodeId]));
+        setClassLessonNodes((prev) => new Map(prev).set(nodeId, result.data));
+        setExpandedClassLessonNodes((prev) => new Set([...prev, nodeId]));
+
+        // 🎯 Submission status đã được load từ getStudentHomeworkStatusByClass
+        // Không cần gọi API thêm nữa!
+      } catch (error) {
+        console.error("Error toggling class lesson nodes:", error);
+      } finally {
+        setLoadingClassLessonNodeIds((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(nodeId);
+          return newSet;
+        });
       }
     },
-    [config.classId, expandedAddons]
+    [classId, expandedClassLessonNodes, config.isStudent],
   );
 
-  // ===== ACTION: Add class addon =====
-  const handleAddClassAddon = useCallback(
-    async (nodeId: string, type: "lesson_note" | "homework_imp") => {
-      if (!config.classId) return;
+  const handleAddClassLessonNode = useCallback(
+    async (
+      nodeId: string,
+      type: "lesson_note" | "homework_imp",
+      content?: Record<string, any>,
+    ) => {
+      if (!classId) return;
 
-      setLoadingAction(`add-addon-${nodeId}`);
+      setLoadingAction(`add-classlessonnode-${nodeId}`);
 
       startTransition(async () => {
-        const result = await addClassAddon({
+        const result = await addClassLessonNode({
           lessonNodeId: nodeId,
-          classId: config.classId!,
+          classId: classId,
           type,
-          content: {
-            text: type === "lesson_note" ? "New note" : "New assignment",
-          },
+          content: content,
         });
 
         if (result.success && result.data) {
-          setClassAddons((prev) => {
+          setClassLessonNodes((prev) => {
             const newMap = new Map(prev);
             const existing = newMap.get(nodeId) || [];
             newMap.set(nodeId, [...existing, result.data]);
             return newMap;
           });
 
-          setAddonCounts((prev) => {
+          setClassLessonNodeCounts((prev) => {
             const newMap = new Map(prev);
             const current = newMap.get(nodeId) || {
               lesson_note: 0,
@@ -459,7 +632,7 @@ export const CourseStructureProvider: React.FC<
             return newMap;
           });
 
-          setExpandedAddons((prev) => new Set([...prev, nodeId]));
+          setExpandedClassLessonNodes((prev) => new Set([...prev, nodeId]));
         } else {
           alert(result.error || "Có lỗi xảy ra");
         }
@@ -467,40 +640,39 @@ export const CourseStructureProvider: React.FC<
         setLoadingAction(null);
       });
     },
-    [config.classId]
+    [classId],
   );
 
-  // ===== ACTION: Delete class addon =====
-  const handleDeleteClassAddon = useCallback(
+  const handleDeleteClassLessonNode = useCallback(
     async (
       nodeId: string,
-      addonId: string,
-      type: "lesson_note" | "homework_imp"
+      classLessonNodeId: string,
+      type: "lesson_note" | "homework_imp",
     ) => {
-      if (!config.classId) return;
+      if (!classId) return;
 
       if (!confirm("Bạn có chắc muốn xóa?")) return;
 
-      setLoadingAction(`delete-addon-${addonId}`);
+      setLoadingAction(`delete-classlessonnode-${classLessonNodeId}`);
 
       startTransition(async () => {
-        const result = await deleteClassAddon({
-          addonId,
-          classId: config.classId!,
+        const result = await deleteClassLessonNode({
+          classLessonNodeId: classLessonNodeId,
+          classId: classId,
         });
 
         if (result.success) {
-          setClassAddons((prev) => {
+          setClassLessonNodes((prev) => {
             const newMap = new Map(prev);
             const existing = newMap.get(nodeId) || [];
             newMap.set(
               nodeId,
-              existing.filter((a) => a.id !== addonId)
+              existing.filter((a) => a.id !== classLessonNodeId),
             );
             return newMap;
           });
 
-          setAddonCounts((prev) => {
+          setClassLessonNodeCounts((prev) => {
             const newMap = new Map(prev);
             const current = newMap.get(nodeId) || {
               lesson_note: 0,
@@ -519,29 +691,101 @@ export const CourseStructureProvider: React.FC<
         setLoadingAction(null);
       });
     },
-    [config.classId]
+    [classId],
   );
 
-  // ===== HELPER: Get addons by type =====
-  const getAddonsByType = useCallback(
+  const getClassLessonNodesByType = useCallback(
     (nodeId: string, type: "lesson_note" | "homework_imp") => {
-      const allAddons = classAddons.get(nodeId) || [];
-      return allAddons.filter((a) => a.type === type);
+      const allClassLessonNodes = classLessonNodes.get(nodeId) || [];
+      return allClassLessonNodes.filter((a) => a.type === type);
     },
-    [classAddons]
+    [classLessonNodes],
   );
 
-  // ===== AUTO-LOAD homework khi select lesson =====
-  useEffect(() => {
-    if (
-      selectedNode &&
-      selectedNode.type === LessonNodeType.lesson &&
-      !loadedNodeIds.has(selectedNode.id) &&
-      selectedNode._count.children > 0
-    ) {
-      fetchAndLoadChildren(selectedNode.id);
-    }
-  }, [selectedNode, loadedNodeIds, fetchAndLoadChildren]);
+  // ===== HELPER: Get homework counts =====
+  const getHomeworkCounts = useCallback(
+    (nodeId: string): HomeworkCountResult => {
+      return (
+        homeworkCountsMap.get(nodeId) || {
+          totalAssigned: 0,
+          pending: 0,
+        }
+      );
+    },
+    [homeworkCountsMap],
+  );
+
+  // ===== ACTION: Update assignment status when completed =====
+  const updateAssignmentStatus = useCallback(
+    async (assignmentId: string): Promise<void> => {
+      // Update studentSubmissionStatus
+      setStudentSubmissionStatus((prev) => {
+        const newMap = new Map(prev);
+        const currentStatus = newMap.get(assignmentId);
+        if (currentStatus) {
+          newMap.set(assignmentId, {
+            ...currentStatus,
+            hasSubmitted: true,
+            submittedAt: new Date().toISOString(),
+          });
+        }
+        return newMap;
+      });
+
+      // Reload homework counts để đảm bảo chính xác
+      if (config.isStudent && classId && initialCourse.rootLessonNode) {
+        try {
+          const statusResult = await getStudentHomeworkStatusByClass(
+            initialCourse.id,
+            classId,
+          );
+
+          if (statusResult.success && statusResult.data) {
+            const {
+              assignedByLessonNode,
+              submittedByLessonNode,
+              submissionsByAssignmentId,
+            } = statusResult.data;
+
+            const countsMap = buildHomeworkCountsMap(
+              initialCourse.rootLessonNode,
+              assignedByLessonNode,
+              submittedByLessonNode,
+            );
+
+            setHomeworkCountsMap(countsMap);
+
+            // Cập nhật submission status từ dữ liệu mới
+            if (submissionsByAssignmentId) {
+              const submissionStatusMap = new Map<
+                string,
+                {
+                  hasSubmitted: boolean;
+                  submittedAt: string | null;
+                  evaluation?: {
+                    isCorrect: boolean;
+                    score: number;
+                    maxScore: number;
+                  };
+                }
+              >();
+
+              Object.entries(submissionsByAssignmentId).forEach(
+                ([id, status]) => {
+                  submissionStatusMap.set(id, status);
+                },
+              );
+
+              setStudentSubmissionStatus(submissionStatusMap);
+            }
+          }
+        } catch (error) {
+          console.error("Error reloading homework counts:", error);
+        }
+      }
+    },
+    [config.isStudent, classId, initialCourse.id, initialCourse.rootLessonNode],
+  );
 
   // ===== CONTEXT VALUE =====
   const value: CourseStructureContextValue = {
@@ -553,29 +797,37 @@ export const CourseStructureProvider: React.FC<
     selectedNodeId,
     selectedNode,
 
-    // Tree UI states
+    // Tree UI
     expandedNodeIds,
-    loadedNodeIds,
-    loadingNodeIds,
 
-    // Class addon states
-    classAddons,
-    addonCounts,
-    expandedAddons,
+    // Class lesson nodes
+    classLessonNodes,
+    classLessonNodeCounts,
+    expandedClassLessonNodes,
 
-    // Loading states
+    // Homework counts
+    homeworkCountsMap,
+    getHomeworkCounts,
+
+    // Loading
     isPending,
     loadingAction,
+    isInitialLoading,
+    loadingClassLessonNodeIds,
+    handleUpdateNode,
+    isUpdatingNode,
 
     // Actions
     setSelectedNodeId,
     toggleNodeExpanded,
     handleAddNode,
     handleDeleteNode,
-    handleToggleAddons,
-    handleAddClassAddon,
-    handleDeleteClassAddon,
-    getAddonsByType,
+    handleToggleClassLessonNodes,
+    handleAddClassLessonNode,
+    handleDeleteClassLessonNode,
+    getClassLessonNodesByType,
+    studentSubmissionStatus,
+    updateAssignmentStatus,
   };
 
   return (
@@ -590,8 +842,12 @@ export const useCourseStructure = () => {
   const context = useContext(CourseStructureContext);
   if (!context) {
     throw new Error(
-      "useCourseStructure must be used within CourseStructureProvider"
+      "useCourseStructure must be used within CourseStructureProvider",
     );
   }
   return context;
+};
+
+export const useOptionalCourseStructure = () => {
+  return useContext(CourseStructureContext);
 };

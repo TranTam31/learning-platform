@@ -34,6 +34,8 @@ model User {
   classMembers  ClassMember[]
   invitations   Invitation[]
 
+  assignments    StudentAssignment[] @relation("UserStudentAssignments")
+  Notes          StudentNote[]       @relation("UserStudentNotes")
   githubAccounts GitHubAccount[]
   widgets        Widget[]
 
@@ -246,6 +248,9 @@ model ClassLessonNode {
   lessonNodeId String
   lessonNode   LessonNode @relation("NodeRoot", fields: [lessonNodeId], references: [id])
 
+  studentAssignment StudentAssignment[] @relation("StudentAssignments")
+  notes             StudentNote[]       @relation("StudentNotes")
+
   createdAt DateTime @default(now())
 
   @@map("class_lesson_node")
@@ -254,6 +259,45 @@ model ClassLessonNode {
 enum ClassAddonType {
   lesson_note
   homework_imp
+}
+
+model StudentAssignment {
+  id String @id @default(cuid())
+
+  studentId String
+  student   User   @relation("UserStudentAssignments", fields: [studentId], references: [id], onDelete: Cascade)
+
+  assignmentId String
+  assignment   ClassLessonNode @relation("StudentAssignments", fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  submissionData Json?
+
+  submittedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([studentId, assignmentId])
+  @@index([studentId])
+  @@index([assignmentId])
+  @@map("student_assignment")
+}
+
+model StudentNote {
+  id String @id @default(cuid())
+
+  studentId String
+  student   User   @relation("UserStudentNotes", fields: [studentId], references: [id], onDelete: Cascade)
+
+  noteId String
+  note   ClassLessonNode @relation("StudentNotes", fields: [noteId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, noteId])
+  @@index([studentId])
+  @@index([noteId])
+  @@map("student_note")
 }
 
 model GitHubAccount {
@@ -270,21 +314,45 @@ model GitHubAccount {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@map("github_account")
 }
 
 model Widget {
   id           String   @id @default(cuid())
   userId       String
   name         String
-  repoFullName String // "username/repo-name"
+  repoFullName String
   repoUrl      String
   branch       String   @default("main")
-  buildStatus  String   @default("pending") // pending, building, success, failed
-  buildOutput  String? // JSON string of build files
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  builds WidgetBuild[]
 
   @@index([userId])
+  @@map("widget")
+}
+
+model WidgetBuild {
+  id           String  @id @default(cuid())
+  widgetId     String
+  version      Int
+  status       String  @default("pending")
+  buildRunId   String?
+  errorMessage String?
+
+  startedAt   DateTime?
+  completedAt DateTime?
+  duration    Int? // Duration in seconds
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  widget Widget @relation(fields: [widgetId], references: [id], onDelete: Cascade)
+
+  @@unique([widgetId, version])
+  @@index([widgetId])
+  @@index([status])
+  @@map("widget_build")
 }

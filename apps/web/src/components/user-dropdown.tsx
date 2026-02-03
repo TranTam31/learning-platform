@@ -1,7 +1,14 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { LogOutIcon, ShieldIcon, UserIcon } from "lucide-react";
+import {
+  CreditCard,
+  LayoutDashboard,
+  LogOutIcon,
+  Notebook,
+  ShieldIcon,
+  UserIcon,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -46,6 +53,21 @@ export function UserDropdown({ user }: UserDropdownProps) {
         <DropdownMenuItem asChild>
           <Link href="/profile">
             <UserIcon className="size-4" /> <span>Profile</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard/classes">
+            <Notebook className="size-4" /> <span>Classes</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard">
+            <LayoutDashboard className="size-4" /> <span>Dashboard</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/dev">
+            <CreditCard className="size-4" /> <span>Widgets</span>
           </Link>
         </DropdownMenuItem>
         {/* {user.role === "admin" && <AdminItem />} */}

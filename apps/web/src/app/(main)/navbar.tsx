@@ -30,7 +30,7 @@ export async function Navbar() {
             height={32}
             className="border-muted rounded-full border"
           />
-          Learning Platform
+          Joy Math
         </Link>
         <div className="flex items-center gap-2">
           <ModeToggle />

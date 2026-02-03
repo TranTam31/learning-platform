@@ -1,12 +1,17 @@
 "use server";
 
-// import slugify from "slugify";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { checkUserInOrg } from "./members";
 import { revalidatePath } from "next/cache";
-import { AddNodeInput, DeleteNodeInput } from "@/types/course";
+import {
+  AddNodeInput,
+  DeleteNodeInput,
+  HomeworkContent,
+  LessonContent,
+  LessonNodeContent,
+} from "@/types/course";
 import { LessonNodeType } from "@repo/db";
 
 export async function canCreateCourse(orgId: string) {
@@ -25,7 +30,7 @@ export async function createCourse(
   name: string,
   slug: string,
   organizationId: string,
-  description?: string
+  description?: string,
 ) {
   const isMember = await checkUserInOrg({ orgId: organizationId });
   const permission = await canCreateCourse(organizationId);
@@ -70,7 +75,7 @@ export async function createCourse(
 
 export async function addLessonNode(input: AddNodeInput) {
   try {
-    const { courseId, parentId, type, title } = input;
+    const { courseId, parentId, type, title, content } = input;
 
     const parentNode = await prisma.lessonNode.findUnique({
       where: { id: parentId },
@@ -110,6 +115,7 @@ export async function addLessonNode(input: AddNodeInput) {
     }
 
     const order = parentNode._count.children;
+    const finalContent = content ?? getDefaultContent(type);
 
     const newNode = await prisma.lessonNode.create({
       data: {
@@ -118,7 +124,7 @@ export async function addLessonNode(input: AddNodeInput) {
         courseId,
         parentId,
         order,
-        content: {}, // Empty object cho tất cả
+        content: finalContent,
       },
       select: {
         id: true,
@@ -151,15 +157,60 @@ export async function addLessonNode(input: AddNodeInput) {
   }
 }
 
-// Function load homework
-export async function loadLessonHomeworks(lessonId: string) {
+function getDefaultContent(type: LessonNodeType): LessonNodeContent {
+  switch (type) {
+    case LessonNodeType.lesson:
+      return { content: "" } as LessonContent;
+
+    case LessonNodeType.homework:
+      return { widgetId: "", widgetVersion: "" } as HomeworkContent;
+
+    case LessonNodeType.module:
+      return { content: "" } as LessonContent;
+    default:
+      return {};
+  }
+}
+
+export async function updateLessonNode(input: {
+  nodeId: string;
+  courseId: string;
+  title?: string;
+  content?: any;
+}) {
   try {
-    const homeworks = await prisma.lessonNode.findMany({
-      where: {
-        parentId: lessonId,
-        type: LessonNodeType.homework,
+    const { nodeId, courseId, title, content } = input;
+
+    // Verify node exists and belongs to course
+    const node = await prisma.lessonNode.findUnique({
+      where: { id: nodeId },
+      select: { courseId: true, type: true },
+    });
+
+    if (!node || node.courseId !== courseId) {
+      return {
+        success: false,
+        error: "Node không tồn tại hoặc không thuộc course này",
+      };
+    }
+
+    // Prevent updating root course node title
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      select: { rootLessonNodeId: true },
+    });
+
+    if (course?.rootLessonNodeId === nodeId && title !== undefined) {
+      return { success: false, error: "Không thể đổi tên root course node" };
+    }
+
+    // Update node
+    const updated = await prisma.lessonNode.update({
+      where: { id: nodeId },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(content !== undefined && { content }),
       },
-      orderBy: { order: "asc" },
       select: {
         id: true,
         title: true,
@@ -170,18 +221,23 @@ export async function loadLessonHomeworks(lessonId: string) {
         courseId: true,
         createdAt: true,
         updatedAt: true,
+        _count: {
+          select: { children: true },
+        },
       },
     });
 
+    revalidatePath(`/courses/${courseId}`);
+
     return {
       success: true,
-      data: homeworks,
+      data: updated,
     };
   } catch (error) {
-    console.error("Error loading lesson homeworks:", error);
+    console.error("Error updating lesson node:", error);
     return {
       success: false,
-      error: "Có lỗi xảy ra khi load homework",
+      error: "Có lỗi xảy ra khi cập nhật node",
     };
   }
 }
@@ -244,42 +300,31 @@ export async function deleteLessonNode(input: DeleteNodeInput) {
   }
 }
 
-export async function getCourseWithRootNode(orgSlug: string, slug: string) {
-  const isMember = await checkUserInOrg({ orgSlug: orgSlug });
-  if (!isMember) throw new Error("Forbidden");
+export async function getCourseWithFullTreeBySlug(
+  orgSlug: string,
+  courseSlug: string,
+) {
   try {
+    const isMember = await checkUserInOrg({ orgSlug: orgSlug });
+    if (!isMember) throw new Error("Forbidden");
+
+    // 1. Load course info
     const course = await prisma.course.findUnique({
       where: {
         organizationId_slug: {
-          organizationId: isMember?.organization.id,
-          slug: slug,
+          organizationId: isMember.organization.id,
+          slug: courseSlug,
         },
       },
-      include: {
-        rootLessonNode: {
-          include: {
-            children: {
-              orderBy: { order: "asc" },
-              select: {
-                id: true,
-                title: true,
-                type: true,
-                content: true,
-                order: true,
-                parentId: true,
-                courseId: true,
-                createdAt: true,
-                updatedAt: true,
-                _count: {
-                  select: { children: true },
-                },
-              },
-            },
-            _count: {
-              select: { children: true },
-            },
-          },
-        },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        organizationId: true,
+        rootLessonNodeId: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
@@ -290,23 +335,9 @@ export async function getCourseWithRootNode(orgSlug: string, slug: string) {
       };
     }
 
-    return {
-      success: true,
-      data: course,
-    };
-  } catch (error) {
-    console.error("Error fetching course with root node:", error);
-    return {
-      success: false,
-      error: "Có lỗi xảy ra khi lấy dữ liệu course",
-    };
-  }
-}
-
-export async function loadNodeChildren(nodeId: string) {
-  try {
-    const children = await prisma.lessonNode.findMany({
-      where: { parentId: nodeId },
+    // 2. Load TẤT CẢ nodes của course
+    const allNodes = await prisma.lessonNode.findMany({
+      where: { courseId: course.id },
       orderBy: { order: "asc" },
       select: {
         id: true,
@@ -326,13 +357,17 @@ export async function loadNodeChildren(nodeId: string) {
 
     return {
       success: true,
-      data: children,
+      data: {
+        course,
+        nodes: allNodes,
+      },
+      role: isMember.role, // Trả về role để layout dùng
     };
   } catch (error) {
-    console.error("Error loading node children:", error);
+    console.error("Error loading course with full tree by slug:", error);
     return {
       success: false,
-      error: "Có lỗi xảy ra khi load children",
+      error: "Có lỗi xảy ra khi lấy dữ liệu course",
     };
   }
 }
@@ -347,17 +382,154 @@ export async function getCourses(organizationId: string) {
   });
 }
 
-export async function getCourseBySlug(orgSlug: string, slug: string) {
-  const isMember = await checkUserInOrg({ orgSlug: orgSlug });
-  if (!isMember) throw new Error("Forbidden");
+/**
+ * Load homework counts cho student trong một class
+ * Trả về Map: LessonNode.id (homework) → { totalAssigned, pending }
+ */
+export async function getStudentHomeworkStatusByClass(
+  courseId: string,
+  classId: string,
+) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
 
-  return prisma.course.findUnique({
-    where: {
-      // Đây là cách gọi "Compound Unique" trong Prisma
-      organizationId_slug: {
-        organizationId: isMember?.organization.id,
-        slug: slug,
+    if (!session) throw new Error("Unauthorized");
+
+    const userId = session.user.id;
+
+    // Verify student in class
+    const membership = await prisma.classMember.findUnique({
+      where: {
+        classId_userId: {
+          classId,
+          userId,
+        },
       },
-    },
-  });
+      select: { role: true },
+    });
+
+    if (!membership || membership.role !== "student") {
+      return {
+        success: false,
+        error: "Not a student of this class",
+      };
+    }
+
+    // 1️⃣ Lấy tất cả ClassLessonNode (homework_imp) của class này
+    const classLessonNodes = await prisma.classLessonNode.findMany({
+      where: {
+        classId: classId,
+        type: "homework_imp",
+      },
+      select: {
+        id: true,
+        lessonNodeId: true, // LessonNode.id (homework template)
+      },
+    });
+
+    if (classLessonNodes.length === 0) {
+      return {
+        success: true,
+        data: {
+          assignedByLessonNode: {}, // lessonNodeId → count
+          submittedByLessonNode: {}, // lessonNodeId → count
+          submissionsByAssignmentId: {}, // assignmentId → status
+        },
+      };
+    }
+
+    // 2️⃣ Lấy StudentAssignments của student này cho các assignments trên
+    const classLessonNodeIds = classLessonNodes.map((cln) => cln.id);
+
+    const studentAssignments = await prisma.studentAssignment.findMany({
+      where: {
+        studentId: userId,
+        assignmentId: {
+          in: classLessonNodeIds,
+        },
+      },
+      select: {
+        assignmentId: true, // ClassLessonNode.id
+        submissionData: true,
+        submittedAt: true,
+      },
+    });
+
+    // 3️⃣ Build Maps: ClassLessonNode.id → status
+    const assignedSet = new Set(
+      studentAssignments.map((sa) => sa.assignmentId),
+    );
+    const submittedSet = new Set(
+      studentAssignments
+        .filter((sa) => sa.submissionData !== null)
+        .map((sa) => sa.assignmentId),
+    );
+
+    // 4️⃣ Group by LessonNode.id
+    const assignedByLessonNode: Record<string, number> = {};
+    const submittedByLessonNode: Record<string, number> = {};
+
+    classLessonNodes.forEach((cln) => {
+      const lessonNodeId = cln.lessonNodeId;
+      const classLessonNodeId = cln.id;
+
+      // Chỉ đếm nếu student được giao
+      if (assignedSet.has(classLessonNodeId)) {
+        assignedByLessonNode[lessonNodeId] =
+          (assignedByLessonNode[lessonNodeId] || 0) + 1;
+
+        if (submittedSet.has(classLessonNodeId)) {
+          submittedByLessonNode[lessonNodeId] =
+            (submittedByLessonNode[lessonNodeId] || 0) + 1;
+        }
+      }
+    });
+
+    // console.log("📊 Student homework status:", {
+    //   totalClassLessonNodes: classLessonNodes.length,
+    //   assignedToStudent: assignedSet.size,
+    //   submitted: submittedSet.size,
+    //   byLessonNode: assignedByLessonNode,
+    // });
+
+    // 5️⃣ Build Map: assignmentId → submission status + evaluation
+    const submissionsByAssignmentId: Record<
+      string,
+      {
+        hasSubmitted: boolean;
+        submittedAt: string | null;
+        evaluation?: {
+          isCorrect: boolean;
+          score: number;
+          maxScore: number;
+        };
+      }
+    > = {};
+
+    studentAssignments.forEach((sa) => {
+      const submissionData = sa.submissionData as any;
+      submissionsByAssignmentId[sa.assignmentId] = {
+        hasSubmitted: sa.submissionData !== null,
+        submittedAt: sa.submittedAt ? sa.submittedAt.toISOString() : null,
+        evaluation: submissionData?.evaluation,
+      };
+    });
+
+    return {
+      success: true,
+      data: {
+        assignedByLessonNode, // { "hw_1": 1, "hw_2": 2 }
+        submittedByLessonNode, // { "hw_1": 1 }
+        submissionsByAssignmentId, // { "assignment_id" → { hasSubmitted, submittedAt } }
+      },
+    };
+  } catch (error) {
+    console.error("Error getting student homework status:", error);
+    return {
+      success: false,
+      error: "Có lỗi xảy ra",
+    };
+  }
 }

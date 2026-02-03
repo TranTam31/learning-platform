@@ -1,7 +1,16 @@
+"use client";
+
+import CourseStructureManager from "@/components/course-structure/course-structure-manager";
 import { useClass } from "@/components/providers/class-context";
-import React from "react";
 
 export default function ClassPage() {
-  const classCourse = useClass();
-  return <div>Class Page</div>;
+  const { classCourse, role } = useClass();
+  // console.log(classCourse);
+  return (
+    <CourseStructureManager
+      initialCourse={classCourse.courseUI}
+      userRole={role}
+      classId={classCourse.id}
+    />
+  );
 }

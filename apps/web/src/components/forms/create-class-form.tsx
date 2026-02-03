@@ -7,13 +7,7 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
   Field,
   FieldError,
@@ -73,11 +67,6 @@ export function CreateClassForm({
 
   return (
     <Card className="w-full border-none shadow-none sm:max-w-md text-left">
-      <CardHeader className="px-0 pt-0">
-        <CardTitle className="text-lg font-semibold">
-          Create New Class
-        </CardTitle>
-      </CardHeader>
       <CardContent className="px-0">
         <form id="create-class-form" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>

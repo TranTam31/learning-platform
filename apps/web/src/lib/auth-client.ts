@@ -8,5 +8,5 @@
 import { createAppAuthClient } from "@repo/auth/client";
 
 export const authClient = createAppAuthClient({
-  baseURL: "http://localhost:3000",
+  baseURL: process.env.BETTER_AUTH_URL!,
 });

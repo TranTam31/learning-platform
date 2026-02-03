@@ -1,10 +1,10 @@
 "use client";
 
-import MembersTable from "@/components/members-table";
+import MembersTable from "@/components/organization/members-table";
 import SearchUser from "@/components/organization/search-user";
 import { useOrganization } from "@/components/providers/org-context";
 
-export default function MembersPage() {
+export default function OrgMembersPage() {
   const organization = useOrganization();
 
   return (

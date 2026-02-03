@@ -1,7 +1,8 @@
 import { CourseNav } from "@/components/course/course-nav";
 import { CourseProvider } from "@/components/providers/course-provider";
-import { getCourseBySlug, getCourseWithRootNode } from "@/server/courses";
+import { getCourseWithFullTreeBySlug } from "@/server/courses";
 import { redirect } from "next/navigation";
+import { buildTreeFromFlatList } from "@/components/course-structure/utils/course-structure-utiles";
 
 interface PageProps {
   params: Promise<{
@@ -14,16 +15,39 @@ interface PageProps {
 export default async function CourseLayout({ children, params }: PageProps) {
   const { orgSlug, courseSlug } = await params;
 
-  let course;
+  // Load course với FULL TREE một lần duy nhất
+  let result;
   try {
-    course = await getCourseWithRootNode(orgSlug, courseSlug);
-  } catch {
+    result = await getCourseWithFullTreeBySlug(orgSlug, courseSlug);
+  } catch (error) {
+    console.error("Error loading course:", error);
     redirect("/dashboard");
   }
 
-  if (!course) redirect("/dashboard");
+  if (!result.success || !result.data) {
+    redirect("/dashboard");
+  }
+
+  const { course, nodes } = result.data;
+  const role = result.role === "member" ? "org_member" : "org_admin";
+
+  // Build tree từ flat nodes
+  const rootNode = buildTreeFromFlatList(nodes);
+
+  if (!rootNode) {
+    console.error("Failed to build tree");
+    redirect("/dashboard");
+  }
+
+  // Tạo CourseUI object
+  const courseUI = {
+    ...course,
+    rootLessonNode: rootNode,
+  };
+  // console.log("course info: ", courseUI);
+
   return (
-    <CourseProvider course={course.data}>
+    <CourseProvider course={courseUI} role={role}>
       <div className="">
         {/* <h1 className="font-bold text-2xl">{course.name}</h1>
         <CourseNav /> */}

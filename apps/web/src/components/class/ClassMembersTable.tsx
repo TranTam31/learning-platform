@@ -1,16 +1,14 @@
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import MembersTableAction from "./members-table-action";
-import { Member, Prisma } from "@repo/db";
+import { Prisma } from "@repo/db";
 
-type MemberWithUser = Prisma.MemberGetPayload<{
+type MemberWithUser = Prisma.ClassMemberGetPayload<{
   include: { user: true };
 }>;
 
@@ -18,7 +16,7 @@ interface MembersTableProps {
   members: MemberWithUser[];
 }
 
-export default function MembersTable({ members }: MembersTableProps) {
+export default function ClassMembersTable({ members }: MembersTableProps) {
   return (
     <Table>
       <TableHeader>
@@ -36,7 +34,7 @@ export default function MembersTable({ members }: MembersTableProps) {
             <TableCell>{member.user.email}</TableCell>
             <TableCell>{member.role}</TableCell>
             <TableCell className="text-right">
-              <MembersTableAction memberId={member.id} />
+              {/* <MembersTableAction memberId={member.id} /> */}
             </TableCell>
           </TableRow>
         ))}

@@ -2,7 +2,12 @@
 
 import { createContext, useContext } from "react";
 
-export const ClassContext = createContext<any | null>(null);
+export type ClassContextValue = {
+  classCourse: any;
+  role: "class_teacher" | "class_student" | "class_owner";
+};
+
+export const ClassContext = createContext<ClassContextValue | null>(null);
 
 export function useClass() {
   const ctx = useContext(ClassContext);
