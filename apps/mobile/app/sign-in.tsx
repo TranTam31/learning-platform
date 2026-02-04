@@ -2,7 +2,7 @@ import { authClient } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 
-export default function Index() {
+export default function SignInPage() {
   const { data: session } = authClient.useSession();
 
   useEffect(() => {
