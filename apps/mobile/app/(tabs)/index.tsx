@@ -9,7 +9,10 @@ import {
   RefreshControl,
   Pressable,
   StyleSheet,
+  TouchableOpacity,
 } from "react-native";
+import { useRouter } from "expo-router";
+import { Settings } from "lucide-react-native";
 
 interface ClassData {
   id: string;
@@ -25,6 +28,7 @@ interface ClassData {
 }
 
 export default function IndexTab() {
+  const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,16 +78,6 @@ export default function IndexTab() {
     fetchClasses();
   };
 
-  if (!session?.user) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.centerText}>
-          Please sign in to view your classes
-        </Text>
-      </View>
-    );
-  }
-
   if (loading) {
     return (
       <View style={styles.container}>
@@ -93,7 +87,15 @@ export default function IndexTab() {
   }
 
   const renderClassItem = ({ item }: { item: ClassData }) => (
-    <Pressable style={styles.classCard}>
+    <Pressable
+      style={styles.classCard}
+      onPress={() =>
+        router.push({
+          pathname: "/(tabs)/class-detail",
+          params: { classId: item.id },
+        })
+      }
+    >
       <Text style={styles.className}>{item.name}</Text>
       {item.course && <Text style={styles.courseName}>{item.course.name}</Text>}
       <Text style={styles.memberCount}>
@@ -118,6 +120,14 @@ export default function IndexTab() {
           }
         />
       )}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push("/settings")}
+      >
+        <Text style={styles.fabText}>
+          <Settings className="size-5 text-white mr-2" />
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -164,5 +174,26 @@ const styles = StyleSheet.create({
   memberCount: {
     fontSize: 12,
     color: "#999",
+  },
+  fab: {
+    position: "absolute",
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#D3D3D3",
+    justifyContent: "center",
+    alignItems: "center",
+    right: 20,
+    bottom: 30,
+    elevation: 5, // Android shadow
+    shadowColor: "#000", // iOS shadow
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+  },
+  fabText: {
+    color: "#fff",
+    fontSize: 28,
+    lineHeight: 30,
   },
 });

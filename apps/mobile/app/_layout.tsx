@@ -9,7 +9,7 @@ export default function RootLayout() {
   return (
     <React.Fragment>
       <StatusBar />
-      <Stack>
+      <Stack screenOptions={{ headerShown: false }}>
         <Stack.Protected guard={session?.user.id != undefined}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack.Protected>
