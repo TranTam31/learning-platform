@@ -149,15 +149,11 @@ export async function addClassMember(
   });
 }
 
-export async function getUserClasses() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) throw new Error("Unauthorized");
-
+// Internal version (used by both server and API routes)
+export async function _getUserClassesByUserId(userId: string) {
   const classMembers = await prisma.classMember.findMany({
     where: {
-      userId: session.user.id,
+      userId,
     },
     include: {
       class: {
@@ -202,6 +198,15 @@ export async function getUserClasses() {
   };
 
   return groupedClasses;
+}
+
+export async function getUserClasses() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) throw new Error("Unauthorized");
+
+  return _getUserClassesByUserId(session.user.id);
 }
 
 export async function getStudentPendingAssignments(classId: string) {
@@ -276,18 +281,12 @@ export async function getStudentPendingAssignments(classId: string) {
   }
 }
 
-export async function getStudentPendingAssignmentsForClasses(
+// Internal version (used by both server and API routes)
+export async function _getStudentPendingAssignmentsForClassesByUserId(
+  userId: string,
   classIds: string[],
 ) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session) throw new Error("Unauthorized");
-
-    const userId = session.user.id;
-
     // 1️⃣ Lấy tất cả StudentAssignments của user trong các classes này
     const studentAssignments = await prisma.studentAssignment.findMany({
       where: {
@@ -339,4 +338,19 @@ export async function getStudentPendingAssignmentsForClasses(
       error: "Có lỗi xảy ra",
     };
   }
+}
+
+export async function getStudentPendingAssignmentsForClasses(
+  classIds: string[],
+) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) throw new Error("Unauthorized");
+
+  return _getStudentPendingAssignmentsForClassesByUserId(
+    session.user.id,
+    classIds,
+  );
 }

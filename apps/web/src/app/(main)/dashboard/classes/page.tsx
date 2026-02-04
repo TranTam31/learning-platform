@@ -70,7 +70,7 @@ export default async function ClassesPage() {
               <ClassCard
                 key={classItem.id}
                 classData={classItem}
-                pendingAssignments={pendingAssignments[classItem.id]}
+                pendingAssignments={pendingAssignments![classItem.id]}
               />
             ))}
           </div>
