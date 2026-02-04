@@ -3,5 +3,6 @@ import prisma from "./prisma";
 import { nextCookies } from "better-auth/next-js";
 
 export const auth = createAuth(prisma, {
+  trustedOrigins: ["myapp://", "http://localhost:8081"],
   plugins: [nextCookies()],
 });
