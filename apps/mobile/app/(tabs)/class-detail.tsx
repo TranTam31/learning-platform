@@ -8,7 +8,7 @@ import {
   StyleSheet,
   FlatList,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { API_BASE_URL } from "@/lib/config/api";
 import {
   ClassData,
@@ -22,6 +22,7 @@ import {
   useCourseStructure,
 } from "@/components/providers/course-structure-provider";
 import { authClient } from "@/lib/auth-client";
+import { AssignmentModal } from "@/components/AssignmentModal";
 
 // Tree Node Component
 interface TreeNodeProps {
@@ -156,8 +157,12 @@ const TreeNodeRenderer: React.FC<{
 };
 
 // Detail Panel
-const DetailPanel: React.FC = () => {
+const DetailPanel: React.FC<{ classId: string }> = ({ classId }) => {
   const { selectedNode } = useCourseStructure();
+  const [showAssignmentModal, setShowAssignmentModal] = useState(false);
+  const [selectedHomeworkId, setSelectedHomeworkId] = useState<string | null>(
+    null,
+  );
 
   if (!selectedNode) {
     return (
@@ -177,55 +182,106 @@ const DetailPanel: React.FC = () => {
         )
       : [];
 
+  const handleHomeworkPress = (homeworkId: string) => {
+    setSelectedHomeworkId(homeworkId);
+    setShowAssignmentModal(true);
+  };
+
   return (
-    <ScrollView style={styles.detailPanel}>
-      <View style={styles.detailContent}>
-        <View style={styles.typeTag}>
-          <Text style={styles.typeTagText}>{selectedNode.type}</Text>
-        </View>
-
-        <Text style={styles.detailTitle}>{selectedNode.title}</Text>
-
-        <View style={styles.divider} />
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.sectionText}>
-            {(selectedNode.content as any)?.description ||
-              "No description available."}
-          </Text>
-        </View>
-
-        {selectedNode.type === LessonNodeType.lesson && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              Homework ({homeworkNodes.length})
-            </Text>
-            {homeworkNodes.length === 0 ? (
-              <Text style={styles.emptyText}>No homework for this lesson</Text>
-            ) : (
-              <View style={styles.homeworkList}>
-                {homeworkNodes.map((hw) => (
-                  <View key={hw.id} style={styles.homeworkItem}>
-                    <Text style={styles.homeworkTitle}>📋 {hw.title}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
+    <>
+      <ScrollView style={styles.detailPanel}>
+        <View style={styles.detailContent}>
+          <View style={styles.typeTag}>
+            <Text style={styles.typeTagText}>{selectedNode.type}</Text>
           </View>
-        )}
 
-        {/* Placeholder for assignment details */}
-        {selectedNode.type === LessonNodeType.lesson && (
+          <Text style={styles.detailTitle}>{selectedNode.title}</Text>
+
+          <View style={styles.divider} />
+
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Assignments</Text>
-            <Text style={styles.placeholderText}>
-              Assignment details coming soon
+            <Text style={styles.sectionTitle}>Description</Text>
+            <Text style={styles.sectionText}>
+              {(selectedNode.content as any)?.description ||
+                "No description available."}
             </Text>
           </View>
-        )}
+
+          {selectedNode.type === LessonNodeType.lesson && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>
+                Homework ({homeworkNodes.length})
+              </Text>
+              {homeworkNodes.length === 0 ? (
+                <Text style={styles.emptyText}>
+                  No homework for this lesson
+                </Text>
+              ) : (
+                <View style={styles.homeworkList}>
+                  {homeworkNodes.map((hw) => (
+                    <Pressable
+                      key={hw.id}
+                      style={styles.homeworkItem}
+                      onPress={() => handleHomeworkPress(hw.id)}
+                    >
+                      <Text style={styles.homeworkTitle}>📋 {hw.title}</Text>
+                      <Text style={styles.homeworkSubtitle}>
+                        Tap to view assignments
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+      </ScrollView>
+
+      {selectedHomeworkId && (
+        <AssignmentModal
+          visible={showAssignmentModal}
+          onClose={() => setShowAssignmentModal(false)}
+          homeworkNodeId={selectedHomeworkId}
+          classId={classId}
+        />
+      )}
+    </>
+  );
+};
+
+// Do All Homework Button Component
+const DoAllHomeworkButton: React.FC<{ classId: string }> = ({ classId }) => {
+  const router = useRouter();
+  const { homeworkCountsMap, course } = useCourseStructure();
+
+  // Calculate total pending from root node
+  const rootCounts = course.rootLessonNodeId
+    ? homeworkCountsMap.get(course.rootLessonNodeId)
+    : null;
+  const totalPending = rootCounts?.pending || 0;
+
+  if (totalPending === 0) {
+    return (
+      <View style={styles.doAllButtonDisabled}>
+        <Text style={styles.doAllButtonIcon}>✓</Text>
+        <Text style={styles.doAllButtonTextDisabled}>All Done!</Text>
       </View>
-    </ScrollView>
+    );
+  }
+
+  return (
+    <Pressable
+      style={styles.doAllButton}
+      onPress={() =>
+        router.push({
+          pathname: "/(tabs)/do-all-homework",
+          params: { classId },
+        })
+      }
+    >
+      <Text style={styles.doAllButtonIcon}>▶</Text>
+      <Text style={styles.doAllButtonText}>Do Homework ({totalPending})</Text>
+    </Pressable>
   );
 };
 
@@ -253,6 +309,7 @@ const ClassDetailContent: React.FC<{
           <View style={styles.sidebarHeader}>
             <Text style={styles.sidebarTitle}>Course Structure</Text>
             <Text style={styles.courseName}>{course.name}</Text>
+            <DoAllHomeworkButton classId={classData.id} />
           </View>
 
           {course.rootLessonNode ? (
@@ -264,7 +321,7 @@ const ClassDetailContent: React.FC<{
       </View>
       {/* Detail Panel */}
       <View style={{ flex: 7 }}>
-        <DetailPanel />
+        <DetailPanel classId={classData.id} />
       </View>
     </View>
   );
@@ -476,13 +533,19 @@ const styles = StyleSheet.create({
   },
   homeworkItem: {
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
     backgroundColor: "#fef3c7",
     borderRadius: 4,
   },
   homeworkTitle: {
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: "600",
     color: "#92400e",
+    marginBottom: 4,
+  },
+  homeworkSubtitle: {
+    fontSize: 11,
+    color: "#b45309",
   },
   placeholderText: {
     fontSize: 12,
@@ -520,5 +583,41 @@ const styles = StyleSheet.create({
   detailPlaceholderText: {
     fontSize: 14,
     color: "#9ca3af",
+  },
+  doAllButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#8b5cf6",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 12,
+    gap: 6,
+  },
+  doAllButtonDisabled: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#dcfce7",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 12,
+    gap: 6,
+  },
+  doAllButtonIcon: {
+    fontSize: 12,
+    color: "white",
+  },
+  doAllButtonText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "white",
+  },
+  doAllButtonTextDisabled: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#16a34a",
   },
 });

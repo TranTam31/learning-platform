@@ -251,6 +251,7 @@ export const CourseStructureProvider: React.FC<
             assignedByLessonNode,
             submittedByLessonNode,
           );
+          console.log("countsMap: ", countsMap);
 
           setHomeworkCountsMap(countsMap);
 

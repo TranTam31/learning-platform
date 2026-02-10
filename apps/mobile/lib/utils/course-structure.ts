@@ -66,27 +66,60 @@ export function findNodeById(
 
 // Build homework counts map
 export function buildHomeworkCountsMap(
-  node: LessonNodeUI,
+  rootNode: LessonNodeUI,
   assignedByLessonNode: Record<string, number>,
   submittedByLessonNode: Record<string, number>,
 ): Map<string, { totalAssigned: number; pending: number }> {
-  const map = new Map<string, { totalAssigned: number; pending: number }>();
+  const countsMap = new Map<
+    string,
+    { totalAssigned: number; pending: number }
+  >();
 
-  function traverse(n: LessonNodeUI) {
-    const totalAssigned = assignedByLessonNode[n.id] || 0;
-    const submitted = submittedByLessonNode[n.id] || 0;
-    const pending = totalAssigned - submitted;
+  // Count homeworks recursively for a node (includes all children)
+  function countHomeworksRecursive(node: LessonNodeUI): {
+    totalAssigned: number;
+    pending: number;
+  } {
+    let totalAssigned = 0;
+    let pending = 0;
 
-    if (totalAssigned > 0) {
-      map.set(n.id, {
-        totalAssigned,
-        pending,
-      });
+    function traverse(currentNode: LessonNodeUI) {
+      // Count assignments for this node
+      const assigned = assignedByLessonNode[currentNode.id] || 0;
+      const submitted = submittedByLessonNode[currentNode.id] || 0;
+
+      if (assigned > 0) {
+        totalAssigned += assigned;
+        pending += assigned - submitted;
+      }
+
+      // Traverse children
+      if (currentNode.children && currentNode.children.length > 0) {
+        currentNode.children.forEach(traverse);
+      }
     }
 
-    n.children.forEach(traverse);
+    traverse(node);
+
+    return {
+      totalAssigned,
+      pending,
+    };
   }
 
-  traverse(node);
-  return map;
+  // Build map for all nodes
+  function traverse(node: LessonNodeUI) {
+    // Calculate counts for this node (includes all children)
+    const counts = countHomeworksRecursive(node);
+    countsMap.set(node.id, counts);
+
+    // Recursive into children
+    if (node.children && node.children.length > 0) {
+      node.children.forEach(traverse);
+    }
+  }
+
+  traverse(rootNode);
+
+  return countsMap;
 }

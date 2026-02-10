@@ -83,3 +83,25 @@ export interface HomeworkCountResult {
   totalAssigned: number;
   pending: number;
 }
+
+export interface Evaluation {
+  isCorrect: boolean;
+  score: number;
+  maxScore: number;
+}
+
+export interface SubmissionStatus {
+  hasSubmitted: boolean;
+  submittedAt: string | null;
+  evaluation?: Evaluation;
+}
+
+export interface ClassLessonNode {
+  id: string;
+  lessonNodeId: string;
+  classId: string;
+  type: "lesson_note" | "homework_imp";
+  content?: any;
+  createdAt?: string;
+  updatedAt?: string;
+}
