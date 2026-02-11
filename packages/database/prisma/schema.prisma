@@ -21,18 +21,19 @@ enum Role {
 }
 
 model User {
-  id            String        @id
-  name          String
-  email         String
-  emailVerified Boolean       @default(false)
-  image         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  members       Member[]
-  classMembers  ClassMember[]
-  invitations   Invitation[]
+  id                String             @id
+  name              String
+  email             String
+  emailVerified     Boolean            @default(false)
+  image             String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  sessions          Session[]
+  accounts          Account[]
+  members           Member[]
+  classMembers      ClassMember[]
+  classGroupMembers ClassGroupMember[]
+  invitations       Invitation[]
 
   assignments    StudentAssignment[] @relation("UserStudentAssignments")
   Notes          StudentNote[]       @relation("UserStudentNotes")
@@ -206,6 +207,7 @@ model Class {
   members ClassMember[]
 
   classLessonNodes ClassLessonNode[] @relation("ClassLessonNode")
+  groups           ClassGroup[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -234,6 +236,31 @@ enum ClassRole {
   owner
   teacher
   student
+}
+
+model ClassGroup {
+  id                String             @id @default(cuid())
+  name              String
+  description       String?
+  classId           String
+  class             Class              @relation(fields: [classId], references: [id], onDelete: Cascade)
+  classGroupMembers ClassGroupMember[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@map("class_group")
+}
+
+model ClassGroupMember {
+  id           String     @id @default(cuid())
+  classGroupId String
+  classGroup   ClassGroup @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  joinedAt     DateTime   @default(now())
+
+  @@unique([classGroupId, userId])
+  @@map("class_group_member")
 }
 
 model ClassLessonNode {

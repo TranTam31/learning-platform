@@ -618,7 +618,7 @@ export const CourseStructureProvider: React.FC<
           setClassLessonNodes((prev) => {
             const newMap = new Map(prev);
             const existing = newMap.get(nodeId) || [];
-            newMap.set(nodeId, [...existing, result.data]);
+            newMap.set(nodeId, [result.data, ...existing]);
             return newMap;
           });
 
