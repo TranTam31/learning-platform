@@ -90,6 +90,31 @@ export async function getClassWithCourse(classId: string) {
           },
         },
       },
+      groups: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          createdAt: true,
+          updatedAt: true,
+          classGroupMembers: {
+            select: {
+              id: true,
+              userId: true,
+              joinedAt: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  image: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: "asc" },
+      },
       course: {
         select: {
           id: true,

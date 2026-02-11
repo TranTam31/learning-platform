@@ -18,6 +18,7 @@ export default function ClassNav() {
   // Tối ưu mảng tabs để code ngắn gọn hơn
   const tabs = [
     { name: "Members", href: `${basePath}/members` },
+    { name: "Groups", href: `${basePath}/groups` },
     { name: "Analyst", href: `${basePath}/analyst` },
   ];
 
