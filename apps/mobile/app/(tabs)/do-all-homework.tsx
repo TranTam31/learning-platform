@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Pressable,
   ScrollView,
+  Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { API_BASE_URL } from "@/lib/config/api";
@@ -22,6 +23,7 @@ interface PendingAssignment {
 interface DisplayedAssignment extends PendingAssignment {
   index: number;
   isCompleted: boolean;
+  isCorrect?: boolean; // NEW: Track if the submission is correct
 }
 
 export default function DoAllHomeworkScreen() {
@@ -37,6 +39,10 @@ export default function DoAllHomeworkScreen() {
   >([]);
   // Track completed assignments
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
+  // Track evaluation (isCorrect) for each assignment
+  const [evaluationMap, setEvaluationMap] = useState<
+    Map<string, { isCorrect: boolean }>
+  >(new Map());
   // Current assignment being worked on
   const [currentAssignmentId, setCurrentAssignmentId] = useState<
     string | undefined
@@ -114,6 +120,15 @@ export default function DoAllHomeworkScreen() {
         setCurrentAssignmentId(pendingWhenOpened[currentIdx + 1].assignmentId);
       }, 500);
     }
+  };
+
+  // Handle evaluation update from AssignmentWidget
+  const handleEvaluationUpdate = (assignmentId: string, isCorrect: boolean) => {
+    setEvaluationMap((prev) => {
+      const newMap = new Map(prev);
+      newMap.set(assignmentId, { isCorrect });
+      return newMap;
+    });
   };
 
   // Check if all assignments are completed
@@ -205,6 +220,10 @@ export default function DoAllHomeworkScreen() {
           <ScrollView style={styles.assignmentList}>
             {displayedAssignments.map((assignment) => {
               const isCurrent = assignment.assignmentId === currentAssignmentId;
+              const evaluation = evaluationMap.get(assignment.assignmentId);
+              const isCorrect = evaluation?.isCorrect;
+              const isLoadingEvaluation =
+                assignment.isCompleted && isCorrect === undefined;
 
               return (
                 <Pressable
@@ -215,12 +234,27 @@ export default function DoAllHomeworkScreen() {
                   style={[
                     styles.assignmentItem,
                     isCurrent && styles.assignmentItemActive,
-                    assignment.isCompleted && styles.assignmentItemCompleted,
+                    assignment.isCompleted &&
+                      (isCorrect === false
+                        ? styles.assignmentItemIncorrect
+                        : isCorrect === true
+                          ? styles.assignmentItemCompleted
+                          : styles.assignmentItemLoading),
                   ]}
                 >
                   <View style={styles.assignmentIcon}>
                     {assignment.isCompleted ? (
-                      <Text style={styles.checkIcon}>✓</Text>
+                      isCorrect === undefined ? (
+                        <ActivityIndicator
+                          size="small"
+                          color="#6b7280"
+                          style={styles.loadingIcon}
+                        />
+                      ) : isCorrect === false ? (
+                        <Text style={styles.incorrectIcon}>✗</Text>
+                      ) : (
+                        <Text style={styles.checkIcon}>✓</Text>
+                      )
                     ) : (
                       <Text style={styles.circleIcon}>○</Text>
                     )}
@@ -231,7 +265,11 @@ export default function DoAllHomeworkScreen() {
                         styles.assignmentTitle,
                         isCurrent && styles.assignmentTitleActive,
                         assignment.isCompleted &&
-                          styles.assignmentTitleCompleted,
+                          (isCorrect === false
+                            ? styles.assignmentTitleIncorrect
+                            : isCorrect === true
+                              ? styles.assignmentTitleCompleted
+                              : styles.assignmentTitleLoading),
                       ]}
                       numberOfLines={1}
                     >
@@ -256,6 +294,7 @@ export default function DoAllHomeworkScreen() {
               onCompleted={() =>
                 handleAssignmentCompleted(currentAssignmentId!)
               }
+              onEvaluationUpdate={handleEvaluationUpdate}
               onError={(error) => console.error("Widget error:", error)}
             />
           )}
@@ -409,6 +448,14 @@ const styles = StyleSheet.create({
     borderColor: "#bbf7d0",
     backgroundColor: "#f0fdf4",
   },
+  assignmentItemIncorrect: {
+    borderColor: "#fecaca",
+    backgroundColor: "#fef2f2",
+  },
+  assignmentItemLoading: {
+    borderColor: "#e5e7eb",
+    backgroundColor: "white",
+  },
   assignmentIcon: {
     width: 24,
     height: 24,
@@ -421,9 +468,18 @@ const styles = StyleSheet.create({
     color: "#22c55e",
     fontWeight: "bold",
   },
+  incorrectIcon: {
+    fontSize: 18,
+    color: "#dc2626",
+    fontWeight: "bold",
+  },
   circleIcon: {
     fontSize: 18,
     color: "#d1d5db",
+  },
+  loadingIcon: {
+    width: 16,
+    height: 16,
   },
   assignmentInfo: {
     flex: 1,
@@ -439,6 +495,13 @@ const styles = StyleSheet.create({
   assignmentTitleCompleted: {
     color: "#16a34a",
     textDecorationLine: "line-through",
+  },
+  assignmentTitleIncorrect: {
+    color: "#dc2626",
+    textDecorationLine: "line-through",
+  },
+  assignmentTitleLoading: {
+    color: "#374151",
   },
   assignmentSubtitle: {
     fontSize: 11,

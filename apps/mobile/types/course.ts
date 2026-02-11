@@ -82,6 +82,7 @@ export interface ClassData {
 export interface HomeworkCountResult {
   totalAssigned: number;
   pending: number;
+  correct: number;
 }
 
 export interface Evaluation {

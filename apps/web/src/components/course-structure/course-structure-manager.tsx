@@ -12,6 +12,7 @@ import {
   Loader2,
   CheckCircle,
   XCircle,
+  BarChart3,
 } from "lucide-react";
 import {
   Dialog,
@@ -169,6 +170,24 @@ const CourseStructureContent: React.FC = () => {
     studentSubmissionStatus,
   } = useCourseStructure();
 
+  // Stats mode toggle (student only)
+  const [showStats, setShowStats] = useState(false);
+
+  // Helper: get stats badge color based on correct ratio
+  const getStatsBadge = (correct: number, total: number) => {
+    if (total === 0) return null;
+    const ratio = correct / total;
+    let colorClass: string;
+    if (ratio >= 0.7) {
+      colorClass = "bg-green-100 text-green-700";
+    } else if (ratio >= 0.4) {
+      colorClass = "bg-yellow-100 text-yellow-700";
+    } else {
+      colorClass = "bg-red-100 text-red-700";
+    }
+    return { label: `${correct}/${total}`, colorClass, ratio };
+  };
+
   // ===== HELPER: Get icon for node type =====
   const getNodeIcon = (node: LessonNodeUI, isExpanded: boolean) => {
     switch (node.type) {
@@ -239,7 +258,24 @@ const CourseStructureContent: React.FC = () => {
             {/* Badge homework counts (student only) */}
             {isStudent &&
               homeworkCounts &&
-              homeworkCounts.totalAssigned > 0 && (
+              homeworkCounts.totalAssigned > 0 &&
+              (showStats ? (
+                // Stats mode: show correct/total with color
+                (() => {
+                  const stats = getStatsBadge(
+                    homeworkCounts.correct,
+                    homeworkCounts.totalAssigned,
+                  );
+                  return stats ? (
+                    <span
+                      className={`ml-2 text-xs px-2 py-0.5 rounded-full font-semibold ${stats.colorClass}`}
+                      title={`${homeworkCounts.correct} đúng / ${homeworkCounts.totalAssigned} tổng (${Math.round(stats.ratio * 100)}%)`}
+                    >
+                      {stats.label}
+                    </span>
+                  ) : null;
+                })()
+              ) : (
                 <span
                   className={`ml-2 text-xs px-2 py-0.5 rounded-full font-semibold ${
                     hasPendingHomework
@@ -250,7 +286,7 @@ const CourseStructureContent: React.FC = () => {
                 >
                   {hasPendingHomework ? `${homeworkCounts.pending}` : "✓"}
                 </span>
-              )}
+              ))}
           </div>
 
           {/* Delete button */}
@@ -374,8 +410,23 @@ const CourseStructureContent: React.FC = () => {
             </div>
           )}
 
-          {/* Student: Do homework button */}
-          {isStudent && <StudentDoAllHomeworkDialog />}
+          {/* Student: Do homework button + Stats toggle */}
+          {isStudent && (
+            <div className="flex flex-col gap-2 mt-2">
+              <StudentDoAllHomeworkDialog />
+              <button
+                onClick={() => setShowStats((prev) => !prev)}
+                className={`w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  showStats
+                    ? "bg-indigo-100 text-indigo-700 border border-indigo-300"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200"
+                }`}
+              >
+                <BarChart3 className="w-4 h-4" />
+                {showStats ? "Ẩn thống kê" : "Xem thống kê"}
+              </button>
+            </div>
+          )}
         </div>
         <div className="flex-1 overflow-y-auto">
           {isInitialLoading ? (
@@ -526,7 +577,23 @@ const CourseStructureContent: React.FC = () => {
                                 )} */}
                                 {isStudent &&
                                   homeworkCounts &&
-                                  homeworkCounts.totalAssigned > 0 && (
+                                  homeworkCounts.totalAssigned > 0 &&
+                                  (showStats ? (
+                                    (() => {
+                                      const stats = getStatsBadge(
+                                        homeworkCounts.correct,
+                                        homeworkCounts.totalAssigned,
+                                      );
+                                      return stats ? (
+                                        <span
+                                          className={`ml-2 text-xs px-2 py-0.5 rounded-full font-semibold ${stats.colorClass}`}
+                                          title={`${homeworkCounts.correct} đúng / ${homeworkCounts.totalAssigned} tổng (${Math.round(stats.ratio * 100)}%)`}
+                                        >
+                                          {stats.label}
+                                        </span>
+                                      ) : null;
+                                    })()
+                                  ) : (
                                     <span
                                       className={`ml-2 text-xs px-2 py-0.5 rounded-full font-semibold ${
                                         hasPendingHomework
@@ -539,7 +606,7 @@ const CourseStructureContent: React.FC = () => {
                                         ? `${homeworkCounts.pending}`
                                         : "✓"}
                                     </span>
-                                  )}
+                                  ))}
                               </div>
 
                               {/* Expand button */}

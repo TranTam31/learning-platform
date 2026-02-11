@@ -243,6 +243,7 @@ export const CourseStructureProvider: React.FC<
           const {
             assignedByLessonNode,
             submittedByLessonNode,
+            correctByLessonNode,
             submissionsByAssignmentId,
           } = statusResult.data;
 
@@ -250,6 +251,7 @@ export const CourseStructureProvider: React.FC<
             initialCourse.rootLessonNode!,
             assignedByLessonNode,
             submittedByLessonNode,
+            correctByLessonNode,
           );
           console.log("countsMap: ", countsMap);
 
@@ -745,6 +747,7 @@ export const CourseStructureProvider: React.FC<
             const {
               assignedByLessonNode,
               submittedByLessonNode,
+              correctByLessonNode,
               submissionsByAssignmentId,
             } = statusResult.data;
 
@@ -752,6 +755,7 @@ export const CourseStructureProvider: React.FC<
               initialCourse.rootLessonNode,
               assignedByLessonNode,
               submittedByLessonNode,
+              correctByLessonNode,
             );
 
             setHomeworkCountsMap(countsMap);

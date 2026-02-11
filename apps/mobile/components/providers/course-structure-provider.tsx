@@ -113,11 +113,16 @@ export const CourseStructureProvider: React.FC<
         if (response.ok) {
           const result = await response.json();
           if (result.success && result.data) {
-            const { assignedByLessonNode, submittedByLessonNode } = result.data;
+            const {
+              assignedByLessonNode,
+              submittedByLessonNode,
+              correctByLessonNode,
+            } = result.data;
             const countsMap = buildHomeworkCountsMap(
               initialCourse.rootLessonNode,
               assignedByLessonNode,
               submittedByLessonNode,
+              correctByLessonNode || {},
             );
             setHomeworkCountsMap(countsMap);
           }
@@ -150,6 +155,7 @@ export const CourseStructureProvider: React.FC<
         homeworkCountsMap.get(nodeId) || {
           totalAssigned: 0,
           pending: 0,
+          correct: 0,
         }
       );
     },

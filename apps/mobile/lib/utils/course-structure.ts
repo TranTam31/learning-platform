@@ -69,28 +69,33 @@ export function buildHomeworkCountsMap(
   rootNode: LessonNodeUI,
   assignedByLessonNode: Record<string, number>,
   submittedByLessonNode: Record<string, number>,
-): Map<string, { totalAssigned: number; pending: number }> {
+  correctByLessonNode: Record<string, number> = {},
+): Map<string, { totalAssigned: number; pending: number; correct: number }> {
   const countsMap = new Map<
     string,
-    { totalAssigned: number; pending: number }
+    { totalAssigned: number; pending: number; correct: number }
   >();
 
   // Count homeworks recursively for a node (includes all children)
   function countHomeworksRecursive(node: LessonNodeUI): {
     totalAssigned: number;
     pending: number;
+    correct: number;
   } {
     let totalAssigned = 0;
     let pending = 0;
+    let correct = 0;
 
     function traverse(currentNode: LessonNodeUI) {
       // Count assignments for this node
       const assigned = assignedByLessonNode[currentNode.id] || 0;
       const submitted = submittedByLessonNode[currentNode.id] || 0;
+      const correctCount = correctByLessonNode[currentNode.id] || 0;
 
       if (assigned > 0) {
         totalAssigned += assigned;
         pending += assigned - submitted;
+        correct += correctCount;
       }
 
       // Traverse children
@@ -104,6 +109,7 @@ export function buildHomeworkCountsMap(
     return {
       totalAssigned,
       pending,
+      correct,
     };
   }
 

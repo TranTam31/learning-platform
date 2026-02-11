@@ -8,7 +8,7 @@ export default function RootLayout() {
   const { data: session } = authClient.useSession();
   return (
     <React.Fragment>
-      <StatusBar />
+      <StatusBar hidden={true} />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Protected guard={session?.user.id != undefined}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

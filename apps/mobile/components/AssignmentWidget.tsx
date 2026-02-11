@@ -35,6 +35,7 @@ interface Submission {
 interface AssignmentWidgetProps {
   assignmentId: string;
   onCompleted?: (submission: Submission) => void;
+  onEvaluationUpdate?: (assignmentId: string, isCorrect: boolean) => void; // NEW: Callback to notify parent about evaluation
   onError?: (error: string) => void;
 }
 
@@ -87,6 +88,7 @@ true;
 export default function AssignmentWidget({
   assignmentId,
   onCompleted,
+  onEvaluationUpdate,
   onError,
 }: AssignmentWidgetProps) {
   const [assignmentData, setAssignmentData] = useState<AssignmentData | null>(
@@ -314,6 +316,9 @@ export default function AssignmentWidget({
           },
         });
       }, 100);
+
+      // Notify evaluation update (for color indication in parent screen)
+      onEvaluationUpdate?.(assignmentId, submission.evaluation.isCorrect);
 
       // Notify parent
       onCompleted?.(submission);

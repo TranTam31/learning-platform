@@ -32,7 +32,45 @@ interface TreeNodeProps {
   onToggleExpand: (node: LessonNodeUI) => void;
   onSelectNode: (nodeId: string) => void;
   isSelected: boolean;
-  homeworkCounts?: { totalAssigned: number; pending: number };
+  homeworkCounts?: { totalAssigned: number; pending: number; correct: number };
+  showStats?: boolean;
+}
+
+// Helper: get stats badge colors based on correct ratio
+function getStatsBadge(
+  correct: number,
+  total: number,
+): {
+  label: string;
+  bgColor: string;
+  textColor: string;
+  ratio: number;
+} | null {
+  if (total === 0) return null;
+  const ratio = correct / total;
+
+  if (ratio >= 0.7) {
+    return {
+      label: `${correct}/${total}`,
+      bgColor: "#dcfce7",
+      textColor: "#166534",
+      ratio,
+    };
+  } else if (ratio >= 0.4) {
+    return {
+      label: `${correct}/${total}`,
+      bgColor: "#fef3c7",
+      textColor: "#92400e",
+      ratio,
+    };
+  } else {
+    return {
+      label: `${correct}/${total}`,
+      bgColor: "#fee2e2",
+      textColor: "#991b1b",
+      ratio,
+    };
+  }
 }
 
 const TreeNode: React.FC<TreeNodeProps> = ({
@@ -43,6 +81,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   onSelectNode,
   isSelected,
   homeworkCounts,
+  showStats = false,
 }) => {
   // Don't show homework nodes in tree
   if (node.type === LessonNodeType.homework) return null;
@@ -96,33 +135,62 @@ const TreeNode: React.FC<TreeNodeProps> = ({
             {node.title}
           </Text>
 
-          {homeworkCounts && homeworkCounts.totalAssigned > 0 && (
-            <View
-              style={[
-                styles.badge,
-                {
-                  backgroundColor: hasPendingHomework ? "#ef4444" : "#dcfce7",
-                },
-              ]}
-            >
-              <Text
-                style={{
-                  color: hasPendingHomework ? "white" : "#166534",
-                  fontSize: 10,
-                  fontWeight: "600",
-                }}
+          {homeworkCounts &&
+            homeworkCounts.totalAssigned > 0 &&
+            (showStats ? (
+              (() => {
+                const stats = getStatsBadge(
+                  homeworkCounts.correct,
+                  homeworkCounts.totalAssigned,
+                );
+                return stats ? (
+                  <View
+                    style={[styles.badge, { backgroundColor: stats.bgColor }]}
+                  >
+                    <Text
+                      style={{
+                        color: stats.textColor,
+                        fontSize: 10,
+                        fontWeight: "600",
+                      }}
+                    >
+                      {stats.label}
+                    </Text>
+                  </View>
+                ) : null;
+              })()
+            ) : (
+              <View
+                style={[
+                  styles.badge,
+                  {
+                    backgroundColor: hasPendingHomework ? "#ef4444" : "#dcfce7",
+                  },
+                ]}
               >
-                {hasPendingHomework ? `${homeworkCounts.pending}` : "✓"}
-              </Text>
-            </View>
-          )}
+                <Text
+                  style={{
+                    color: hasPendingHomework ? "white" : "#166534",
+                    fontSize: 10,
+                    fontWeight: "600",
+                  }}
+                >
+                  {hasPendingHomework ? `${homeworkCounts.pending}` : "✓"}
+                </Text>
+              </View>
+            ))}
         </View>
       </Pressable>
 
       {isExpanded && node.children && node.children.length > 0 && (
         <View>
           {node.children.map((child) => (
-            <TreeNodeRenderer key={child.id} node={child} level={level + 1} />
+            <TreeNodeRenderer
+              key={child.id}
+              node={child}
+              level={level + 1}
+              showStats={showStats}
+            />
           ))}
         </View>
       )}
@@ -134,7 +202,8 @@ const TreeNode: React.FC<TreeNodeProps> = ({
 const TreeNodeRenderer: React.FC<{
   node: LessonNodeUI;
   level: number;
-}> = ({ node, level }) => {
+  showStats?: boolean;
+}> = ({ node, level, showStats = false }) => {
   const {
     selectedNodeId,
     expandedNodeIds,
@@ -152,13 +221,17 @@ const TreeNodeRenderer: React.FC<{
       onSelectNode={setSelectedNodeId}
       isSelected={selectedNodeId === node.id}
       homeworkCounts={getHomeworkCounts(node.id)}
+      showStats={showStats}
     />
   );
 };
 
 // Detail Panel
-const DetailPanel: React.FC<{ classId: string }> = ({ classId }) => {
-  const { selectedNode } = useCourseStructure();
+const DetailPanel: React.FC<{ classId: string; showStats?: boolean }> = ({
+  classId,
+  showStats = false,
+}) => {
+  const { selectedNode, getHomeworkCounts } = useCourseStructure();
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
   const [selectedHomeworkId, setSelectedHomeworkId] = useState<string | null>(
     null,
@@ -218,18 +291,84 @@ const DetailPanel: React.FC<{ classId: string }> = ({ classId }) => {
                 </Text>
               ) : (
                 <View style={styles.homeworkList}>
-                  {homeworkNodes.map((hw) => (
-                    <Pressable
-                      key={hw.id}
-                      style={styles.homeworkItem}
-                      onPress={() => handleHomeworkPress(hw.id)}
-                    >
-                      <Text style={styles.homeworkTitle}>📋 {hw.title}</Text>
-                      <Text style={styles.homeworkSubtitle}>
-                        Tap to view assignments
-                      </Text>
-                    </Pressable>
-                  ))}
+                  {homeworkNodes.map((hw) => {
+                    const hwCounts = getHomeworkCounts(hw.id);
+                    const hasPending = hwCounts && hwCounts.pending > 0;
+                    const hasAssigned = hwCounts && hwCounts.totalAssigned > 0;
+
+                    return (
+                      <Pressable
+                        key={hw.id}
+                        style={styles.homeworkItem}
+                        onPress={() => handleHomeworkPress(hw.id)}
+                      >
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Text style={[styles.homeworkTitle, { flex: 1 }]}>
+                            📋 {hw.title}
+                          </Text>
+                          {hasAssigned &&
+                            (showStats ? (
+                              (() => {
+                                const stats = getStatsBadge(
+                                  hwCounts.correct,
+                                  hwCounts.totalAssigned,
+                                );
+                                return stats ? (
+                                  <View
+                                    style={[
+                                      styles.badge,
+                                      { backgroundColor: stats.bgColor },
+                                    ]}
+                                  >
+                                    <Text
+                                      style={{
+                                        color: stats.textColor,
+                                        fontSize: 10,
+                                        fontWeight: "600",
+                                      }}
+                                    >
+                                      {stats.label}
+                                    </Text>
+                                  </View>
+                                ) : null;
+                              })()
+                            ) : (
+                              <View
+                                style={[
+                                  styles.badge,
+                                  {
+                                    backgroundColor: hasPending
+                                      ? "#ef4444"
+                                      : "#dcfce7",
+                                  },
+                                ]}
+                              >
+                                <Text
+                                  style={{
+                                    color: hasPending ? "white" : "#166534",
+                                    fontSize: 10,
+                                    fontWeight: "600",
+                                  }}
+                                >
+                                  {hasPending ? `${hwCounts.pending}` : "✓"}
+                                </Text>
+                              </View>
+                            ))}
+                        </View>
+                        <Text style={styles.homeworkSubtitle}>
+                          {hasAssigned
+                            ? `${hwCounts.totalAssigned} assignment${hwCounts.totalAssigned !== 1 ? "s" : ""} · ${hwCounts.pending} pending`
+                            : "Tap to view assignments"}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
                 </View>
               )}
             </View>
@@ -290,7 +429,15 @@ const ClassDetailContent: React.FC<{
   classData: ClassData;
   courseUI: CourseUI;
 }> = ({ classData, courseUI }) => {
-  const { isLoading, course } = useCourseStructure();
+  const { isLoading, course, homeworkCountsMap } = useCourseStructure();
+  const [showStats, setShowStats] = useState(false);
+
+  // Calculate root stats for toggle button label
+  const rootCounts = course.rootLessonNodeId
+    ? homeworkCountsMap.get(course.rootLessonNodeId)
+    : null;
+  const totalAssigned = rootCounts?.totalAssigned || 0;
+  const totalCorrect = rootCounts?.correct || 0;
 
   if (isLoading) {
     return (
@@ -310,10 +457,35 @@ const ClassDetailContent: React.FC<{
             <Text style={styles.sidebarTitle}>Course Structure</Text>
             <Text style={styles.courseName}>{course.name}</Text>
             <DoAllHomeworkButton classId={classData.id} />
+            {totalAssigned > 0 && (
+              <Pressable
+                style={[
+                  styles.statsToggleButton,
+                  showStats && styles.statsToggleButtonActive,
+                ]}
+                onPress={() => setShowStats((prev) => !prev)}
+              >
+                <Text style={styles.statsToggleIcon}>📊</Text>
+                <Text
+                  style={[
+                    styles.statsToggleText,
+                    showStats && styles.statsToggleTextActive,
+                  ]}
+                >
+                  {showStats
+                    ? `Stats: ${totalCorrect}/${totalAssigned}`
+                    : "View Stats"}
+                </Text>
+              </Pressable>
+            )}
           </View>
 
           {course.rootLessonNode ? (
-            <TreeNodeRenderer node={course.rootLessonNode} level={0} />
+            <TreeNodeRenderer
+              node={course.rootLessonNode}
+              level={0}
+              showStats={showStats}
+            />
           ) : (
             <Text style={styles.emptyText}>No course structure</Text>
           )}
@@ -321,7 +493,7 @@ const ClassDetailContent: React.FC<{
       </View>
       {/* Detail Panel */}
       <View style={{ flex: 7 }}>
-        <DetailPanel classId={classData.id} />
+        <DetailPanel classId={classData.id} showStats={showStats} />
       </View>
     </View>
   );
@@ -619,5 +791,30 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: "#16a34a",
+  },
+  statsToggleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f3f4f6",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginTop: 8,
+    gap: 6,
+  },
+  statsToggleButtonActive: {
+    backgroundColor: "#ede9fe",
+  },
+  statsToggleIcon: {
+    fontSize: 12,
+  },
+  statsToggleText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#6b7280",
+  },
+  statsToggleTextActive: {
+    color: "#7c3aed",
   },
 });

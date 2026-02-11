@@ -429,6 +429,7 @@ export async function _getStudentHomeworkStatusByClassInternal(
         data: {
           assignedByLessonNode: {},
           submittedByLessonNode: {},
+          correctByLessonNode: {},
           submissionsByAssignmentId: {},
         },
       };
@@ -460,10 +461,19 @@ export async function _getStudentHomeworkStatusByClassInternal(
         .filter((sa) => sa.submissionData !== null)
         .map((sa) => sa.assignmentId),
     );
+    const correctSet = new Set(
+      studentAssignments
+        .filter((sa) => {
+          const data = sa.submissionData as any;
+          return data?.evaluation?.isCorrect === true;
+        })
+        .map((sa) => sa.assignmentId),
+    );
 
     // 4️⃣ Group by LessonNode.id
     const assignedByLessonNode: Record<string, number> = {};
     const submittedByLessonNode: Record<string, number> = {};
+    const correctByLessonNode: Record<string, number> = {};
 
     classLessonNodes.forEach((cln) => {
       const lessonNodeId = cln.lessonNodeId;
@@ -476,6 +486,11 @@ export async function _getStudentHomeworkStatusByClassInternal(
         if (submittedSet.has(classLessonNodeId)) {
           submittedByLessonNode[lessonNodeId] =
             (submittedByLessonNode[lessonNodeId] || 0) + 1;
+        }
+
+        if (correctSet.has(classLessonNodeId)) {
+          correctByLessonNode[lessonNodeId] =
+            (correctByLessonNode[lessonNodeId] || 0) + 1;
         }
       }
     });
@@ -508,6 +523,7 @@ export async function _getStudentHomeworkStatusByClassInternal(
       data: {
         assignedByLessonNode,
         submittedByLessonNode,
+        correctByLessonNode,
         submissionsByAssignmentId,
       },
     };
