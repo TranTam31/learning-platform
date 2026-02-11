@@ -677,7 +677,7 @@ const CourseStructureContent: React.FC = () => {
                                         >
                                           {/* Assignment number */}
                                           <span className="font-semibold text-orange-700 min-w-fit">
-                                            Bài {index + 1}
+                                            Bài {hwImplCount - index}
                                           </span>
 
                                           {/* Status & Evaluation */}

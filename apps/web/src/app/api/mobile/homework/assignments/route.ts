@@ -43,23 +43,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get all ClassLessonNodes (assignments) for this homework
-    const assignments = await prisma.classLessonNode.findMany({
+    // Get all ClassLessonNodes (assignments) for this homework (newest first)
+    const allAssignments = await prisma.classLessonNode.findMany({
       where: {
         lessonNodeId: homeworkNodeId,
         classId,
         type: "homework_imp",
       },
       orderBy: {
-        createdAt: "asc",
+        createdAt: "desc",
       },
     });
 
-    // Get student's submission status for each assignment
-    const submissionStatus = await prisma.studentAssignment.findMany({
+    // Get student's assigned assignments (only those in StudentAssignment table)
+    const studentAssignments = await prisma.studentAssignment.findMany({
       where: {
         studentId: session.user.id,
-        assignmentId: { in: assignments.map((a) => a.id) },
+        assignmentId: { in: allAssignments.map((a) => a.id) },
       },
       select: {
         assignmentId: true,
@@ -68,14 +68,19 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Build submission map
-    const submissionMap = new Map(
-      submissionStatus.map((s) => [s.assignmentId, s]),
+    // Build map of assigned assignments with submission data
+    const assignedMap = new Map(
+      studentAssignments.map((s) => [s.assignmentId, s]),
+    );
+
+    // Filter: Only keep assignments that were assigned to this student
+    const assignedAssignments = allAssignments.filter((a) =>
+      assignedMap.has(a.id),
     );
 
     // Format assignments with submission status
-    const formattedAssignments = assignments.map((assignment) => {
-      const submission = submissionMap.get(assignment.id);
+    const formattedAssignments = assignedAssignments.map((assignment) => {
+      const submission = assignedMap.get(assignment.id);
       const submissionData = submission?.submissionData as any;
 
       return {
@@ -89,6 +94,12 @@ export async function GET(request: NextRequest) {
         evaluation: submissionData?.evaluation || null,
         content: assignment.content,
       };
+    });
+
+    // Sort: incomplete assignments first, then by original order
+    formattedAssignments.sort((a, b) => {
+      if (a.hasSubmitted === b.hasSubmitted) return 0;
+      return a.hasSubmitted ? 1 : -1;
     });
 
     return NextResponse.json({

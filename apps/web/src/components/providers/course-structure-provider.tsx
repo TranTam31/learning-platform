@@ -712,6 +712,7 @@ export const CourseStructureProvider: React.FC<
         homeworkCountsMap.get(nodeId) || {
           totalAssigned: 0,
           pending: 0,
+          correct: 0,
         }
       );
     },

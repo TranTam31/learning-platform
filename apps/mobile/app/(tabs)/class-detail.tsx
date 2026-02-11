@@ -8,7 +8,7 @@ import {
   StyleSheet,
   FlatList,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { API_BASE_URL } from "@/lib/config/api";
 import {
   ClassData,
@@ -299,8 +299,14 @@ const DetailPanel: React.FC<{ classId: string; showStats?: boolean }> = ({
                     return (
                       <Pressable
                         key={hw.id}
-                        style={styles.homeworkItem}
-                        onPress={() => handleHomeworkPress(hw.id)}
+                        style={[
+                          styles.homeworkItem,
+                          !hasAssigned && styles.homeworkItemDisabled,
+                        ]}
+                        onPress={() =>
+                          hasAssigned && handleHomeworkPress(hw.id)
+                        }
+                        disabled={!hasAssigned}
                       >
                         <View
                           style={{
@@ -309,7 +315,13 @@ const DetailPanel: React.FC<{ classId: string; showStats?: boolean }> = ({
                             justifyContent: "space-between",
                           }}
                         >
-                          <Text style={[styles.homeworkTitle, { flex: 1 }]}>
+                          <Text
+                            style={[
+                              styles.homeworkTitle,
+                              { flex: 1 },
+                              !hasAssigned && styles.homeworkTitleDisabled,
+                            ]}
+                          >
                             📋 {hw.title}
                           </Text>
                           {hasAssigned &&
@@ -361,10 +373,15 @@ const DetailPanel: React.FC<{ classId: string; showStats?: boolean }> = ({
                               </View>
                             ))}
                         </View>
-                        <Text style={styles.homeworkSubtitle}>
+                        <Text
+                          style={[
+                            styles.homeworkSubtitle,
+                            !hasAssigned && styles.homeworkSubtitleDisabled,
+                          ]}
+                        >
                           {hasAssigned
                             ? `${hwCounts.totalAssigned} assignment${hwCounts.totalAssigned !== 1 ? "s" : ""} · ${hwCounts.pending} pending`
-                            : "Tap to view assignments"}
+                            : "No assignments yet"}
                         </Text>
                       </Pressable>
                     );
@@ -429,8 +446,16 @@ const ClassDetailContent: React.FC<{
   classData: ClassData;
   courseUI: CourseUI;
 }> = ({ classData, courseUI }) => {
-  const { isLoading, course, homeworkCountsMap } = useCourseStructure();
+  const { isLoading, course, homeworkCountsMap, refetchHomeworkCounts } =
+    useCourseStructure();
   const [showStats, setShowStats] = useState(false);
+
+  // Refetch homework counts when screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      refetchHomeworkCounts();
+    }, [refetchHomeworkCounts]),
+  );
 
   // Calculate root stats for toggle button label
   const rootCounts = course.rootLessonNodeId
@@ -709,15 +734,25 @@ const styles = StyleSheet.create({
     backgroundColor: "#fef3c7",
     borderRadius: 4,
   },
+  homeworkItemDisabled: {
+    backgroundColor: "#f3f4f6",
+    opacity: 0.7,
+  },
   homeworkTitle: {
     fontSize: 13,
     fontWeight: "600",
     color: "#92400e",
     marginBottom: 4,
   },
+  homeworkTitleDisabled: {
+    color: "#9ca3af",
+  },
   homeworkSubtitle: {
     fontSize: 11,
     color: "#b45309",
+  },
+  homeworkSubtitleDisabled: {
+    color: "#9ca3af",
   },
   placeholderText: {
     fontSize: 12,

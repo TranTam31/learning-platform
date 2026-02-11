@@ -27,12 +27,18 @@ interface ClassData {
   };
 }
 
+interface PendingAssignments {
+  [classId: string]: number;
+}
+
 export default function IndexTab() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [pendingAssignments, setPendingAssignments] =
+    useState<PendingAssignments>({});
 
   const fetchClasses = async () => {
     try {
@@ -58,12 +64,75 @@ export default function IndexTab() {
       const result = await response.json();
       if (result.success && Array.isArray(result.data)) {
         setClasses(result.data);
+        // Fetch pending assignments after getting classes
+        await fetchPendingAssignments(result.data, session?.session.token);
       }
     } catch (error) {
       console.error("Error fetching classes:", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const fetchPendingAssignments = async (
+    classesData: ClassData[],
+    token: string,
+  ) => {
+    try {
+      const pendingMap: PendingAssignments = {};
+
+      // Fetch pending assignments cho mỗi class
+      for (const classItem of classesData) {
+        if (!classItem.course) continue; // Bỏ qua nếu không có course
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/api/mobile/class/homework-status?classId=${classItem.id}&courseId=${classItem.course.id}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          );
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data) {
+              const { assignedByLessonNode, submittedByLessonNode } =
+                result.data;
+
+              // Calculate total pending
+              let totalAssigned = 0;
+              let totalSubmitted = 0;
+
+              Object.values(assignedByLessonNode || {}).forEach(
+                (count: any) => {
+                  totalAssigned += count;
+                },
+              );
+
+              Object.values(submittedByLessonNode || {}).forEach(
+                (count: any) => {
+                  totalSubmitted += count;
+                },
+              );
+
+              pendingMap[classItem.id] = totalAssigned - totalSubmitted;
+            }
+          }
+        } catch (error) {
+          console.error(
+            `Error fetching pending for class ${classItem.id}:`,
+            error,
+          );
+        }
+      }
+
+      setPendingAssignments(pendingMap);
+    } catch (error) {
+      console.error("Error fetching pending assignments:", error);
     }
   };
 
@@ -86,23 +155,57 @@ export default function IndexTab() {
     );
   }
 
-  const renderClassItem = ({ item }: { item: ClassData }) => (
-    <Pressable
-      style={styles.classCard}
-      onPress={() =>
-        router.push({
-          pathname: "/(tabs)/class-detail",
-          params: { classId: item.id },
-        })
-      }
-    >
-      <Text style={styles.className}>{item.name}</Text>
-      {item.course && <Text style={styles.courseName}>{item.course.name}</Text>}
-      <Text style={styles.memberCount}>
-        {item._count?.members || 0} members
-      </Text>
-    </Pressable>
-  );
+  const renderClassItem = ({ item }: { item: ClassData }) => {
+    const pending = pendingAssignments[item.id] || 0;
+    const hasPending = pending > 0;
+
+    return (
+      <Pressable
+        style={styles.classCard}
+        onPress={() =>
+          router.push({
+            pathname: "/(tabs)/class-detail",
+            params: { classId: item.id },
+          })
+        }
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={styles.className}>{item.name}</Text>
+            {item.course && (
+              <Text style={styles.courseName}>{item.course.name}</Text>
+            )}
+            <Text style={styles.memberCount}>
+              {item._count?.members || 0} members
+            </Text>
+          </View>
+          {pending > 0 && (
+            <View
+              style={[
+                styles.pendingBadge,
+                hasPending && { backgroundColor: "#ef4444" },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.pendingBadgeText,
+                  hasPending && { color: "white" },
+                ]}
+              >
+                {pending}
+              </Text>
+            </View>
+          )}
+        </View>
+      </Pressable>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -174,6 +277,20 @@ const styles = StyleSheet.create({
   memberCount: {
     fontSize: 12,
     color: "#999",
+  },
+  pendingBadge: {
+    backgroundColor: "#dcfce7",
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    minWidth: 28,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  pendingBadgeText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#16a34a",
   },
   fab: {
     position: "absolute",

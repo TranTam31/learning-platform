@@ -37,6 +37,7 @@ interface CourseStructureContextValue {
   // Actions
   setSelectedNodeId: (id: string | null) => void;
   toggleNodeExpanded: (node: LessonNodeUI) => void;
+  refetchHomeworkCounts: () => Promise<void>;
 }
 
 const CourseStructureContext = createContext<
@@ -86,56 +87,56 @@ export const CourseStructureProvider: React.FC<
   }
 
   // Load homework status for student
-  useEffect(() => {
-    const loadHomeworkCounts = async () => {
-      try {
-        const { data: session } = await authClient.getSession();
+  const loadHomeworkCounts = useCallback(async () => {
+    try {
+      const { data: session } = await authClient.getSession();
 
-        if (!session?.session.token) {
-          throw new Error("No session token available");
-        }
-        if (!initialCourse.rootLessonNode) {
-          setIsLoading(false);
-          return;
-        }
-
-        const response = await fetch(
-          `${API_BASE_URL}/api/mobile/class/homework-status?classId=${classId}&courseId=${initialCourse.id}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${session?.session.token}`, // Gửi token
-            },
-          },
-        );
-
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success && result.data) {
-            const {
-              assignedByLessonNode,
-              submittedByLessonNode,
-              correctByLessonNode,
-            } = result.data;
-            const countsMap = buildHomeworkCountsMap(
-              initialCourse.rootLessonNode,
-              assignedByLessonNode,
-              submittedByLessonNode,
-              correctByLessonNode || {},
-            );
-            setHomeworkCountsMap(countsMap);
-          }
-        }
-      } catch (error) {
-        console.error("Error loading homework counts:", error);
-      } finally {
-        setIsLoading(false);
+      if (!session?.session.token) {
+        throw new Error("No session token available");
       }
-    };
+      if (!initialCourse.rootLessonNode) {
+        setIsLoading(false);
+        return;
+      }
 
-    loadHomeworkCounts();
+      const response = await fetch(
+        `${API_BASE_URL}/api/mobile/class/homework-status?classId=${classId}&courseId=${initialCourse.id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.session.token}`, // Gửi token
+          },
+        },
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.data) {
+          const {
+            assignedByLessonNode,
+            submittedByLessonNode,
+            correctByLessonNode,
+          } = result.data;
+          const countsMap = buildHomeworkCountsMap(
+            initialCourse.rootLessonNode,
+            assignedByLessonNode,
+            submittedByLessonNode,
+            correctByLessonNode || {},
+          );
+          setHomeworkCountsMap(countsMap);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading homework counts:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }, [classId, initialCourse.id, initialCourse.rootLessonNode]);
+
+  useEffect(() => {
+    loadHomeworkCounts();
+  }, [loadHomeworkCounts]);
 
   const toggleNodeExpanded = useCallback((node: LessonNodeUI) => {
     setExpandedNodeIds((prev) => {
@@ -175,6 +176,7 @@ export const CourseStructureProvider: React.FC<
         isLoading,
         setSelectedNodeId,
         toggleNodeExpanded,
+        refetchHomeworkCounts: loadHomeworkCounts,
       }}
     >
       {children}

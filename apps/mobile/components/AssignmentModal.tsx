@@ -47,6 +47,9 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
 
   useEffect(() => {
     if (visible) {
+      setLoading(true);
+      setAssignments([]);
+      setError(null);
       fetchAssignments();
     }
   }, [visible, homeworkNodeId, classId]);

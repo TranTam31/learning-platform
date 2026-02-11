@@ -3,6 +3,7 @@
 
 import { auth } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
+import { Prisma } from "@repo/db";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
@@ -52,7 +53,7 @@ export async function loadClassLessonNode(
           lessonNodeId,
           classId,
         },
-        orderBy: { createdAt: "asc" },
+        orderBy: { createdAt: "desc" },
         select: {
           id: true,
           type: true,
@@ -72,7 +73,7 @@ export async function loadClassLessonNode(
           lessonNodeId,
           classId,
         },
-        orderBy: { createdAt: "asc" },
+        orderBy: { createdAt: "desc" },
         select: {
           id: true,
           type: true,
@@ -142,6 +143,33 @@ export async function loadClassLessonNode(
           return assignedNoteIds.has(node.id);
         }
         return false; // Type khác → không hiển thị
+      });
+
+      // Build a set of submitted homework IDs for sorting
+      const submittedHomeworkIds = new Set<string>();
+      if (homeworkNodes.length > 0) {
+        const submittedAssignments = await prisma.studentAssignment.findMany({
+          where: {
+            studentId: userId,
+            assignmentId: { in: homeworkNodes.map((node) => node.id) },
+            submissionData: { not: Prisma.DbNull },
+          },
+          select: { assignmentId: true },
+        });
+        submittedAssignments.forEach((sa) =>
+          submittedHomeworkIds.add(sa.assignmentId),
+        );
+      }
+
+      // Sort: incomplete first, then by original order (newest first)
+      assignedClassLessonNodes.sort((a, b) => {
+        if (a.type === "homework_imp" && b.type === "homework_imp") {
+          const aSubmitted = submittedHomeworkIds.has(a.id);
+          const bSubmitted = submittedHomeworkIds.has(b.id);
+          if (aSubmitted === bSubmitted) return 0;
+          return aSubmitted ? 1 : -1;
+        }
+        return 0;
       });
 
       // console.log(
