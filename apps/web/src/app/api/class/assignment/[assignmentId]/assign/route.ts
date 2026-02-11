@@ -16,10 +16,20 @@ export async function POST(
     });
     if (!session) throw new Error("Unauthorized");
     const body = await request.json();
-    const { studentId } = body;
+    const { studentId, studentIds } = body;
 
-    if (!studentId) {
-      return NextResponse.json({ error: "Missing studentId" }, { status: 400 });
+    // Support both single studentId and bulk studentIds
+    const idsToAssign: string[] = studentIds
+      ? studentIds
+      : studentId
+        ? [studentId]
+        : [];
+
+    if (idsToAssign.length === 0) {
+      return NextResponse.json(
+        { error: "Missing studentId or studentIds" },
+        { status: 400 },
+      );
     }
 
     // 1️⃣ Lấy thông tin assignment
@@ -55,49 +65,58 @@ export async function POST(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // 3️⃣ Kiểm tra student có trong class không
-    const studentMembership = await prisma.classMember.findUnique({
+    // 3️⃣ Kiểm tra tất cả students có trong class không
+    const studentMemberships = await prisma.classMember.findMany({
       where: {
-        classId_userId: {
-          classId: assignment.classId,
-          userId: studentId,
-        },
+        classId: assignment.classId,
+        userId: { in: idsToAssign },
+        role: "student",
       },
+      select: { userId: true },
     });
 
-    if (!studentMembership || studentMembership.role !== "student") {
+    const validStudentIds = studentMemberships.map((m) => m.userId);
+
+    if (validStudentIds.length === 0) {
       return NextResponse.json(
-        { error: "Student not found in this class" },
+        { error: "No valid students found in this class" },
         { status: 404 },
       );
     }
 
-    // 4️⃣ Tạo StudentAssignment (nếu chưa có)
-    const studentAssignment = await prisma.studentAssignment.upsert({
+    // 4️⃣ Lấy danh sách đã được giao rồi để skip
+    const existingAssignments = await prisma.studentAssignment.findMany({
       where: {
-        studentId_assignmentId: {
-          studentId: studentId,
-          assignmentId: assignmentId,
-        },
-      },
-      create: {
-        studentId: studentId,
         assignmentId: assignmentId,
-        submissionData: undefined,
-        submittedAt: null,
+        studentId: { in: validStudentIds },
       },
-      update: {
-        // Không update gì nếu đã tồn tại
-      },
+      select: { studentId: true },
     });
+
+    const alreadyAssignedIds = new Set(
+      existingAssignments.map((a) => a.studentId),
+    );
+    const newStudentIds = validStudentIds.filter(
+      (id) => !alreadyAssignedIds.has(id),
+    );
+
+    // 5️⃣ Tạo StudentAssignment cho những người chưa được giao
+    if (newStudentIds.length > 0) {
+      await prisma.studentAssignment.createMany({
+        data: newStudentIds.map((sid) => ({
+          studentId: sid,
+          assignmentId: assignmentId,
+          submittedAt: null,
+        })),
+        skipDuplicates: true,
+      });
+    }
 
     return NextResponse.json({
       success: true,
-      studentAssignment: {
-        id: studentAssignment.id,
-        studentId: studentAssignment.studentId,
-        assignmentId: studentAssignment.assignmentId,
-      },
+      assigned: newStudentIds.length,
+      skipped: alreadyAssignedIds.size,
+      total: validStudentIds.length,
     });
   } catch (error) {
     console.error("[ASSIGN_TO_STUDENT_ERROR]", error);

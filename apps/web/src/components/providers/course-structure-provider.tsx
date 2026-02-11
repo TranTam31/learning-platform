@@ -93,7 +93,7 @@ interface CourseStructureContextValue {
     nodeId: string,
     type: "lesson_note" | "homework_imp",
     content?: Record<string, any>,
-  ) => Promise<void>;
+  ) => Promise<string | undefined>;
   handleDeleteClassLessonNode: (
     nodeId: string,
     classLessonNodeId: string,
@@ -601,20 +601,20 @@ export const CourseStructureProvider: React.FC<
       nodeId: string,
       type: "lesson_note" | "homework_imp",
       content?: Record<string, any>,
-    ) => {
-      if (!classId) return;
+    ): Promise<string | undefined> => {
+      if (!classId) return undefined;
 
       setLoadingAction(`add-classlessonnode-${nodeId}`);
 
-      startTransition(async () => {
-        const result = await addClassLessonNode({
-          lessonNodeId: nodeId,
-          classId: classId,
-          type,
-          content: content,
-        });
+      const result = await addClassLessonNode({
+        lessonNodeId: nodeId,
+        classId: classId,
+        type,
+        content: content,
+      });
 
-        if (result.success && result.data) {
+      if (result.success && result.data) {
+        startTransition(() => {
           setClassLessonNodes((prev) => {
             const newMap = new Map(prev);
             const existing = newMap.get(nodeId) || [];
@@ -636,12 +636,15 @@ export const CourseStructureProvider: React.FC<
           });
 
           setExpandedClassLessonNodes((prev) => new Set([...prev, nodeId]));
-        } else {
-          alert(result.error || "Có lỗi xảy ra");
-        }
+        });
 
         setLoadingAction(null);
-      });
+        return result.data.id;
+      } else {
+        alert(result.error || "Có lỗi xảy ra");
+        setLoadingAction(null);
+        return undefined;
+      }
     },
     [classId],
   );

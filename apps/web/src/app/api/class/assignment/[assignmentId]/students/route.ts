@@ -135,8 +135,50 @@ export async function GET(
       return 0;
     });
 
+    // 7️⃣ Lấy groups của class
+    const groups = await prisma.classGroup.findMany({
+      where: { classId: assignment.classId },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        classGroupMembers: {
+          select: {
+            userId: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    // Map groups với trạng thái assign của từng member
+    const groupsWithStatus = groups.map((group) => {
+      const memberIds = group.classGroupMembers.map((m) => m.userId);
+      const membersStatus = memberIds.map((uid) => {
+        const st = studentsWithStatus.find((s) => s.id === uid);
+        return {
+          userId: uid,
+          isAssigned: st?.isAssigned ?? false,
+        };
+      });
+      const totalMembers = memberIds.length;
+      const assignedMembers = membersStatus.filter((m) => m.isAssigned).length;
+      const allAssigned = totalMembers > 0 && assignedMembers === totalMembers;
+
+      return {
+        id: group.id,
+        name: group.name,
+        description: group.description,
+        memberIds,
+        totalMembers,
+        assignedMembers,
+        allAssigned,
+      };
+    });
+
     return NextResponse.json({
       students: studentsWithStatus,
+      groups: groupsWithStatus,
       stats: {
         total: studentsWithStatus.length,
         assigned: studentsWithStatus.filter((s) => s.isAssigned).length,

@@ -18,6 +18,8 @@ import {
   isBase64Image,
   getImageSizeFromBase64,
 } from "@/lib/supabase/image-upload";
+import AssignmentStudentsPanel from "./AssignmentStudentsPanel";
+import { Button } from "@/components/ui/button";
 
 export interface TeacherCreateAssignmentRef {
   getCurrentConfig: () => Record<string, any>;
@@ -26,12 +28,13 @@ export interface TeacherCreateAssignmentRef {
 
 interface TeacherCreateAssignmentProps {
   html: string;
+  assignmentId?: string | null;
 }
 
 const TeacherCreateAssignment = forwardRef<
   TeacherCreateAssignmentRef,
   TeacherCreateAssignmentProps
->(({ html }, ref) => {
+>(({ html, assignmentId }, ref) => {
   const [widgetDef, setWidgetDef] = useState<WidgetDefinition | null>(null);
   const [config, setConfig] = useState<Record<string, any>>({});
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +44,7 @@ const TeacherCreateAssignment = forwardRef<
 
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [isReviewMode, setIsReviewMode] = useState(false);
+  const [viewingAnswer, setViewingAnswer] = useState<any>(null);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const paneRef = useRef<HTMLDivElement>(null);
@@ -331,13 +335,44 @@ const TeacherCreateAssignment = forwardRef<
     };
   }, [widgetDef, iframeReady]);
 
+  // Handle view answer from AssignmentStudentsPanel
+  const handleViewAnswer = (answer: any) => {
+    setViewingAnswer(answer);
+    sendMessage({
+      type: "PARAMS_UPDATE",
+      payload: { ...config, __answer: answer },
+    });
+  };
+
+  // Reset view to default config
+  const handleResetView = () => {
+    setViewingAnswer(null);
+    sendMessage({ type: "PARAMS_UPDATE", payload: config });
+  };
+
   return (
     <div className="bg-white flex h-full min-h-0">
       <div className="flex-1 p-2 min-h-0">
+        {viewingAnswer && (
+          <div className="mb-3 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between mx-auto max-w-2xl">
+            <div className="text-sm text-blue-700">
+              <strong>Đang xem bài làm của học sinh</strong>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleResetView}
+              className="text-xs"
+            >
+              ← Quay lại
+            </Button>
+          </div>
+        )}
+
         <div className="h-full max-w-2xl mx-auto bg-white rounded-4xl shadow-2xl overflow-hidden border border-gray-100">
           <iframe
             ref={iframeRef}
-            className="w-full h-full min-h-[400px] min-w-[320px] border-0"
+            className="w-full h-full min-h-100 min-w-[320px] border-0"
             title="Widget"
             sandbox="allow-scripts allow-same-origin"
           />
@@ -368,79 +403,89 @@ const TeacherCreateAssignment = forwardRef<
         )}
       </div>
 
-      <div className="w-80 bg-white border-l border-slate-200 flex flex-col">
-        <div className="px-4 py-3 border-b border-slate-200">
-          <h3 className="text-sm font-semibold text-slate-700">
-            Cấu hình & Kết quả
-          </h3>
+      {/* RIGHT PANEL: Tweakpane config OR AssignmentStudentsPanel */}
+      {assignmentId ? (
+        <div className="w-96 bg-white border-l border-slate-200 flex flex-col">
+          <AssignmentStudentsPanel
+            assignmentId={assignmentId}
+            onViewAnswer={handleViewAnswer}
+          />
         </div>
+      ) : (
+        <div className="w-80 bg-white border-l border-slate-200 flex flex-col">
+          <div className="px-4 py-3 border-b border-slate-200">
+            <h3 className="text-sm font-semibold text-slate-700">
+              Cấu hình & Kết quả
+            </h3>
+          </div>
 
-        <div
-          ref={paneRef}
-          className="flex-1 overflow-y-auto p-4 text-sm text-slate-600"
-        />
+          <div
+            ref={paneRef}
+            className="flex-1 overflow-y-auto p-4 text-sm text-slate-600"
+          />
 
-        {/* Submission Info (for testing) */}
-        {submission && (
-          <div className="border-t border-slate-200 p-4 space-y-3">
-            <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-              📊 Kết quả test
-            </div>
-
-            <div
-              className={`p-3 rounded-lg ${
-                submission.evaluation.isCorrect
-                  ? "bg-green-50 border border-green-200"
-                  : "bg-red-50 border border-red-200"
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                {submission.evaluation.isCorrect ? (
-                  <CheckCircle className="text-green-600" size={18} />
-                ) : (
-                  <XCircle className="text-red-600" size={18} />
-                )}
-                <span
-                  className={`font-semibold ${
-                    submission.evaluation.isCorrect
-                      ? "text-green-700"
-                      : "text-red-700"
-                  }`}
-                >
-                  {submission.evaluation.isCorrect ? "Đúng" : "Sai"}
-                </span>
+          {/* Submission Info (for testing) */}
+          {submission && (
+            <div className="border-t border-slate-200 p-4 space-y-3">
+              <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                📊 Kết quả test
               </div>
 
-              <div className="text-sm space-y-1">
-                <div className="text-slate-700">
-                  Điểm:{" "}
-                  <strong>
-                    {submission.evaluation.score}/
-                    {submission.evaluation.maxScore}
-                  </strong>
+              <div
+                className={`p-3 rounded-lg ${
+                  submission.evaluation.isCorrect
+                    ? "bg-green-50 border border-green-200"
+                    : "bg-red-50 border border-red-200"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  {submission.evaluation.isCorrect ? (
+                    <CheckCircle className="text-green-600" size={18} />
+                  ) : (
+                    <XCircle className="text-red-600" size={18} />
+                  )}
+                  <span
+                    className={`font-semibold ${
+                      submission.evaluation.isCorrect
+                        ? "text-green-700"
+                        : "text-red-700"
+                    }`}
+                  >
+                    {submission.evaluation.isCorrect ? "Đúng" : "Sai"}
+                  </span>
+                </div>
+
+                <div className="text-sm space-y-1">
+                  <div className="text-slate-700">
+                    Điểm:{" "}
+                    <strong>
+                      {submission.evaluation.score}/
+                      {submission.evaluation.maxScore}
+                    </strong>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Review Mode Toggle */}
-            {!isReviewMode ? (
-              <button
-                onClick={enterReviewMode}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition"
-              >
-                🔍 Xem lại bài làm
-              </button>
-            ) : (
-              <button
-                onClick={exitReviewMode}
-                className="w-full bg-slate-600 hover:bg-slate-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition"
-              >
-                ← Quay lại chế độ làm bài
-              </button>
-            )}
-          </div>
-        )}
-      </div>
+              {/* Review Mode Toggle */}
+              {!isReviewMode ? (
+                <button
+                  onClick={enterReviewMode}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition"
+                >
+                  🔍 Xem lại bài làm
+                </button>
+              ) : (
+                <button
+                  onClick={exitReviewMode}
+                  className="w-full bg-slate-600 hover:bg-slate-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition"
+                >
+                  ← Quay lại chế độ làm bài
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Plus, Save } from "lucide-react";
+import { Loader2, Plus, Save, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -31,6 +31,7 @@ export default function TeacherAssignmentDialog({ hwId }: { hwId: string }) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [open, setOpen] = useState(false);
+  const [assignmentId, setAssignmentId] = useState<string | null>(null);
 
   const fetchedAssignmentRef = useRef(false);
   const widgetPreviewRef = useRef<TeacherCreateAssignmentRef>(null);
@@ -115,10 +116,19 @@ export default function TeacherAssignmentDialog({ hwId }: { hwId: string }) {
     try {
       setSaving(true);
 
-      await handleAddClassAddon(hwId, "homework_imp", currentConfig);
+      const createdId = await handleAddClassAddon(
+        hwId,
+        "homework_imp",
+        currentConfig,
+      );
 
-      // chỉ chạy khi save thành công
-      setOpen(false);
+      if (createdId) {
+        // Show assignment panel instead of closing
+        setAssignmentId(createdId);
+      } else {
+        // Fallback: close dialog if no ID returned
+        setOpen(false);
+      }
     } catch (err) {
       console.error(err);
       alert("Lưu thất bại");
@@ -128,7 +138,15 @@ export default function TeacherAssignmentDialog({ hwId }: { hwId: string }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (!isOpen) {
+          setAssignmentId(null);
+        }
+      }}
+    >
       <DialogTrigger asChild>
         <Button className="w-full px-2! py-1! bg-orange-100 text-orange-700 text-xs rounded hover:bg-orange-200">
           <Plus className="w-2 h-2" />
@@ -138,9 +156,11 @@ export default function TeacherAssignmentDialog({ hwId }: { hwId: string }) {
 
       <DialogContent className="w-[90vw]! h-[95vh]! max-w-none! p-1! flex! flex-col! min-h-0!">
         <DialogHeader className="px-6 py-4 border-b shrink-0 flex flex-row items-center justify-between">
-          <DialogTitle>Set config for Widget</DialogTitle>
+          <DialogTitle>
+            {assignmentId ? "Giao bài tập" : "Set config for Widget"}
+          </DialogTitle>
 
-          {widgetId && widgetHtmlCache[widgetId] && (
+          {widgetId && widgetHtmlCache[widgetId] && !assignmentId && (
             <Button
               onClick={handleSaveConfig}
               disabled={saving}
@@ -172,6 +192,7 @@ export default function TeacherAssignmentDialog({ hwId }: { hwId: string }) {
             <TeacherCreateAssignment
               ref={widgetPreviewRef}
               html={widgetHtmlCache[widgetId]}
+              assignmentId={assignmentId}
             />
           </div>
         ) : (
