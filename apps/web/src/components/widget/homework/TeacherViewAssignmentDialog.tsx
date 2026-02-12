@@ -23,15 +23,18 @@ export default function TeacherViewAssignmentDialog({
   targetStudentId,
   targetStudentName,
 }: TeacherViewAssignmentDialogProps) {
+  const [open, setOpen] = useState(false);
   const [widgetHtml, setWidgetHtml] = useState<string | null>(null);
   const [savedConfig, setSavedConfig] = useState<Record<string, any> | null>(
     null,
   );
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load assignment data
+  // Load assignment data only when dialog opens
   useEffect(() => {
+    if (!open) return;
+
     const loadAssignment = async () => {
       try {
         setLoading(true);
@@ -55,8 +58,6 @@ export default function TeacherViewAssignmentDialog({
           widgetId: string;
           buildRunId: string;
         } = await assignmentRes.json();
-
-        // console.log("📦 Assignment data:", assignmentData);
 
         // Kiểm tra có config chưa
         if (!assignmentData.savedConfig) {
@@ -85,10 +86,10 @@ export default function TeacherViewAssignmentDialog({
     };
 
     loadAssignment();
-  }, [assignmentId]);
+  }, [open, assignmentId]);
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="px-2! py-1! bg-orange-100 text-orange-700 text-xs rounded hover:bg-orange-200">
           <span className="hidden sm:inline">Show Assignment</span>
