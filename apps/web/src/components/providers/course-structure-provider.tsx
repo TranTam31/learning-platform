@@ -93,7 +93,7 @@ interface CourseStructureContextValue {
     nodeId: string,
     type: "lesson_note" | "homework_imp",
     content?: Record<string, any>,
-  ) => Promise<void>;
+  ) => Promise<string | undefined>;
   handleDeleteClassLessonNode: (
     nodeId: string,
     classLessonNodeId: string,
@@ -243,6 +243,7 @@ export const CourseStructureProvider: React.FC<
           const {
             assignedByLessonNode,
             submittedByLessonNode,
+            correctByLessonNode,
             submissionsByAssignmentId,
           } = statusResult.data;
 
@@ -250,7 +251,9 @@ export const CourseStructureProvider: React.FC<
             initialCourse.rootLessonNode!,
             assignedByLessonNode,
             submittedByLessonNode,
+            correctByLessonNode,
           );
+          console.log("countsMap: ", countsMap);
 
           setHomeworkCountsMap(countsMap);
 
@@ -598,24 +601,24 @@ export const CourseStructureProvider: React.FC<
       nodeId: string,
       type: "lesson_note" | "homework_imp",
       content?: Record<string, any>,
-    ) => {
-      if (!classId) return;
+    ): Promise<string | undefined> => {
+      if (!classId) return undefined;
 
       setLoadingAction(`add-classlessonnode-${nodeId}`);
 
-      startTransition(async () => {
-        const result = await addClassLessonNode({
-          lessonNodeId: nodeId,
-          classId: classId,
-          type,
-          content: content,
-        });
+      const result = await addClassLessonNode({
+        lessonNodeId: nodeId,
+        classId: classId,
+        type,
+        content: content,
+      });
 
-        if (result.success && result.data) {
+      if (result.success && result.data) {
+        startTransition(() => {
           setClassLessonNodes((prev) => {
             const newMap = new Map(prev);
             const existing = newMap.get(nodeId) || [];
-            newMap.set(nodeId, [...existing, result.data]);
+            newMap.set(nodeId, [result.data, ...existing]);
             return newMap;
           });
 
@@ -633,12 +636,15 @@ export const CourseStructureProvider: React.FC<
           });
 
           setExpandedClassLessonNodes((prev) => new Set([...prev, nodeId]));
-        } else {
-          alert(result.error || "Có lỗi xảy ra");
-        }
+        });
 
         setLoadingAction(null);
-      });
+        return result.data.id;
+      } else {
+        alert(result.error || "Có lỗi xảy ra");
+        setLoadingAction(null);
+        return undefined;
+      }
     },
     [classId],
   );
@@ -709,6 +715,7 @@ export const CourseStructureProvider: React.FC<
         homeworkCountsMap.get(nodeId) || {
           totalAssigned: 0,
           pending: 0,
+          correct: 0,
         }
       );
     },
@@ -744,6 +751,7 @@ export const CourseStructureProvider: React.FC<
             const {
               assignedByLessonNode,
               submittedByLessonNode,
+              correctByLessonNode,
               submissionsByAssignmentId,
             } = statusResult.data;
 
@@ -751,6 +759,7 @@ export const CourseStructureProvider: React.FC<
               initialCourse.rootLessonNode,
               assignedByLessonNode,
               submittedByLessonNode,
+              correctByLessonNode,
             );
 
             setHomeworkCountsMap(countsMap);

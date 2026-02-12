@@ -8,6 +8,7 @@ import { useCourseStructure } from "@/components/providers/course-structure-prov
 interface StudentAssignmentViewProps {
   assignmentId: string;
   onCompleted?: (assignmentId: string) => void; // NEW: Callback when assignment is completed
+  onEvaluationUpdate?: (assignmentId: string, isCorrect: boolean) => void; // NEW: Callback to notify parent about evaluation
 }
 
 interface AssignmentData {
@@ -32,6 +33,7 @@ interface AssignmentData {
 export default function StudentAssignmentView({
   assignmentId,
   onCompleted,
+  onEvaluationUpdate,
 }: StudentAssignmentViewProps) {
   const { updateAssignmentStatus } = useCourseStructure();
   const [assignmentData, setAssignmentData] = useState<AssignmentData | null>(
@@ -247,6 +249,11 @@ export default function StudentAssignmentView({
 
       // 🎯 Update provider state (update UI everywhere)
       await updateAssignmentStatus(assignmentId);
+
+      // 🎯 Notify evaluation update (for color indication in parent dialog)
+      if (onEvaluationUpdate) {
+        onEvaluationUpdate(assignmentId, submission.evaluation.isCorrect);
+      }
 
       // 🎯 Call callback to notify parent (for auto-next assignment)
       if (onCompleted) {

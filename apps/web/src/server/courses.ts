@@ -386,19 +386,13 @@ export async function getCourses(organizationId: string) {
  * Load homework counts cho student trong một class
  * Trả về Map: LessonNode.id (homework) → { totalAssigned, pending }
  */
-export async function getStudentHomeworkStatusByClass(
+// Internal version (used by API routes)
+export async function _getStudentHomeworkStatusByClassInternal(
+  userId: string,
   courseId: string,
   classId: string,
 ) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session) throw new Error("Unauthorized");
-
-    const userId = session.user.id;
-
     // Verify student in class
     const membership = await prisma.classMember.findUnique({
       where: {
@@ -425,7 +419,7 @@ export async function getStudentHomeworkStatusByClass(
       },
       select: {
         id: true,
-        lessonNodeId: true, // LessonNode.id (homework template)
+        lessonNodeId: true,
       },
     });
 
@@ -433,14 +427,15 @@ export async function getStudentHomeworkStatusByClass(
       return {
         success: true,
         data: {
-          assignedByLessonNode: {}, // lessonNodeId → count
-          submittedByLessonNode: {}, // lessonNodeId → count
-          submissionsByAssignmentId: {}, // assignmentId → status
+          assignedByLessonNode: {},
+          submittedByLessonNode: {},
+          correctByLessonNode: {},
+          submissionsByAssignmentId: {},
         },
       };
     }
 
-    // 2️⃣ Lấy StudentAssignments của student này cho các assignments trên
+    // 2️⃣ Lấy StudentAssignments
     const classLessonNodeIds = classLessonNodes.map((cln) => cln.id);
 
     const studentAssignments = await prisma.studentAssignment.findMany({
@@ -451,13 +446,13 @@ export async function getStudentHomeworkStatusByClass(
         },
       },
       select: {
-        assignmentId: true, // ClassLessonNode.id
+        assignmentId: true,
         submissionData: true,
         submittedAt: true,
       },
     });
 
-    // 3️⃣ Build Maps: ClassLessonNode.id → status
+    // 3️⃣ Build Maps
     const assignedSet = new Set(
       studentAssignments.map((sa) => sa.assignmentId),
     );
@@ -466,16 +461,24 @@ export async function getStudentHomeworkStatusByClass(
         .filter((sa) => sa.submissionData !== null)
         .map((sa) => sa.assignmentId),
     );
+    const correctSet = new Set(
+      studentAssignments
+        .filter((sa) => {
+          const data = sa.submissionData as any;
+          return data?.evaluation?.isCorrect === true;
+        })
+        .map((sa) => sa.assignmentId),
+    );
 
     // 4️⃣ Group by LessonNode.id
     const assignedByLessonNode: Record<string, number> = {};
     const submittedByLessonNode: Record<string, number> = {};
+    const correctByLessonNode: Record<string, number> = {};
 
     classLessonNodes.forEach((cln) => {
       const lessonNodeId = cln.lessonNodeId;
       const classLessonNodeId = cln.id;
 
-      // Chỉ đếm nếu student được giao
       if (assignedSet.has(classLessonNodeId)) {
         assignedByLessonNode[lessonNodeId] =
           (assignedByLessonNode[lessonNodeId] || 0) + 1;
@@ -484,17 +487,15 @@ export async function getStudentHomeworkStatusByClass(
           submittedByLessonNode[lessonNodeId] =
             (submittedByLessonNode[lessonNodeId] || 0) + 1;
         }
+
+        if (correctSet.has(classLessonNodeId)) {
+          correctByLessonNode[lessonNodeId] =
+            (correctByLessonNode[lessonNodeId] || 0) + 1;
+        }
       }
     });
 
-    // console.log("📊 Student homework status:", {
-    //   totalClassLessonNodes: classLessonNodes.length,
-    //   assignedToStudent: assignedSet.size,
-    //   submitted: submittedSet.size,
-    //   byLessonNode: assignedByLessonNode,
-    // });
-
-    // 5️⃣ Build Map: assignmentId → submission status + evaluation
+    // 5️⃣ Build submission status map
     const submissionsByAssignmentId: Record<
       string,
       {
@@ -520,9 +521,10 @@ export async function getStudentHomeworkStatusByClass(
     return {
       success: true,
       data: {
-        assignedByLessonNode, // { "hw_1": 1, "hw_2": 2 }
-        submittedByLessonNode, // { "hw_1": 1 }
-        submissionsByAssignmentId, // { "assignment_id" → { hasSubmitted, submittedAt } }
+        assignedByLessonNode,
+        submittedByLessonNode,
+        correctByLessonNode,
+        submissionsByAssignmentId,
       },
     };
   } catch (error) {
@@ -532,4 +534,21 @@ export async function getStudentHomeworkStatusByClass(
       error: "Có lỗi xảy ra",
     };
   }
+}
+
+export async function getStudentHomeworkStatusByClass(
+  courseId: string,
+  classId: string,
+) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) throw new Error("Unauthorized");
+
+  return _getStudentHomeworkStatusByClassInternal(
+    session.user.id,
+    courseId,
+    classId,
+  );
 }
