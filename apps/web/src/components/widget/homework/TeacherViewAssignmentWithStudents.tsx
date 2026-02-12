@@ -5,17 +5,22 @@ import { AlertCircle } from "lucide-react";
 import { WidgetDefinition } from "../core/types";
 import { Button } from "@/components/ui/button";
 import AssignmentStudentsPanel from "./AssignmentStudentsPanel";
+import DirectAssignStudentPanel from "./DirectAssignStudentPanel";
 
 interface TeacherViewAssignmentWithStudentsProps {
   assignmentId: string;
   html: string;
   initialConfig: Record<string, any>;
+  targetStudentId?: string | null;
+  targetStudentName?: string;
 }
 
 export default function TeacherViewAssignmentWithStudents({
   assignmentId,
   html,
   initialConfig,
+  targetStudentId,
+  targetStudentName,
 }: TeacherViewAssignmentWithStudentsProps) {
   const [widgetDef, setWidgetDef] = useState<WidgetDefinition | null>(null);
   const [config] = useState<Record<string, any>>(initialConfig);
@@ -147,10 +152,18 @@ export default function TeacherViewAssignmentWithStudents({
 
       {/* RIGHT: Assignment Students Panel */}
       <div className="w-96 bg-white border-l border-slate-200 flex flex-col">
-        <AssignmentStudentsPanel
-          assignmentId={assignmentId}
-          onViewAnswer={handleViewAnswer}
-        />
+        {targetStudentId && targetStudentName ? (
+          <DirectAssignStudentPanel
+            assignmentId={assignmentId}
+            studentId={targetStudentId}
+            studentName={targetStudentName}
+          />
+        ) : (
+          <AssignmentStudentsPanel
+            assignmentId={assignmentId}
+            onViewAnswer={handleViewAnswer}
+          />
+        )}
       </div>
     </div>
   );

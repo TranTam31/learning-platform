@@ -14,10 +14,14 @@ import TeacherViewAssignmentWithStudents from "./TeacherViewAssignmentWithStuden
 
 interface TeacherViewAssignmentDialogProps {
   assignmentId: string; // ClassLessonNode.id
+  targetStudentId?: string | null;
+  targetStudentName?: string;
 }
 
 export default function TeacherViewAssignmentDialog({
   assignmentId,
+  targetStudentId,
+  targetStudentName,
 }: TeacherViewAssignmentDialogProps) {
   const [widgetHtml, setWidgetHtml] = useState<string | null>(null);
   const [savedConfig, setSavedConfig] = useState<Record<string, any> | null>(
@@ -115,6 +119,8 @@ export default function TeacherViewAssignmentDialog({
               assignmentId={assignmentId}
               html={widgetHtml}
               initialConfig={savedConfig}
+              targetStudentId={targetStudentId}
+              targetStudentName={targetStudentName}
             />
           </div>
         ) : (

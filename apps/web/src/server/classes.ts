@@ -379,3 +379,51 @@ export async function getStudentPendingAssignmentsForClasses(
     classIds,
   );
 }
+
+/**
+ * Get all students in a class (teacher/owner only)
+ */
+export async function getClassStudents(classId: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) throw new Error("Unauthorized");
+
+  const membership = await prisma.classMember.findUnique({
+    where: {
+      classId_userId: { classId, userId: session.user.id },
+    },
+    select: { role: true },
+  });
+
+  if (!membership || !["teacher", "owner"].includes(membership.role)) {
+    throw new Error("Forbidden");
+  }
+
+  const students = await prisma.classMember.findMany({
+    where: {
+      classId,
+      role: "student",
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+        },
+      },
+    },
+    orderBy: {
+      joinedAt: "asc",
+    },
+  });
+
+  return students.map((s) => ({
+    id: s.userId,
+    name: s.user.name || "Unknown",
+    email: s.user.email,
+    image: s.user.image,
+  }));
+}

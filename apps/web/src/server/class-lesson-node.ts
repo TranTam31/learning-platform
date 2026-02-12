@@ -513,3 +513,82 @@ export async function getBuildRunIdFromLessonNode(
     buildRunId: widgetBuild?.buildRunId ?? null,
   };
 }
+
+/**
+ * Get assignment stats (assigned/submitted/total) for all homework_imp CLNs in a class.
+ * Teacher/owner only.
+ * Returns: Map<assignmentId, { total, assigned, submitted }>
+ */
+export async function getAssignmentStatsBatch(classId: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) throw new Error("Unauthorized");
+
+  const membership = await prisma.classMember.findUnique({
+    where: {
+      classId_userId: { classId, userId: session.user.id },
+    },
+    select: { role: true },
+  });
+
+  if (
+    !membership ||
+    (membership.role !== "teacher" && membership.role !== "owner")
+  ) {
+    return { success: false, error: "Forbidden" };
+  }
+
+  try {
+    // 1. Total students in class
+    const totalStudents = await prisma.classMember.count({
+      where: { classId, role: "student" },
+    });
+
+    // 2. All homework_imp CLNs in this class
+    const classLessonNodes = await prisma.classLessonNode.findMany({
+      where: { classId, type: "homework_imp" },
+      select: { id: true },
+    });
+
+    if (classLessonNodes.length === 0) {
+      return { success: true, data: {} };
+    }
+
+    const clnIds = classLessonNodes.map((cln) => cln.id);
+
+    // 3. All StudentAssignments for these CLNs
+    const studentAssignments = await prisma.studentAssignment.findMany({
+      where: { assignmentId: { in: clnIds } },
+      select: {
+        assignmentId: true,
+        submissionData: true,
+      },
+    });
+
+    // 4. Aggregate per assignment
+    const statsMap: Record<
+      string,
+      { total: number; assigned: number; submitted: number }
+    > = {};
+
+    // Initialize all CLNs with base stats
+    clnIds.forEach((id) => {
+      statsMap[id] = { total: totalStudents, assigned: 0, submitted: 0 };
+    });
+
+    studentAssignments.forEach((sa) => {
+      if (statsMap[sa.assignmentId]) {
+        statsMap[sa.assignmentId].assigned += 1;
+        if (sa.submissionData !== null) {
+          statsMap[sa.assignmentId].submitted += 1;
+        }
+      }
+    });
+
+    return { success: true, data: statsMap };
+  } catch (error) {
+    console.error("Error getting assignment stats batch:", error);
+    return { success: false, error: "Có lỗi xảy ra" };
+  }
+}

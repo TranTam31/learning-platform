@@ -552,3 +552,116 @@ export async function getStudentHomeworkStatusByClass(
     classId,
   );
 }
+
+/**
+ * Teacher/Owner views a specific student's homework status
+ */
+export async function getStudentHomeworkStatusByClassForTeacher(
+  courseId: string,
+  classId: string,
+  studentId: string,
+) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) throw new Error("Unauthorized");
+
+  // Verify caller is teacher/owner of the class
+  const membership = await prisma.classMember.findUnique({
+    where: {
+      classId_userId: { classId, userId: session.user.id },
+    },
+    select: { role: true },
+  });
+
+  if (
+    !membership ||
+    (membership.role !== "teacher" && membership.role !== "owner")
+  ) {
+    return {
+      success: false,
+      error: "Forbidden: Not a teacher of this class",
+    };
+  }
+
+  return _getStudentHomeworkStatusByClassInternal(studentId, courseId, classId);
+}
+
+/**
+ * Get homework summary stats for ALL students in a class (teacher/owner only)
+ * Returns: { studentId → { totalAssigned, correct } }
+ */
+export async function getAllStudentsHomeworkSummary(
+  courseId: string,
+  classId: string,
+) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) throw new Error("Unauthorized");
+
+  // Verify caller is teacher/owner
+  const membership = await prisma.classMember.findUnique({
+    where: {
+      classId_userId: { classId, userId: session.user.id },
+    },
+    select: { role: true },
+  });
+
+  if (
+    !membership ||
+    (membership.role !== "teacher" && membership.role !== "owner")
+  ) {
+    return { success: false, error: "Forbidden" };
+  }
+
+  try {
+    // 1. Get all homework_imp ClassLessonNodes in this class
+    const classLessonNodes = await prisma.classLessonNode.findMany({
+      where: {
+        classId,
+        type: "homework_imp",
+      },
+      select: { id: true },
+    });
+
+    if (classLessonNodes.length === 0) {
+      return { success: true, data: {} };
+    }
+
+    const clnIds = classLessonNodes.map((cln) => cln.id);
+
+    // 2. Get ALL StudentAssignments for these CLNs (all students)
+    const allAssignments = await prisma.studentAssignment.findMany({
+      where: {
+        assignmentId: { in: clnIds },
+      },
+      select: {
+        studentId: true,
+        assignmentId: true,
+        submissionData: true,
+      },
+    });
+
+    // 3. Aggregate per student
+    const statsMap: Record<string, { totalAssigned: number; correct: number }> =
+      {};
+
+    allAssignments.forEach((sa) => {
+      if (!statsMap[sa.studentId]) {
+        statsMap[sa.studentId] = { totalAssigned: 0, correct: 0 };
+      }
+      statsMap[sa.studentId].totalAssigned += 1;
+
+      const data = sa.submissionData as any;
+      if (data?.evaluation?.isCorrect === true) {
+        statsMap[sa.studentId].correct += 1;
+      }
+    });
+
+    return { success: true, data: statsMap };
+  } catch (error) {
+    console.error("Error getting all students homework summary:", error);
+    return { success: false, error: "Có lỗi xảy ra" };
+  }
+}

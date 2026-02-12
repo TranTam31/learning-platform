@@ -19,6 +19,7 @@ import {
   getImageSizeFromBase64,
 } from "@/lib/supabase/image-upload";
 import AssignmentStudentsPanel from "./AssignmentStudentsPanel";
+import DirectAssignStudentPanel from "./DirectAssignStudentPanel";
 import { Button } from "@/components/ui/button";
 
 export interface TeacherCreateAssignmentRef {
@@ -29,12 +30,14 @@ export interface TeacherCreateAssignmentRef {
 interface TeacherCreateAssignmentProps {
   html: string;
   assignmentId?: string | null;
+  targetStudentId?: string | null;
+  targetStudentName?: string;
 }
 
 const TeacherCreateAssignment = forwardRef<
   TeacherCreateAssignmentRef,
   TeacherCreateAssignmentProps
->(({ html, assignmentId }, ref) => {
+>(({ html, assignmentId, targetStudentId, targetStudentName }, ref) => {
   const [widgetDef, setWidgetDef] = useState<WidgetDefinition | null>(null);
   const [config, setConfig] = useState<Record<string, any>>({});
   const [error, setError] = useState<string | null>(null);
@@ -406,10 +409,18 @@ const TeacherCreateAssignment = forwardRef<
       {/* RIGHT PANEL: Tweakpane config OR AssignmentStudentsPanel */}
       {assignmentId ? (
         <div className="w-96 bg-white border-l border-slate-200 flex flex-col">
-          <AssignmentStudentsPanel
-            assignmentId={assignmentId}
-            onViewAnswer={handleViewAnswer}
-          />
+          {targetStudentId && targetStudentName ? (
+            <DirectAssignStudentPanel
+              assignmentId={assignmentId}
+              studentId={targetStudentId}
+              studentName={targetStudentName}
+            />
+          ) : (
+            <AssignmentStudentsPanel
+              assignmentId={assignmentId}
+              onViewAnswer={handleViewAnswer}
+            />
+          )}
         </div>
       ) : (
         <div className="w-80 bg-white border-l border-slate-200 flex flex-col">

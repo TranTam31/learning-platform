@@ -17,8 +17,16 @@ import TeacherCreateAssignment, {
 } from "./TeacherCreateAssignment";
 
 export default function TeacherAssignmentDialog({ hwId }: { hwId: string }) {
-  const { handleAddClassLessonNode: handleAddClassAddon } =
-    useCourseStructure();
+  const {
+    handleAddClassLessonNode: handleAddClassAddon,
+    selectedStudentId,
+    classStudents,
+    isTeacherStudentView,
+  } = useCourseStructure();
+
+  const selectedStudentName = classStudents.find(
+    (s) => s.id === selectedStudentId,
+  )?.name;
 
   const [widgetId, setWidgetId] = useState<string | null>(null);
   const [buildRunId, setBuildRunId] = useState<string | null>(null);
@@ -193,6 +201,12 @@ export default function TeacherAssignmentDialog({ hwId }: { hwId: string }) {
               ref={widgetPreviewRef}
               html={widgetHtmlCache[widgetId]}
               assignmentId={assignmentId}
+              targetStudentId={
+                isTeacherStudentView ? selectedStudentId : undefined
+              }
+              targetStudentName={
+                isTeacherStudentView ? selectedStudentName : undefined
+              }
             />
           </div>
         ) : (

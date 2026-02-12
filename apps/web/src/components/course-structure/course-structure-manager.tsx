@@ -13,6 +13,9 @@ import {
   CheckCircle,
   XCircle,
   BarChart3,
+  User,
+  ArrowRightLeft,
+  Users,
 } from "lucide-react";
 import {
   Dialog,
@@ -32,6 +35,8 @@ import WidgetMarketplaceDialog from "../widget/marketplace/WidgetMarketplaceDial
 import TeacherAssignmentDialog from "../widget/homework/TeacherCreateAssignmentDialog";
 import TeacherViewAssignmentDialog from "../widget/homework/TeacherViewAssignmentDialog";
 import StudentViewAssignmentDialog from "../widget/homework/StudentViewAssignmentDialog";
+import TeacherStudentAssignmentViewDialog from "../widget/homework/TeacherStudentAssignmentViewDialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import StudentDoAllHomeworkDialog from "./StudentDoAllHomeworkDialog";
 import CourseStructureSettings from "./CourseStructureSettings";
 
@@ -168,10 +173,30 @@ const CourseStructureContent: React.FC = () => {
     getClassLessonNodesByType: getClassLessonNodesByType,
     getHomeworkCounts,
     studentSubmissionStatus,
+
+    // Assignment stats (teacher)
+    assignmentStats,
+
+    // Teacher student view
+    selectedStudentId,
+    setSelectedStudentId,
+    classStudents,
+    classStudentStats,
+    isTeacherStudentView,
+    isLoadingStudentView,
+    reloadSelectedStudentData,
   } = useCourseStructure();
 
   // Stats mode toggle (student only)
   const [showStats, setShowStats] = useState(false);
+  // Teacher student select dialog
+  const [showStudentDialog, setShowStudentDialog] = useState(false);
+
+  // Derived: selected student name
+  const selectedStudentName = useMemo(() => {
+    if (!selectedStudentId) return "";
+    return classStudents.find((s) => s.id === selectedStudentId)?.name || "";
+  }, [selectedStudentId, classStudents]);
 
   // Helper: get stats badge color based on correct ratio
   const getStatsBadge = (correct: number, total: number) => {
@@ -218,8 +243,9 @@ const CourseStructureContent: React.FC = () => {
     const hasChildren = node._count.children > 0;
     const isDeleting = loadingAction === `delete-${node.id}`;
 
-    // Get homework counts (student only)
-    const homeworkCounts = isStudent ? getHomeworkCounts(node.id) : null;
+    // Get homework counts (student or teacher-student-view)
+    const homeworkCounts =
+      isStudent || isTeacherStudentView ? getHomeworkCounts(node.id) : null;
     const hasPendingHomework = homeworkCounts && homeworkCounts.pending > 0;
 
     return (
@@ -255,11 +281,11 @@ const CourseStructureContent: React.FC = () => {
             {getNodeIcon(node, isExpanded)}
             <span className="text-sm">{node.title}</span>
 
-            {/* Badge homework counts (student only) */}
-            {isStudent &&
+            {/* Badge homework counts (student or teacher-student-view) */}
+            {(isStudent || isTeacherStudentView) &&
               homeworkCounts &&
               homeworkCounts.totalAssigned > 0 &&
-              (showStats ? (
+              (showStats || isTeacherStudentView ? (
                 // Stats mode: show correct/total with color
                 (() => {
                   const stats = getStatsBadge(
@@ -427,6 +453,137 @@ const CourseStructureContent: React.FC = () => {
               </button>
             </div>
           )}
+
+          {/* Teacher: View student stats */}
+          {isTeacher && classStudents.length > 0 && (
+            <div className="flex flex-col gap-2 mt-2">
+              <button
+                onClick={() => {
+                  if (isTeacherStudentView) {
+                    setSelectedStudentId(null);
+                  } else {
+                    setShowStudentDialog(true);
+                  }
+                }}
+                className={`w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  isTeacherStudentView
+                    ? "bg-indigo-100 text-indigo-700 border border-indigo-300"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200"
+                }`}
+              >
+                <BarChart3 className="w-4 h-4" />
+                {isTeacherStudentView
+                  ? "Tắt xem thống kê"
+                  : "Xem thống kê học sinh"}
+              </button>
+
+              {/* Student pick dialog */}
+              <Dialog
+                open={showStudentDialog}
+                onOpenChange={setShowStudentDialog}
+              >
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Chọn học sinh</DialogTitle>
+                  </DialogHeader>
+                  <ScrollArea className="max-h-80">
+                    <div className="py-1">
+                      {classStudents.map((s) => {
+                        const stats = classStudentStats.get(s.id);
+                        const isSelected = selectedStudentId === s.id;
+                        return (
+                          <button
+                            key={s.id}
+                            onClick={() => {
+                              setSelectedStudentId(s.id);
+                              setShowStudentDialog(false);
+                            }}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors rounded-md ${
+                              isSelected
+                                ? "bg-indigo-50 border-l-2 border-indigo-500"
+                                : "hover:bg-gray-50"
+                            }`}
+                          >
+                            {s.image ? (
+                              <img
+                                src={s.image}
+                                alt={s.name}
+                                className="w-8 h-8 rounded-full object-cover shrink-0"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                                <User className="w-4 h-4 text-gray-500" />
+                              </div>
+                            )}
+                            <span className="flex-1 text-left truncate font-medium text-gray-700">
+                              {s.name}
+                            </span>
+                            {stats && stats.totalAssigned > 0 ? (
+                              <span
+                                className={`text-xs px-2 py-0.5 rounded-full font-semibold shrink-0 ${
+                                  stats.correct / stats.totalAssigned >= 0.7
+                                    ? "bg-green-100 text-green-700"
+                                    : stats.correct / stats.totalAssigned >= 0.4
+                                      ? "bg-yellow-100 text-yellow-700"
+                                      : "bg-red-100 text-red-700"
+                                }`}
+                                title={`${stats.correct} đúng / ${stats.totalAssigned} tổng (${Math.round((stats.correct / stats.totalAssigned) * 100)}%)`}
+                              >
+                                {stats.correct}/{stats.totalAssigned}
+                              </span>
+                            ) : (
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 shrink-0">
+                                0/0
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </ScrollArea>
+                </DialogContent>
+              </Dialog>
+
+              {/* Student stats summary */}
+              {isTeacherStudentView && (
+                <div className="bg-indigo-50 border border-indigo-200 rounded-md px-3 py-2">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium text-indigo-700">
+                      {selectedStudentName}
+                    </div>
+                    <button
+                      onClick={() => setShowStudentDialog(true)}
+                      className="flex items-center gap-1 text-xs text-indigo-500 hover:text-indigo-700 transition-colors"
+                      title="Đổi học sinh"
+                    >
+                      <ArrowRightLeft className="w-3 h-3" />
+                      Đổi
+                    </button>
+                  </div>
+                  {isLoadingStudentView ? (
+                    <div className="flex items-center gap-2 mt-1">
+                      <Loader2 className="w-3 h-3 animate-spin text-indigo-500" />
+                      <span className="text-xs text-indigo-500">
+                        Đang tải...
+                      </span>
+                    </div>
+                  ) : (
+                    (() => {
+                      const rootCounts = getHomeworkCounts(
+                        course.rootLessonNodeId || "",
+                      );
+                      return (
+                        <div className="text-xs text-indigo-600 mt-1">
+                          {rootCounts.correct}/{rootCounts.totalAssigned} đúng •{" "}
+                          {rootCounts.pending} chưa làm
+                        </div>
+                      );
+                    })()
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex-1 overflow-y-auto">
           {isInitialLoading ? (
@@ -523,10 +680,11 @@ const CourseStructureContent: React.FC = () => {
                           hw.id,
                         );
 
-                        // Get homework counts (student only)
-                        const homeworkCounts = isStudent
-                          ? getHomeworkCounts(hw.id)
-                          : null;
+                        // Get homework counts (student or teacher-student-view)
+                        const homeworkCounts =
+                          isStudent || isTeacherStudentView
+                            ? getHomeworkCounts(hw.id)
+                            : null;
                         const hasPendingHomework =
                           homeworkCounts && homeworkCounts.pending > 0;
 
@@ -569,16 +727,11 @@ const CourseStructureContent: React.FC = () => {
                                     </span>
                                   )}
 
-                                {/* Pending count (student only) */}
-                                {/* {isStudent && hasPendingHomework > 0 && (
-                                  <span className="text-xs text-white bg-red-500 px-2 py-0.5 rounded font-semibold">
-                                    {hasPendingHomework} chưa làm
-                                  </span>
-                                )} */}
-                                {isStudent &&
+                                {/* Pending count (student or teacher-student-view) */}
+                                {(isStudent || isTeacherStudentView) &&
                                   homeworkCounts &&
                                   homeworkCounts.totalAssigned > 0 &&
-                                  (showStats ? (
+                                  (showStats || isTeacherStudentView ? (
                                     (() => {
                                       const stats = getStatsBadge(
                                         homeworkCounts.correct,
@@ -653,7 +806,237 @@ const CourseStructureContent: React.FC = () => {
                                   <div className="text-xs text-gray-400 italic py-2">
                                     Chưa có bài tập nào
                                   </div>
+                                ) : isTeacherStudentView ? (
+                                  /* ===== TEACHER STUDENT VIEW: Split assigned/unassigned ===== */
+                                  (() => {
+                                    const assignedNodes =
+                                      hwClassLessonNodes.filter((cln) =>
+                                        studentSubmissionStatus.has(cln.id),
+                                      );
+                                    const unassignedNodes =
+                                      hwClassLessonNodes.filter(
+                                        (cln) =>
+                                          !studentSubmissionStatus.has(cln.id),
+                                      );
+
+                                    return (
+                                      <>
+                                        {/* Assigned section */}
+                                        {assignedNodes.length > 0 && (
+                                          <>
+                                            <div className="text-xs font-semibold text-green-700 py-1 border-b border-green-200">
+                                              Đã giao cho {selectedStudentName}{" "}
+                                              ({assignedNodes.length})
+                                            </div>
+                                            {assignedNodes.map(
+                                              (classLessonNode, index) => {
+                                                const submissionStatus =
+                                                  studentSubmissionStatus.get(
+                                                    classLessonNode.id,
+                                                  );
+                                                const isPendingForStudent =
+                                                  !submissionStatus ||
+                                                  !submissionStatus.hasSubmitted;
+
+                                                return (
+                                                  <div
+                                                    key={classLessonNode.id}
+                                                    className={`flex items-center gap-2 p-2 rounded text-xs group transition-colors ${
+                                                      isPendingForStudent
+                                                        ? "bg-yellow-50 border border-yellow-200"
+                                                        : "bg-green-50 border border-green-200"
+                                                    }`}
+                                                  >
+                                                    <span className="font-semibold text-orange-700 min-w-fit">
+                                                      Bài{" "}
+                                                      {hwImplCount -
+                                                        hwClassLessonNodes.indexOf(
+                                                          classLessonNode,
+                                                        )}
+                                                    </span>
+
+                                                    {/* Assignment stats */}
+                                                    {(() => {
+                                                      const aStats =
+                                                        assignmentStats.get(
+                                                          classLessonNode.id,
+                                                        );
+                                                      if (!aStats) return null;
+                                                      return (
+                                                        <span
+                                                          className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700"
+                                                          title={`Đã giao ${aStats.assigned}/${aStats.total} · Đã nộp ${aStats.submitted}/${aStats.assigned}`}
+                                                        >
+                                                          <Users className="w-3 h-3 inline -mt-0.5 mr-0.5" />
+                                                          {aStats.assigned}/
+                                                          {aStats.total}
+                                                        </span>
+                                                      );
+                                                    })()}
+
+                                                    {/* Status & Evaluation */}
+                                                    <div className="flex items-center gap-2">
+                                                      <span
+                                                        className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                                                          isPendingForStudent
+                                                            ? "bg-yellow-500 text-white"
+                                                            : "bg-green-500 text-white"
+                                                        }`}
+                                                      >
+                                                        {isPendingForStudent
+                                                          ? "Chưa làm"
+                                                          : "Đã làm"}
+                                                      </span>
+
+                                                      {!isPendingForStudent &&
+                                                        submissionStatus?.evaluation && (
+                                                          <div className="flex items-center gap-1">
+                                                            {submissionStatus
+                                                              .evaluation
+                                                              .isCorrect ? (
+                                                              <CheckCircle className="w-4 h-4 text-green-600" />
+                                                            ) : (
+                                                              <XCircle className="w-4 h-4 text-red-600" />
+                                                            )}
+                                                            <span className="font-semibold text-gray-700">
+                                                              {
+                                                                submissionStatus
+                                                                  .evaluation
+                                                                  .score
+                                                              }
+                                                              /
+                                                              {
+                                                                submissionStatus
+                                                                  .evaluation
+                                                                  .maxScore
+                                                              }
+                                                            </span>
+                                                          </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="flex-1" />
+
+                                                    {/* Show student's assignment (read-only) */}
+                                                    <TeacherStudentAssignmentViewDialog
+                                                      assignmentId={
+                                                        classLessonNode.id
+                                                      }
+                                                      studentId={
+                                                        selectedStudentId!
+                                                      }
+                                                      studentName={
+                                                        selectedStudentName
+                                                      }
+                                                    />
+
+                                                    {/* Delete button */}
+                                                    {isTeacher && (
+                                                      <button
+                                                        onClick={() =>
+                                                          handleDeleteClassLessonNode(
+                                                            hw.id,
+                                                            classLessonNode.id,
+                                                            "homework_imp",
+                                                          )
+                                                        }
+                                                        className="p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100"
+                                                      >
+                                                        <Trash2 className="w-3 h-3 text-red-500" />
+                                                      </button>
+                                                    )}
+                                                  </div>
+                                                );
+                                              },
+                                            )}
+                                          </>
+                                        )}
+
+                                        {/* Unassigned section */}
+                                        {unassignedNodes.length > 0 && (
+                                          <>
+                                            <div className="text-xs font-semibold text-gray-500 py-1 border-b border-gray-200 mt-2">
+                                              Chưa giao cho{" "}
+                                              {selectedStudentName} (
+                                              {unassignedNodes.length})
+                                            </div>
+                                            {unassignedNodes.map(
+                                              (classLessonNode, index) => (
+                                                <div
+                                                  key={classLessonNode.id}
+                                                  className="flex items-center gap-2 p-2 rounded text-xs group transition-colors bg-gray-50 border border-gray-200"
+                                                >
+                                                  <span className="font-semibold text-orange-700 min-w-fit">
+                                                    Bài{" "}
+                                                    {hwImplCount -
+                                                      hwClassLessonNodes.indexOf(
+                                                        classLessonNode,
+                                                      )}
+                                                  </span>
+
+                                                  {/* Assignment stats */}
+                                                  {(() => {
+                                                    const aStats =
+                                                      assignmentStats.get(
+                                                        classLessonNode.id,
+                                                      );
+                                                    if (!aStats) return null;
+                                                    return (
+                                                      <span
+                                                        className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700"
+                                                        title={`Đã giao ${aStats.assigned}/${aStats.total} · Đã nộp ${aStats.submitted}/${aStats.assigned}`}
+                                                      >
+                                                        <Users className="w-3 h-3 inline -mt-0.5 mr-0.5" />
+                                                        {aStats.assigned}/
+                                                        {aStats.total}
+                                                      </span>
+                                                    );
+                                                  })()}
+
+                                                  <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-gray-400 text-white">
+                                                    Chưa giao
+                                                  </span>
+
+                                                  <div className="flex-1" />
+
+                                                  {/* Show Assignment with direct assign to student */}
+                                                  <TeacherViewAssignmentDialog
+                                                    assignmentId={
+                                                      classLessonNode.id
+                                                    }
+                                                    targetStudentId={
+                                                      selectedStudentId
+                                                    }
+                                                    targetStudentName={
+                                                      selectedStudentName
+                                                    }
+                                                  />
+
+                                                  {/* Delete button */}
+                                                  {isTeacher && (
+                                                    <button
+                                                      onClick={() =>
+                                                        handleDeleteClassLessonNode(
+                                                          hw.id,
+                                                          classLessonNode.id,
+                                                          "homework_imp",
+                                                        )
+                                                      }
+                                                      className="p-1 hover:bg-red-100 rounded opacity-0 group-hover:opacity-100"
+                                                    >
+                                                      <Trash2 className="w-3 h-3 text-red-500" />
+                                                    </button>
+                                                  )}
+                                                </div>
+                                              ),
+                                            )}
+                                          </>
+                                        )}
+                                      </>
+                                    );
+                                  })()
                                 ) : (
+                                  /* ===== ORIGINAL RENDERING ===== */
                                   hwClassLessonNodes.map(
                                     (classLessonNode, index) => {
                                       // Check submission status
@@ -679,6 +1062,42 @@ const CourseStructureContent: React.FC = () => {
                                           <span className="font-semibold text-orange-700 min-w-fit">
                                             Bài {hwImplCount - index}
                                           </span>
+
+                                          {/* Assignment stats (teacher) */}
+                                          {isTeacher &&
+                                            (() => {
+                                              const aStats =
+                                                assignmentStats.get(
+                                                  classLessonNode.id,
+                                                );
+                                              if (!aStats) return null;
+                                              return (
+                                                <div className="flex items-center gap-1.5">
+                                                  <span
+                                                    className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700"
+                                                    title={`Đã giao ${aStats.assigned}/${aStats.total}`}
+                                                  >
+                                                    <Users className="w-3 h-3 inline -mt-0.5 mr-0.5" />
+                                                    {aStats.assigned}/
+                                                    {aStats.total}
+                                                  </span>
+                                                  <span
+                                                    className={`text-xs px-1.5 py-0.5 rounded ${
+                                                      aStats.submitted ===
+                                                        aStats.assigned &&
+                                                      aStats.assigned > 0
+                                                        ? "bg-green-100 text-green-700"
+                                                        : "bg-yellow-100 text-yellow-700"
+                                                    }`}
+                                                    title={`Đã nộp ${aStats.submitted}/${aStats.assigned}`}
+                                                  >
+                                                    <CheckCircle className="w-3 h-3 inline -mt-0.5 mr-0.5" />
+                                                    {aStats.submitted}/
+                                                    {aStats.assigned}
+                                                  </span>
+                                                </div>
+                                              );
+                                            })()}
 
                                           {/* Status & Evaluation */}
                                           {isStudent && (

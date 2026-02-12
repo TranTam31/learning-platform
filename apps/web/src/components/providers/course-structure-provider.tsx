@@ -11,13 +11,17 @@ import {
   addLessonNode,
   deleteLessonNode,
   getStudentHomeworkStatusByClass,
+  getStudentHomeworkStatusByClassForTeacher,
+  getAllStudentsHomeworkSummary,
   updateLessonNode,
 } from "@/server/courses";
+import { getClassStudents } from "@/server/classes";
 import {
   loadClassLessonNode,
   getClassLessonNodeCounts,
   addClassLessonNode,
   deleteClassLessonNode,
+  getAssignmentStatsBatch,
 } from "@/server/class-lesson-node";
 import {
   AddNodeInputType,
@@ -39,6 +43,13 @@ import {
 } from "../course-structure/utils/homework-count-utils";
 
 // ===== TYPES =====
+export interface ClassStudentInfo {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+}
+
 interface CourseStructureContextValue {
   // Config
   classId?: string;
@@ -116,6 +127,21 @@ interface CourseStructureContextValue {
     }
   >;
   updateAssignmentStatus: (assignmentId: string) => Promise<void>;
+
+  // Assignment stats (teacher)
+  assignmentStats: Map<
+    string,
+    { total: number; assigned: number; submitted: number }
+  >;
+
+  // Teacher student view
+  selectedStudentId: string | null;
+  setSelectedStudentId: (id: string | null) => void;
+  classStudents: ClassStudentInfo[];
+  classStudentStats: Map<string, { totalAssigned: number; correct: number }>;
+  isTeacherStudentView: boolean;
+  isLoadingStudentView: boolean;
+  reloadSelectedStudentData: () => Promise<void>;
 }
 
 export interface AddNodeOptions {
@@ -203,6 +229,22 @@ export const CourseStructureProvider: React.FC<
         };
       }
     >
+  >(new Map());
+
+  // ===== TEACHER STUDENT VIEW =====
+  const [selectedStudentId, setSelectedStudentIdState] = useState<
+    string | null
+  >(null);
+  const [classStudents, setClassStudents] = useState<ClassStudentInfo[]>([]);
+  const [classStudentStats, setClassStudentStats] = useState<
+    Map<string, { totalAssigned: number; correct: number }>
+  >(new Map());
+  const [isLoadingStudentView, setIsLoadingStudentView] = useState(false);
+  const isTeacherStudentView = config.isTeacher && !!selectedStudentId;
+
+  // ===== ASSIGNMENT STATS (TEACHER) =====
+  const [assignmentStats, setAssignmentStats] = useState<
+    Map<string, { total: number; assigned: number; submitted: number }>
   >(new Map());
 
   // ===== LOADING STATES =====
@@ -365,6 +407,153 @@ export const CourseStructureProvider: React.FC<
     config.isStudent,
     initialCourse.rootLessonNode,
   ]);
+
+  // ===== LOAD CLASS STUDENTS + STATS (teacher only) =====
+  useEffect(() => {
+    if (!config.isTeacher || !classId) return;
+
+    const loadStudentsAndStats = async () => {
+      try {
+        const [students, summaryResult] = await Promise.all([
+          getClassStudents(classId),
+          getAllStudentsHomeworkSummary(initialCourse.id, classId),
+        ]);
+        setClassStudents(students);
+
+        if (summaryResult.success && summaryResult.data) {
+          const statsMap = new Map<
+            string,
+            { totalAssigned: number; correct: number }
+          >();
+          Object.entries(summaryResult.data).forEach(([studentId, stats]) => {
+            statsMap.set(studentId, stats);
+          });
+          setClassStudentStats(statsMap);
+        }
+      } catch (error) {
+        console.error("Error loading class students:", error);
+      }
+    };
+
+    loadStudentsAndStats();
+  }, [config.isTeacher, classId, initialCourse.id]);
+
+  // ===== LOAD ASSIGNMENT STATS (teacher only) =====
+  useEffect(() => {
+    if (!config.isTeacher || !classId) return;
+
+    const loadStats = async () => {
+      try {
+        const result = await getAssignmentStatsBatch(classId);
+        if (result.success && result.data) {
+          const statsMap = new Map<
+            string,
+            { total: number; assigned: number; submitted: number }
+          >();
+          Object.entries(result.data).forEach(([id, stats]) => {
+            statsMap.set(
+              id,
+              stats as { total: number; assigned: number; submitted: number },
+            );
+          });
+          setAssignmentStats(statsMap);
+        }
+      } catch (error) {
+        console.error("Error loading assignment stats:", error);
+      }
+    };
+
+    loadStats();
+  }, [config.isTeacher, classId]);
+
+  // ===== LOAD SELECTED STUDENT HOMEWORK STATUS (teacher student view) =====
+  const loadSelectedStudentData = useCallback(async () => {
+    if (
+      !config.isTeacher ||
+      !classId ||
+      !selectedStudentId ||
+      !initialCourse.rootLessonNode
+    ) {
+      return;
+    }
+
+    setIsLoadingStudentView(true);
+    try {
+      const statusResult = await getStudentHomeworkStatusByClassForTeacher(
+        initialCourse.id,
+        classId,
+        selectedStudentId,
+      );
+
+      if (statusResult.success && statusResult.data) {
+        const {
+          assignedByLessonNode,
+          submittedByLessonNode,
+          correctByLessonNode,
+          submissionsByAssignmentId,
+        } = statusResult.data;
+
+        const countsMap = buildHomeworkCountsMap(
+          initialCourse.rootLessonNode,
+          assignedByLessonNode,
+          submittedByLessonNode,
+          correctByLessonNode,
+        );
+        setHomeworkCountsMap(countsMap);
+
+        if (submissionsByAssignmentId) {
+          const submissionStatusMap = new Map<
+            string,
+            {
+              hasSubmitted: boolean;
+              submittedAt: string | null;
+              evaluation?: {
+                isCorrect: boolean;
+                score: number;
+                maxScore: number;
+              };
+            }
+          >();
+
+          Object.entries(submissionsByAssignmentId).forEach(([id, status]) => {
+            submissionStatusMap.set(id, status);
+          });
+          setStudentSubmissionStatus(submissionStatusMap);
+        } else {
+          setStudentSubmissionStatus(new Map());
+        }
+      }
+    } catch (error) {
+      console.error("Error loading student homework status:", error);
+    } finally {
+      setIsLoadingStudentView(false);
+    }
+  }, [
+    config.isTeacher,
+    classId,
+    selectedStudentId,
+    initialCourse.id,
+    initialCourse.rootLessonNode,
+  ]);
+
+  useEffect(() => {
+    if (!selectedStudentId && config.isTeacher) {
+      // Clear data when deselected
+      setHomeworkCountsMap(new Map());
+      setStudentSubmissionStatus(new Map());
+      return;
+    }
+
+    loadSelectedStudentData();
+  }, [selectedStudentId, loadSelectedStudentData]);
+
+  const setSelectedStudentId = useCallback((id: string | null) => {
+    setSelectedStudentIdState(id);
+  }, []);
+
+  const reloadSelectedStudentData = useCallback(async () => {
+    await loadSelectedStudentData();
+  }, [loadSelectedStudentData]);
 
   // ===== ACTION: Toggle expand/collapse (ĐƠN GIẢN) =====
   const toggleNodeExpanded = useCallback((node: LessonNodeUI) => {
@@ -837,6 +1026,18 @@ export const CourseStructureProvider: React.FC<
     getClassLessonNodesByType,
     studentSubmissionStatus,
     updateAssignmentStatus,
+
+    // Assignment stats (teacher)
+    assignmentStats,
+
+    // Teacher student view
+    selectedStudentId,
+    setSelectedStudentId,
+    classStudents,
+    classStudentStats,
+    isTeacherStudentView,
+    isLoadingStudentView,
+    reloadSelectedStudentData,
   };
 
   return (
