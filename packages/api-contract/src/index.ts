@@ -1,17 +1,49 @@
 import { initContract } from "@ts-rest/core";
-import { authContract } from "./auth.contract";
+import { z } from "zod";
+import { classesContract } from "./classes.contract";
+import { coursesContract } from "./courses.contract";
+import { classLessonNodesContract } from "./class-lesson-nodes.contract";
+import { classGroupsContract } from "./class-groups.contract";
+import { membersContract } from "./members.contract";
+import { usersContract } from "./users.contract";
+import { widgetsContract } from "./widgets.contract";
+import { permissionsContract } from "./permissions.contract";
 
 const c = initContract();
 
+// ── Health check ───────────────────────────────────────────
+const healthContract = c.router({
+  check: {
+    method: "GET",
+    path: "/health",
+    responses: {
+      200: z.object({
+        status: z.literal("ok"),
+        timestamp: z.string(),
+      }),
+    },
+    summary: "Health check",
+  },
+});
+
+// ── Root router ────────────────────────────────────────────
 export const contract = c.router(
   {
-    auth: authContract,
+    health: healthContract,
+    classes: classesContract,
+    courses: coursesContract,
+    classLessonNodes: classLessonNodesContract,
+    classGroups: classGroupsContract,
+    members: membersContract,
+    users: usersContract,
+    widgets: widgetsContract,
+    permissions: permissionsContract,
   },
   {
     pathPrefix: "/api",
     strictStatusCodes: true,
-  }
+  },
 );
 
-export * from "./auth.contract";
-export * from "./user.contract";
+// Re-export shared schemas & types (not contracts)
+export * from "./schemas";

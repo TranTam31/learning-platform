@@ -1,6 +1,6 @@
 import { CourseNav } from "@/components/course/course-nav";
 import { CourseProvider } from "@/components/providers/course-provider";
-import { getCourseWithFullTreeBySlug } from "@/server/courses";
+import { apiServer } from "@/lib/api-server-client";
 import { redirect } from "next/navigation";
 import { buildTreeFromFlatList } from "@/components/course-structure/utils/course-structure-utiles";
 
@@ -16,20 +16,22 @@ export default async function CourseLayout({ children, params }: PageProps) {
   const { orgSlug, courseSlug } = await params;
 
   // Load course với FULL TREE một lần duy nhất
-  let result;
+  let res;
   try {
-    result = await getCourseWithFullTreeBySlug(orgSlug, courseSlug);
+    res = await apiServer.courses.getCourseBySlug({
+      params: { orgSlug, courseSlug },
+    });
   } catch (error) {
     console.error("Error loading course:", error);
     redirect("/dashboard");
   }
 
-  if (!result.success || !result.data) {
+  if (res.status !== 200 || !res.body.data) {
     redirect("/dashboard");
   }
 
-  const { course, nodes } = result.data;
-  const role = result.role === "member" ? "org_member" : "org_admin";
+  const { course, nodes } = res.body.data;
+  const role = res.body.role === "member" ? "org_member" : "org_admin";
 
   // Build tree từ flat nodes
   const rootNode = buildTreeFromFlatList(nodes);

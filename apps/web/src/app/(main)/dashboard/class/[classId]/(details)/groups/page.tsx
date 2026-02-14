@@ -24,13 +24,7 @@ import {
   Pencil,
   Loader2,
 } from "lucide-react";
-import {
-  createClassGroup,
-  deleteClassGroup,
-  updateClassGroup,
-  addMemberToGroup,
-  removeMemberFromGroup,
-} from "@/server/class-groups";
+import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 
 type GroupMember = {
@@ -114,11 +108,15 @@ export default function ClassGroupsPage() {
     if (!groupName.trim()) return;
     startTransition(async () => {
       try {
-        const newGroup = await createClassGroup(
-          classId,
-          groupName.trim(),
-          groupDescription.trim() || undefined,
-        );
+        const res = await api.classGroups.createClassGroup({
+          body: {
+            classId,
+            name: groupName.trim(),
+            description: groupDescription.trim() || undefined,
+          },
+        });
+        if (res.status !== 201) throw new Error((res.body as any).error);
+        const newGroup = res.body;
         setGroups((prev) => [...prev, newGroup as Group]);
         setSelectedGroupId(newGroup.id);
         setShowCreateDialog(false);
@@ -135,12 +133,16 @@ export default function ClassGroupsPage() {
     if (!selectedGroup || !groupName.trim()) return;
     startTransition(async () => {
       try {
-        const updated = await updateClassGroup(
-          classId,
-          selectedGroup.id,
-          groupName.trim(),
-          groupDescription.trim() || undefined,
-        );
+        const res = await api.classGroups.updateClassGroup({
+          params: { groupId: selectedGroup.id },
+          body: {
+            classId,
+            name: groupName.trim(),
+            description: groupDescription.trim() || undefined,
+          },
+        });
+        if (res.status !== 200) throw new Error((res.body as any).error);
+        const updated = res.body;
         setGroups((prev) =>
           prev.map((g) => (g.id === updated.id ? (updated as Group) : g)),
         );
@@ -158,7 +160,12 @@ export default function ClassGroupsPage() {
     if (!selectedGroup) return;
     startTransition(async () => {
       try {
-        await deleteClassGroup(classId, selectedGroup.id);
+        const res = await api.classGroups.deleteClassGroup({
+          params: { groupId: selectedGroup.id },
+          query: { classId },
+          body: undefined,
+        });
+        if (res.status !== 200) throw new Error((res.body as any).error);
         setGroups((prev) => prev.filter((g) => g.id !== selectedGroup.id));
         setSelectedGroupId(null);
         setShowDeleteDialog(false);
@@ -173,11 +180,12 @@ export default function ClassGroupsPage() {
     if (!selectedGroup) return;
     startTransition(async () => {
       try {
-        const newMember = await addMemberToGroup(
-          classId,
-          selectedGroup.id,
-          userId,
-        );
+        const res = await api.classGroups.addMemberToGroup({
+          params: { groupId: selectedGroup.id },
+          body: { classId, userId },
+        });
+        if (res.status !== 201) throw new Error((res.body as any).error);
+        const newMember = res.body;
         setGroups((prev) =>
           prev.map((g) =>
             g.id === selectedGroup.id
@@ -202,7 +210,12 @@ export default function ClassGroupsPage() {
     if (!selectedGroup) return;
     startTransition(async () => {
       try {
-        await removeMemberFromGroup(classId, selectedGroup.id, userId);
+        const res = await api.classGroups.removeMemberFromGroup({
+          params: { groupId: selectedGroup.id, userId },
+          query: { classId },
+          body: undefined,
+        });
+        if (res.status !== 200) throw new Error((res.body as any).error);
         setGroups((prev) =>
           prev.map((g) =>
             g.id === selectedGroup.id

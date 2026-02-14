@@ -8,28 +8,13 @@ import React, {
   useEffect,
 } from "react";
 import {
-  addLessonNode,
-  deleteLessonNode,
-  getStudentHomeworkStatusByClass,
-  getStudentHomeworkStatusByClassForTeacher,
-  getAllStudentsHomeworkSummary,
-  updateLessonNode,
-} from "@/server/courses";
-import { getClassStudents } from "@/server/classes";
-import {
-  loadClassLessonNode,
-  getClassLessonNodeCounts,
-  addClassLessonNode,
-  deleteClassLessonNode,
-  getAssignmentStatsBatch,
-} from "@/server/class-lesson-node";
-import {
   AddNodeInputType,
   CourseUI,
   LessonNodeContent,
   LessonNodeType,
   LessonNodeUI,
 } from "@/types/course";
+import { api } from "@/lib/api-client";
 import {
   transformToUINode,
   findNodeById,
@@ -275,10 +260,13 @@ export const CourseStructureProvider: React.FC<
     // Nếu là student → Load homework counts
     const loadHomeworkCounts = async () => {
       try {
-        const statusResult = await getStudentHomeworkStatusByClass(
-          initialCourse.id,
-          classId,
-        );
+        const statusRes = await api.courses.getHomeworkStatus({
+          query: { courseId: initialCourse.id, classId },
+        });
+        const statusResult =
+          statusRes.status === 200
+            ? statusRes.body
+            : { success: false as const };
         console.log("statusResult", statusResult);
 
         if (statusResult.success && statusResult.data) {
@@ -376,10 +364,13 @@ export const CourseStructureProvider: React.FC<
         );
 
         // Load counts
-        const countsResult = await getClassLessonNodeCounts(
-          homeworkNodeIds,
-          classId,
-        );
+        const countsRes = await api.classLessonNodes.getClassLessonNodeCounts({
+          body: { lessonNodeIds: homeworkNodeIds, classId },
+        });
+        const countsResult =
+          countsRes.status === 200
+            ? countsRes.body
+            : { success: false as const };
 
         if (countsResult.success && countsResult.data) {
           const newMap = new Map<
@@ -414,10 +405,17 @@ export const CourseStructureProvider: React.FC<
 
     const loadStudentsAndStats = async () => {
       try {
-        const [students, summaryResult] = await Promise.all([
-          getClassStudents(classId),
-          getAllStudentsHomeworkSummary(initialCourse.id, classId),
+        const [studentsRes, summaryRes] = await Promise.all([
+          api.classes.getClassStudents({ params: { classId } }),
+          api.courses.getAllStudentsHomeworkSummary({
+            query: { courseId: initialCourse.id, classId },
+          }),
         ]);
+        const students = studentsRes.status === 200 ? studentsRes.body : [];
+        const summaryResult =
+          summaryRes.status === 200
+            ? summaryRes.body
+            : { success: false as const };
         setClassStudents(students);
 
         if (summaryResult.success && summaryResult.data) {
@@ -444,7 +442,11 @@ export const CourseStructureProvider: React.FC<
 
     const loadStats = async () => {
       try {
-        const result = await getAssignmentStatsBatch(classId);
+        const statsRes = await api.classLessonNodes.getAssignmentStatsBatch({
+          params: { classId },
+        });
+        const result =
+          statsRes.status === 200 ? statsRes.body : { success: false as const };
         if (result.success && result.data) {
           const statsMap = new Map<
             string,
@@ -479,11 +481,15 @@ export const CourseStructureProvider: React.FC<
 
     setIsLoadingStudentView(true);
     try {
-      const statusResult = await getStudentHomeworkStatusByClassForTeacher(
-        initialCourse.id,
-        classId,
-        selectedStudentId,
-      );
+      const statusRes = await api.courses.getHomeworkStatusForTeacher({
+        query: {
+          courseId: initialCourse.id,
+          classId,
+          studentId: selectedStudentId,
+        },
+      });
+      const statusResult =
+        statusRes.status === 200 ? statusRes.body : { success: false as const };
 
       if (statusResult.success && statusResult.data) {
         const {
@@ -600,13 +606,20 @@ export const CourseStructureProvider: React.FC<
               ? "New Lesson"
               : "New Homework";
 
-        const result = await addLessonNode({
-          courseId: course.id,
-          parentId: selectedNode.id,
-          type: type,
-          title: options?.title ?? defaultTitle,
-          content: options?.content,
+        const addRes = await api.courses.addLessonNode({
+          params: { courseId: course.id },
+          body: {
+            parentId: selectedNode.id,
+            type: type as "module" | "lesson" | "homework",
+            title: options?.title ?? defaultTitle,
+            content: options?.content,
+          },
         });
+        const result = (
+          addRes.status === 200
+            ? addRes.body
+            : { success: false, error: (addRes.body as any).error }
+        ) as { success: boolean; data?: any; error?: string };
 
         if (result.success && result.data) {
           const newNode: LessonNodeUI = {
@@ -661,10 +674,15 @@ export const CourseStructureProvider: React.FC<
       setLoadingAction(`delete-${nodeId}`);
 
       startTransition(async () => {
-        const result = await deleteLessonNode({
-          nodeId,
-          courseId: course.id,
+        const deleteRes = await api.courses.deleteLessonNode({
+          params: { courseId: course.id, nodeId },
+          body: undefined,
         });
+        const result = (
+          deleteRes.status === 200
+            ? deleteRes.body
+            : { success: false, error: (deleteRes.body as any).error }
+        ) as { success: boolean; data?: any; error?: string };
 
         if (result.success) {
           setCourse((prev) => {
@@ -703,11 +721,15 @@ export const CourseStructureProvider: React.FC<
       setIsUpdatingNode(nodeId);
 
       try {
-        const result = await updateLessonNode({
-          nodeId,
-          courseId: course.id,
-          ...updates,
+        const updateRes = await api.courses.updateLessonNode({
+          params: { courseId: course.id, nodeId },
+          body: updates,
         });
+        const result = (
+          updateRes.status === 200
+            ? updateRes.body
+            : { success: false, error: (updateRes.body as any).error }
+        ) as { success: boolean; data?: any; error?: string };
 
         if (result.success && result.data) {
           setCourse((prev) => {
@@ -761,13 +783,18 @@ export const CourseStructureProvider: React.FC<
 
       try {
         // 1. Load class lesson nodes
-        const result = await loadClassLessonNode(nodeId, classId);
+        const loadRes = await api.classLessonNodes.loadClassLessonNode({
+          query: { lessonNodeId: nodeId, classId },
+        });
+        const result = (
+          loadRes.status === 200 ? loadRes.body : { success: false as const }
+        ) as { success: boolean; data?: any[]; error?: string };
 
         if (!result.success || !result.data) {
           throw new Error("Failed to load class lesson nodes");
         }
 
-        setClassLessonNodes((prev) => new Map(prev).set(nodeId, result.data));
+        setClassLessonNodes((prev) => new Map(prev).set(nodeId, result.data!));
         setExpandedClassLessonNodes((prev) => new Set([...prev, nodeId]));
 
         // 🎯 Submission status đã được load từ getStudentHomeworkStatusByClass
@@ -795,12 +822,19 @@ export const CourseStructureProvider: React.FC<
 
       setLoadingAction(`add-classlessonnode-${nodeId}`);
 
-      const result = await addClassLessonNode({
-        lessonNodeId: nodeId,
-        classId: classId,
-        type,
-        content: content,
+      const addRes = await api.classLessonNodes.addClassLessonNode({
+        body: {
+          lessonNodeId: nodeId,
+          classId: classId,
+          type,
+          content: content,
+        },
       });
+      const result = (
+        addRes.status === 201
+          ? addRes.body
+          : { success: false, error: (addRes.body as any).error }
+      ) as { success: boolean; data?: any; error?: string };
 
       if (result.success && result.data) {
         startTransition(() => {
@@ -851,10 +885,16 @@ export const CourseStructureProvider: React.FC<
       setLoadingAction(`delete-classlessonnode-${classLessonNodeId}`);
 
       startTransition(async () => {
-        const result = await deleteClassLessonNode({
-          classLessonNodeId: classLessonNodeId,
-          classId: classId,
+        const deleteRes = await api.classLessonNodes.deleteClassLessonNode({
+          params: { classLessonNodeId },
+          query: { classId },
+          body: undefined,
         });
+        const result = (
+          deleteRes.status === 200
+            ? deleteRes.body
+            : { success: false, error: (deleteRes.body as any).error }
+        ) as { success: boolean; data?: any; error?: string };
 
         if (result.success) {
           setClassLessonNodes((prev) => {
@@ -931,10 +971,13 @@ export const CourseStructureProvider: React.FC<
       // Reload homework counts để đảm bảo chính xác
       if (config.isStudent && classId && initialCourse.rootLessonNode) {
         try {
-          const statusResult = await getStudentHomeworkStatusByClass(
-            initialCourse.id,
-            classId,
-          );
+          const statusRes = await api.courses.getHomeworkStatus({
+            query: { courseId: initialCourse.id, classId },
+          });
+          const statusResult =
+            statusRes.status === 200
+              ? statusRes.body
+              : { success: false as const };
 
           if (statusResult.success && statusResult.data) {
             const {

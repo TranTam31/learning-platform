@@ -21,9 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"; // Import các component Select của Shadcn
-import { findUserByEmailAction } from "@/server/users";
+import { api } from "@/lib/api-client";
 import { type Role } from "@repo/db";
-import { addMember } from "@/server/members";
 import { useRouter } from "next/navigation";
 
 const emailSchema = z.string().email("Email không đúng định dạng");
@@ -65,7 +64,8 @@ export default function SearchUser({
 
     startTransition(async () => {
       try {
-        const user = await findUserByEmailAction(email);
+        const res = await api.users.findByEmail({ query: { email } });
+        const user = res.status === 200 ? res.body : null;
         setFoundUser(user);
 
         if (!user) {
@@ -80,8 +80,13 @@ export default function SearchUser({
   const handleAddUser = async (userId: string, role: Role, orgId: string) => {
     try {
       setIsLoading(true);
-      await addMember(orgId, userId, role);
+      const res = await api.members.addMember({
+        body: { organizationId: orgId, userId, role },
+      });
       setIsLoading(false);
+      if (res.status !== 201) {
+        throw new Error((res.body as any).error || "Failed to add member");
+      }
       router.refresh();
       toast.success(`Đã thêm thành công với quyền ${role}`);
     } catch (error: any) {

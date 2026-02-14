@@ -1,7 +1,8 @@
 import WidgetMarketplace from "@/components/widget/marketplace/WidgetMarketplace";
-import { getAllWidgets } from "@/server/widgets";
+import { apiServer } from "@/lib/api-server-client";
 
 export default async function MarketplacePage() {
-  const widgets = await getAllWidgets();
+  const widgetsRes = await apiServer.widgets.getAllWidgets();
+  const widgets = widgetsRes.status === 200 ? widgetsRes.body : [];
   return <WidgetMarketplace initialWidgets={widgets} />;
 }

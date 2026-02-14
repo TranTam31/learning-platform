@@ -1,6 +1,6 @@
 import { buildTreeFromFlatList } from "@/components/course-structure/utils/course-structure-utiles";
 import { ClassProvider } from "@/components/providers/class-provider";
-import { getClassWithCourse } from "@/server/classes";
+import { apiServer } from "@/lib/api-server-client";
 import { redirect } from "next/navigation";
 
 type Params = Promise<{ classId: string }>;
@@ -13,23 +13,23 @@ export default async function ClassLayout({
   params: Params;
 }) {
   const { classId } = await params;
-  let result;
+  let res;
   try {
-    result = await getClassWithCourse(classId);
+    res = await apiServer.classes.getClassWithCourse({ params: { classId } });
   } catch {
     redirect("/dashboard");
   }
 
-  if (!result.success || !result.data) {
+  if (res.status !== 200 || !res.body.data) {
     redirect("/dashboard");
   }
 
-  const role = `class_${result.role}` as
+  const role = `class_${res.body.role}` as
     | "class_owner"
     | "class_teacher"
     | "class_student";
 
-  const { classData, nodes } = result.data;
+  const { classData, nodes } = res.body.data;
   const rootNode = buildTreeFromFlatList(nodes);
 
   if (!rootNode) {

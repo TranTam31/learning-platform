@@ -21,7 +21,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { createCourse } from "@/server/courses";
+import { api } from "@/lib/api-client";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(50),
@@ -31,7 +31,7 @@ const formSchema = z.object({
     .max(50)
     .regex(
       /^[a-z0-0-]+$/,
-      "Slug only contains lowercase letters, numbers, and hyphens"
+      "Slug only contains lowercase letters, numbers, and hyphens",
     ),
   description: z.string().max(200).optional(),
 });
@@ -72,12 +72,17 @@ export function CreateCourseForm({
   const onSubmit: SubmitHandler<FormValues> = async (formData) => {
     setSubmitError(null);
     try {
-      await createCourse(
-        formData.name,
-        formData.slug,
-        organizationId,
-        formData.description
-      );
+      const res = await api.courses.createCourse({
+        body: {
+          name: formData.name,
+          slug: formData.slug,
+          organizationId,
+          description: formData.description,
+        },
+      });
+      if (res.status !== 201) {
+        throw new Error((res.body as any).error || "Failed to create course");
+      }
       toast.success("Course created successfully");
       form.reset();
     } catch (err: any) {

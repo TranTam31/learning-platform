@@ -1,6 +1,6 @@
 "use client";
 
-import { canCreateCourse, getCourses } from "@/server/courses";
+import { api } from "@/lib/api-client";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,13 +25,20 @@ export default function OrganizationPage() {
     error,
   } = useQuery({
     queryKey: ["courses"],
-    queryFn: () => getCourses(organization?.id),
+    queryFn: async () => {
+      const res = await api.courses.getCourses({
+        query: { organizationId: organization?.id },
+      });
+      return res.status === 200 ? res.body : [];
+    },
   });
 
   useEffect(() => {
     async function check() {
-      const result = await canCreateCourse(organization?.id);
-      setHasPermission(result.success);
+      const res = await api.courses.canCreateCourse({
+        query: { orgId: organization?.id },
+      });
+      setHasPermission(res.status === 200 && res.body.success);
     }
     check();
   }, []);

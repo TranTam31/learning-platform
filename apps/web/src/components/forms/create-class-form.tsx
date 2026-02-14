@@ -15,7 +15,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { createClass } from "@/server/classes";
+import { api } from "@/lib/api-client";
 
 interface CreateClassFormProps {
   courseId: string;
@@ -52,7 +52,12 @@ export function CreateClassForm({
   const onSubmit: SubmitHandler<FormValues> = async (formData) => {
     setSubmitError(null);
     try {
-      await createClass(formData.className, courseId, organizationId);
+      const res = await api.classes.createClass({
+        body: { name: formData.className, courseId, organizationId },
+      });
+      if (res.status !== 201) {
+        throw new Error((res.body as any).error || "Failed to create class");
+      }
 
       toast.success("Class created successfully");
       form.reset();

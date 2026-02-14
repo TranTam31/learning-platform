@@ -1,22 +1,32 @@
 import { ClassCard } from "@/components/class/class-card";
-import {
-  getStudentPendingAssignmentsForClasses,
-  getUserClasses,
-} from "@/server/classes";
+import { apiServer } from "@/lib/api-server-client";
 
 export default async function ClassesPage() {
-  const classes = await getUserClasses();
+  const classesRes = await apiServer.classes.getUserClasses();
+  const classes =
+    classesRes.status === 200
+      ? classesRes.body
+      : { owner: [] as any[], teacher: [] as any[], student: [] as any[] };
 
   // Load pending assignments cho tất cả student classes
-  const studentClassIds = classes.student.map((c) => c.id);
-  const pendingAssignmentsResult =
+  const studentClassIds = classes.student.map((c: any) => c.id);
+  const pendingRes =
     studentClassIds.length > 0
-      ? await getStudentPendingAssignmentsForClasses(studentClassIds)
-      : { success: true, data: {} };
+      ? await apiServer.classes.getPendingAssignmentsBatch({
+          body: { classIds: studentClassIds },
+        })
+      : {
+          status: 200 as const,
+          body: {
+            success: true,
+            data: {} as Record<string, { pending: number; total: number }>,
+          },
+        };
 
-  const pendingAssignments = pendingAssignmentsResult.success
-    ? pendingAssignmentsResult.data
-    : {};
+  const pendingAssignments =
+    pendingRes.status === 200 && pendingRes.body.success
+      ? pendingRes.body.data
+      : {};
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">

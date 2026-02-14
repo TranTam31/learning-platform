@@ -1,7 +1,7 @@
 import { OrgNav } from "@/components/organization/organization-nav";
 import { OrganizationProvider } from "@/components/providers/org-provider";
 import { auth } from "@/lib/auth-server";
-import { checkUserInOrg } from "@/server/members";
+import { apiServer } from "@/lib/api-server-client";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -17,7 +17,12 @@ export default async function OrgLayout({
   const { slug } = await params;
   let organization;
   try {
-    await checkUserInOrg({ orgSlug: slug });
+    const memberRes = await apiServer.members.checkUserInOrg({
+      query: { orgSlug: slug },
+    });
+    if (memberRes.status !== 200 || !memberRes.body) {
+      redirect("/dashboard");
+    }
     organization = await auth.api.getFullOrganization({
       query: {
         organizationSlug: slug,
