@@ -140,7 +140,7 @@ export default function SearchUser({
               value={role}
               onValueChange={(value) => setRole(value as Role)}
             >
-              <SelectTrigger className="w-[130px]">
+              <SelectTrigger className="w-32.5">
                 <SelectValue placeholder="Chọn vai trò" />
               </SelectTrigger>
               <SelectContent>
