@@ -1,5 +1,11 @@
 // components/course-structure/CourseStructureManager.tsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   ChevronRight,
   ChevronDown,
@@ -39,6 +45,7 @@ import TeacherStudentAssignmentViewDialog from "../widget/homework/TeacherStuden
 import { ScrollArea } from "@/components/ui/scroll-area";
 import StudentDoAllHomeworkDialog from "./StudentDoAllHomeworkDialog";
 import CourseStructureSettings from "./CourseStructureSettings";
+import dynamic from "next/dynamic";
 
 // ===== PROPS =====
 interface CourseStructureManagerProps {
@@ -359,6 +366,23 @@ const CourseStructureContent: React.FC = () => {
   const isAddingModule = loadingAction === "add-MODULE";
   const isAddingLesson = loadingAction === "add-LESSON";
 
+  const Editor = useMemo(
+    () =>
+      dynamic(() => import("@/components/course-structure/Editor"), {
+        ssr: false,
+      }),
+    [],
+  );
+
+  // ===== Auto-save content handler =====
+  const handleSaveContent = useCallback(
+    async (content: any[]) => {
+      if (!selectedNode) return;
+      await handleUpdateNode(selectedNode.id, { content });
+    },
+    [selectedNode, handleUpdateNode],
+  );
+
   // ===== JSX =====
   return (
     <div className="flex h-screen bg-gray-50">
@@ -604,7 +628,7 @@ const CourseStructureContent: React.FC = () => {
       {/* ===== DETAIL PANEL ===== */}
       <div className="flex-1 p-6 overflow-y-auto">
         {selectedNode ? (
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-lg shadow-sm p-6">
               {/* Node Header */}
               <div className="mb-4">
@@ -627,16 +651,17 @@ const CourseStructureContent: React.FC = () => {
                 )}
               </div>
 
-              {/* Description */}
-              <div className="border-t border-gray-200 pt-4">
-                <h3 className="text-sm font-semibold text-gray-700 mb-2">
-                  Description
-                </h3>
-                <p className="text-gray-600">
-                  {(selectedNode.content as any)?.description ||
-                    "No Description available."}
-                </p>
-              </div>
+              {/* Content */}
+              <Editor
+                key={selectedNode.id}
+                initialContent={
+                  selectedNode.content
+                    ? (selectedNode.content as any[])
+                    : undefined
+                }
+                editable={isAdmin}
+                onSave={handleSaveContent}
+              />
 
               {/* Homework Section (Lesson only) */}
               {selectedNode.type === LessonNodeType.lesson && (

@@ -20,10 +20,10 @@ export const coursesContract = c.router(
       summary: "Get all courses in an organization",
     },
 
-    // ── GET /courses/:orgSlug/:courseSlug ─────────────
+    // ── GET /courses/by-slug/:orgSlug/:courseSlug ─────────────
     getCourseBySlug: {
       method: "GET",
-      path: "/:orgSlug/:courseSlug",
+      path: "/by-slug/:orgSlug/:courseSlug",
       pathParams: z.object({
         orgSlug: z.string(),
         courseSlug: z.string(),

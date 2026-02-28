@@ -159,14 +159,8 @@ export async function addLessonNode(input: AddNodeInput) {
 
 function getDefaultContent(type: LessonNodeType): LessonNodeContent {
   switch (type) {
-    case LessonNodeType.lesson:
-      return { content: "" } as LessonContent;
-
     case LessonNodeType.homework:
       return { widgetId: "", widgetVersion: "" } as HomeworkContent;
-
-    case LessonNodeType.module:
-      return { content: "" } as LessonContent;
     default:
       return {};
   }
