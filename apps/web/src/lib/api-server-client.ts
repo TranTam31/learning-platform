@@ -16,7 +16,7 @@ import { headers as getHeaders } from "next/headers";
  *   - NestJS      → đặt INTERNAL_API_URL=http://localhost:3001
  */
 export const apiServer = initClient(contract, {
-  baseUrl: process.env.INTERNAL_API_URL ?? "http://localhost:3000",
+  baseUrl: process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_APP_URL!,
   baseHeaders: {},
   api: async (args) => {
     // Forward cookies from the incoming request so auth works
