@@ -6,7 +6,24 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"],
-      "env": ["DATABASE_URL"]
+      "env": [
+        "DATABASE_URL",
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "INTERNAL_API_URL",
+        "NEXT_PUBLIC_APP_URL",
+        "NEXT_PUBLIC_API_URL",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "GITHUB_APP_ID",
+        "GITHUB_APP_PRIVATE_KEY",
+        "GITHUB_APP_CLIENT_ID",
+        "GITHUB_APP_CLIENT_SECRET",
+        "GITHUB_PAT",
+        "WIDGET_BUILDER_REPO",
+        "WEBHOOK_SECRET",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -18,15 +35,15 @@
       "cache": false,
       "persistent": true
     },
-  "db:generate": {
-    "cache": false
-  },
-  "db:migrate": {
-    "cache": false,
-    "persistent": true
-  },
-  "db:deploy": {
-    "cache": false
-  }
+    "db:generate": {
+      "cache": false
+    },
+    "db:migrate": {
+      "cache": false,
+      "persistent": true
+    },
+    "db:deploy": {
+      "cache": false
+    }
   }
 }

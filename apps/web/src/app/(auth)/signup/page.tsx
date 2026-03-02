@@ -15,7 +15,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { Loader } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -32,7 +32,7 @@ const Signup = () => {
 
   const form = useForm<z.infer<typeof SignUpSchema>>({
     mode: "onChange",
-    resolver: zodResolver(SignUpSchema),
+    resolver: standardSchemaResolver(SignUpSchema),
     defaultValues: { email: "", password: "", fullname: "" },
   });
 

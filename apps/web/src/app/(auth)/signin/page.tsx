@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,7 @@ const SigninPage = () => {
 
   const form = useForm<z.infer<typeof SignInSchema>>({
     mode: "onChange",
-    resolver: zodResolver(SignInSchema),
+    resolver: standardSchemaResolver(SignInSchema),
     defaultValues: { email: "", password: "" },
   });
 

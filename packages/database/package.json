@@ -10,7 +10,7 @@
     "db:migrate": "prisma migrate dev --skip-generate",
     "db:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "dev": "tsc --watch"
   },
   "dependencies": {

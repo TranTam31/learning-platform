@@ -1,6 +1,6 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { Loader } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
@@ -47,7 +47,7 @@ export function CreateCourseForm({
 
   const form = useForm<FormValues>({
     mode: "onChange",
-    resolver: zodResolver(formSchema),
+    resolver: standardSchemaResolver(formSchema),
     defaultValues: {
       name: "",
       slug: "",
