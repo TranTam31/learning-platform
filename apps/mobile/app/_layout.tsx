@@ -1,5 +1,4 @@
 import { Stack } from "expo-router";
-import "../global.css";
 import React from "react";
 import { StatusBar } from "react-native";
 import { authClient } from "@/lib/auth-client";

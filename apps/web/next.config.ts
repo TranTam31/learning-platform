@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     // Zod 4 type mismatch with @hookform/resolvers — compilation works fine
     ignoreBuildErrors: true,
   },
+  // Prevent Vercel/Turbopack from bundling these packages into multiple chunks,
+  // which breaks private class fields (#state) due to class identity mismatch.
+  serverExternalPackages: ["better-auth", "@node-rs/argon2"],
   allowedDevOrigins: ["https://jong-triangled-courtney.ngrok-free.dev"],
   // async rewrites() {
   //   return [
