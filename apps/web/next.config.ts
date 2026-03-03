@@ -8,7 +8,12 @@ const nextConfig: NextConfig = {
   },
   // Prevent Vercel/Turbopack from bundling these packages into multiple chunks,
   // which breaks private class fields (#state) due to class identity mismatch.
-  serverExternalPackages: ["better-auth", "@node-rs/argon2"],
+  serverExternalPackages: [
+    "better-auth",
+    "@better-auth/expo",
+    "@better-auth/core",
+    "@node-rs/argon2",
+  ],
   allowedDevOrigins: ["https://jong-triangled-courtney.ngrok-free.dev"],
   // async rewrites() {
   //   return [
