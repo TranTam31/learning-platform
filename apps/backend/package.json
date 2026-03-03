@@ -31,7 +31,7 @@
     "@repo/auth": "*",
     "@repo/db": "*",
     "@thallesp/nestjs-better-auth": "^2.2.0",
-    "@ts-rest/nest": "^3.52.1",
+    "@ts-rest/nest": "3.53.0-rc.1",
     "better-auth": "^1.4.6",
     "dotenv": "^17.2.3",
     "graphql": "^16.12.0",
