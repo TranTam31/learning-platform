@@ -25,12 +25,11 @@ import { SignInSchema } from "@repo/api-contract";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 
+export const dynamic = "force-dynamic";
+
 const SigninPage = () => {
   const router = useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const { data: session } = authClient.useSession();
-  console.log(session);
 
   const form = useForm<z.infer<typeof SignInSchema>>({
     mode: "onChange",
@@ -41,7 +40,7 @@ const SigninPage = () => {
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit: SubmitHandler<z.infer<typeof SignInSchema>> = async (
-    formData
+    formData,
   ) => {
     setSubmitError(null);
     const { error } = await authClient.signIn.email({
