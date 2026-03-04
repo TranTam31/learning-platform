@@ -22,7 +22,8 @@
         "GITHUB_PAT",
         "WIDGET_BUILDER_REPO",
         "WEBHOOK_SECRET",
-        "SUPABASE_SERVICE_ROLE_KEY"
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "EXPO_URL"
       ]
     },
     "lint": {
