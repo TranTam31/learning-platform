@@ -1,4 +1,4 @@
-# Moly- Learning Platform
+# Moly - Learning Platform
 
 A multi-tenant learning platform where educators build structured curricula and developers create assignment widgets - sandboxed via iframe/WebView, like **Figma plugins** or **Chrome extensions** (pluggable system).
 
