@@ -1,7 +1,6 @@
 {
   "name": "learning-platform",
   "version": "1.0.0",
-  "packageManager": "npm@10.9.2",
   "description": "",
   "scripts": {
     "build": "turbo run build",
