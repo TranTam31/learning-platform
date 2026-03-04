@@ -92,7 +92,7 @@ export default async function ClassesPage() {
         classes.teacher.length === 0 &&
         classes.student.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-gray-500 text-lg mb-4">
+            <p className="text-muted-foreground text-lg mb-4">
               Bạn chưa tham gia lớp học nào
             </p>
           </div>

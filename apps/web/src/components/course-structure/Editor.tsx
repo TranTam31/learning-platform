@@ -157,7 +157,7 @@ const Editor: React.FC<EditorProps> = ({
         </div>
       )}
       {!editable && hasNoContent ? (
-        <p className="px-6 text-gray-400 text-sm italic">
+        <p className="px-6 text-muted-foreground text-sm italic">
           No content available
         </p>
       ) : (

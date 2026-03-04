@@ -13,7 +13,6 @@
       "next": "16.0.11"
     }
   },
-  "packageManager": "npm@10.9.2",
   "workspaces": {
     "packages": [
       "apps/*",

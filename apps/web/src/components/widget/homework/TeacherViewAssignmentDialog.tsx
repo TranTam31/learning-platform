@@ -105,7 +105,7 @@ export default function TeacherViewAssignmentDialog({
         {loading ? (
           <div className="flex justify-center items-center w-full h-full gap-3">
             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-            <span className="text-lg">Đang tải...</span>
+            <span className="text-lg">Loading...</span>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center h-full gap-4 p-8">

@@ -24,7 +24,7 @@ export function CourseNav() {
   ];
 
   return (
-    <div className="flex items-center border-b border-gray-800 w-full">
+    <div className="flex items-center border-b border-border w-full">
       <div className="flex gap-6">
         {tabs.map((tab) => {
           // Kiểm tra active trực tiếp khi render
@@ -35,15 +35,15 @@ export function CourseNav() {
               key={tab.href}
               href={tab.href}
               className={cn(
-                "relative py-2 text-sm font-medium transition-colors hover:text-black",
-                isActive ? "text-black" : "text-gray-400"
+                "relative py-2 text-sm font-medium transition-colors hover:text-foreground",
+                isActive ? "text-foreground" : "text-muted-foreground",
               )}
             >
               {tab.name}
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute -bottom-px -left-1 -right-1 h-0.5 bg-black"
+                  className="absolute -bottom-px -left-1 -right-1 h-0.5 bg-foreground"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
               )}

@@ -354,12 +354,12 @@ const TeacherCreateAssignment = forwardRef<
   };
 
   return (
-    <div className="bg-white flex h-full min-h-0">
+    <div className="bg-background flex h-full min-h-0">
       <div className="flex-1 p-2 min-h-0">
         {viewingAnswer && (
           <div className="mb-3 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between mx-auto max-w-2xl">
             <div className="text-sm text-blue-700">
-              <strong>Đang xem bài làm của học sinh</strong>
+              <strong>Reviewing student submission</strong>
             </div>
             <Button
               size="sm"
@@ -367,12 +367,12 @@ const TeacherCreateAssignment = forwardRef<
               onClick={handleResetView}
               className="text-xs"
             >
-              ← Quay lại
+              ← Back
             </Button>
           </div>
         )}
 
-        <div className="h-full max-w-2xl mx-auto bg-white rounded-4xl shadow-2xl overflow-hidden border border-gray-100">
+        <div className="h-full max-w-2xl mx-auto bg-card rounded-4xl shadow-2xl overflow-hidden border border-border/50">
           <iframe
             ref={iframeRef}
             className="w-full h-full min-h-100 min-w-[320px] border-0"
@@ -382,9 +382,9 @@ const TeacherCreateAssignment = forwardRef<
         </div>
 
         {loading && !error && (
-          <div className="text-center mt-8 text-gray-400 flex items-center justify-center gap-2">
-            <div className="animate-spin h-5 w-5 border-2 border-gray-300 border-t-gray-600 rounded-full" />
-            Đang tải widget...
+          <div className="text-center mt-8 text-muted-foreground flex items-center justify-center gap-2">
+            <div className="animate-spin h-5 w-5 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full" />
+            Loading widget...
           </div>
         )}
 
@@ -408,7 +408,7 @@ const TeacherCreateAssignment = forwardRef<
 
       {/* RIGHT PANEL: Tweakpane config OR AssignmentStudentsPanel */}
       {assignmentId ? (
-        <div className="w-96 bg-white border-l border-slate-200 flex flex-col">
+        <div className="w-96 bg-card border-l border-border flex flex-col">
           {targetStudentId && targetStudentName ? (
             <DirectAssignStudentPanel
               assignmentId={assignmentId}
@@ -423,22 +423,22 @@ const TeacherCreateAssignment = forwardRef<
           )}
         </div>
       ) : (
-        <div className="w-80 bg-white border-l border-slate-200 flex flex-col">
-          <div className="px-4 py-3 border-b border-slate-200">
-            <h3 className="text-sm font-semibold text-slate-700">
+        <div className="w-80 bg-card border-l border-border flex flex-col">
+          <div className="px-4 py-3 border-b border-border">
+            <h3 className="text-sm font-semibold text-foreground">
               Cấu hình & Kết quả
             </h3>
           </div>
 
           <div
             ref={paneRef}
-            className="flex-1 overflow-y-auto p-4 text-sm text-slate-600"
+            className="flex-1 overflow-y-auto p-4 text-sm text-muted-foreground"
           />
 
           {/* Submission Info (for testing) */}
           {submission && (
-            <div className="border-t border-slate-200 p-4 space-y-3">
-              <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+            <div className="border-t border-border p-4 space-y-3">
+              <div className="text-xs font-semibold text-foreground uppercase tracking-wide">
                 📊 Kết quả test
               </div>
 
@@ -467,7 +467,7 @@ const TeacherCreateAssignment = forwardRef<
                 </div>
 
                 <div className="text-sm space-y-1">
-                  <div className="text-slate-700">
+                  <div className="text-muted-foreground">
                     Điểm:{" "}
                     <strong>
                       {submission.evaluation.score}/
@@ -481,16 +481,16 @@ const TeacherCreateAssignment = forwardRef<
               {!isReviewMode ? (
                 <button
                   onClick={enterReviewMode}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium py-2 px-4 rounded-lg transition"
                 >
-                  🔍 Xem lại bài làm
+                  🔍 Review your answers
                 </button>
               ) : (
                 <button
                   onClick={exitReviewMode}
-                  className="w-full bg-slate-600 hover:bg-slate-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition"
+                  className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground text-sm font-medium py-2 px-4 rounded-lg transition"
                 >
-                  ← Quay lại chế độ làm bài
+                  ← Return to test mode
                 </button>
               )}
             </div>

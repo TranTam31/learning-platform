@@ -114,9 +114,9 @@ export default function BuildDetailsView({ widget, build, widgetHtml }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <nav className="bg-white border-b border-gray-200">
+      <nav className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
@@ -126,8 +126,8 @@ export default function BuildDetailsView({ widget, build, widgetHtml }: Props) {
               >
                 ← Back to {widget.name}
               </a>
-              <span className="text-gray-300">|</span>
-              <h1 className="text-lg font-semibold text-gray-900">
+              <span className="text-muted-foreground">|</span>
+              <h1 className="text-lg font-semibold text-foreground">
                 Build v{build.version}
               </h1>
             </div>
@@ -138,30 +138,30 @@ export default function BuildDetailsView({ widget, build, widgetHtml }: Props) {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Build Summary */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
+        <div className="bg-card rounded-lg shadow p-6 mb-6">
+          <h2 className="text-xl font-bold text-foreground mb-4">
             Build Information
           </h2>
           <div className="grid grid-cols-4 gap-4 text-sm">
             <div>
-              <span className="text-gray-600">Version</span>
-              <p className="font-mono text-lg font-semibold text-gray-900">
+              <span className="text-muted-foreground">Version</span>
+              <p className="font-mono text-lg font-semibold text-foreground">
                 v{build.version}
               </p>
             </div>
             <div>
-              <span className="text-gray-600">Status</span>
-              <p className="font-medium text-gray-900">{build.status}</p>
+              <span className="text-muted-foreground">Status</span>
+              <p className="font-medium text-foreground">{build.status}</p>
             </div>
             <div>
-              <span className="text-gray-600">Duration</span>
-              <p className="font-medium text-gray-900">
+              <span className="text-muted-foreground">Duration</span>
+              <p className="font-medium text-foreground">
                 {build.duration ? `${build.duration}s` : "-"}
               </p>
             </div>
             <div>
-              <span className="text-gray-600">Completed</span>
-              <p className="font-medium text-gray-900">
+              <span className="text-muted-foreground">Completed</span>
+              <p className="font-medium text-foreground">
                 {build.completedAt
                   ? new Date(build.completedAt).toLocaleDateString("vi-VN")
                   : "In progress"}
@@ -173,9 +173,9 @@ export default function BuildDetailsView({ widget, build, widgetHtml }: Props) {
         {widgetHtml && <WidgetPreviewDialog html={widgetHtml} />}
 
         {/* Build Steps */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-card rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Build Steps</h2>
+            <h2 className="text-xl font-bold text-foreground">Build Steps</h2>
             <div className="flex gap-2">
               <button
                 onClick={expandAll}
@@ -183,7 +183,7 @@ export default function BuildDetailsView({ widget, build, widgetHtml }: Props) {
               >
                 Expand All
               </button>
-              <span className="text-gray-300">|</span>
+              <span className="text-muted-foreground">|</span>
               <button
                 onClick={collapseAll}
                 className="text-sm text-blue-600 hover:text-blue-800"
@@ -196,14 +196,18 @@ export default function BuildDetailsView({ widget, build, widgetHtml }: Props) {
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="ml-3 text-gray-600">Loading logs...</span>
+              <span className="ml-3 text-muted-foreground">
+                Loading logs...
+              </span>
             </div>
           ) : error ? (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
               {error}
             </div>
           ) : steps.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">No steps found</div>
+            <div className="text-center py-8 text-muted-foreground">
+              No steps found
+            </div>
           ) : (
             <div className="space-y-2">
               {steps.map((step) => (
@@ -251,32 +255,36 @@ function StepView({
     {
       success: "text-green-600",
       failure: "text-red-600",
-      cancelled: "text-gray-600",
-      skipped: "text-gray-400",
+      cancelled: "text-muted-foreground",
+      skipped: "text-muted-foreground",
     }[step.conclusion || ""] || "text-blue-600";
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
+    <div className="border border-border rounded-lg overflow-hidden">
       {/* Step Header */}
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors text-left"
+        className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors text-left"
       >
         <div className="flex items-center gap-3">
           <span className={`text-xl ${conclusionColor}`}>{conclusionIcon}</span>
-          <span className="font-medium text-gray-900">{step.name}</span>
+          <span className="font-medium text-foreground">{step.name}</span>
           {step.duration !== null && (
-            <span className="text-sm text-gray-500">({step.duration}s)</span>
+            <span className="text-sm text-muted-foreground">
+              ({step.duration}s)
+            </span>
           )}
         </div>
-        <span className="text-gray-400">{expanded ? "▼" : "▶"}</span>
+        <span className="text-muted-foreground">{expanded ? "▼" : "▶"}</span>
       </button>
 
       {/* Step Logs */}
       {expanded && (
-        <div className="border-t border-gray-200 bg-gray-900 p-4">
+        <div className="border-t border-border bg-gray-900 p-4">
           {step.logs.length === 0 ? (
-            <p className="text-gray-500 text-sm">No logs for this step</p>
+            <p className="text-muted-foreground text-sm">
+              No logs for this step
+            </p>
           ) : (
             <div className="space-y-2">
               {step.logs.map((section, idx) => (
@@ -363,7 +371,7 @@ function LogSectionView({
 
 function StatusBadge({ status }: { status: string }) {
   const colors = {
-    pending: "bg-gray-100 text-gray-700",
+    pending: "bg-muted text-muted-foreground",
     building: "bg-blue-100 text-blue-700",
     success: "bg-green-100 text-green-700",
     failed: "bg-red-100 text-red-700",

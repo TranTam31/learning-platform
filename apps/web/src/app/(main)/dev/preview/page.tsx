@@ -121,25 +121,25 @@ export default function WidgetPreviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex justify-center p-6">
+    <div className="min-h-screen bg-background flex justify-center p-6">
       <div className="max-w-2xl w-full">
         <header className="text-center mb-10 mt-20">
-          <h1 className="text-5xl font-black text-gray-900 mb-4 tracking-tight">
+          <h1 className="text-5xl font-black text-foreground mb-4 tracking-tight">
             Widget Studio
           </h1>
         </header>
 
-        <div className="bg-white p-10 rounded-[2.5rem] shadow-xl border border-gray-50">
+        <div className="bg-card p-10 rounded-[2.5rem] shadow-xl border border-border">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center">
-              <Link className="text-indigo-600" size={24} />
+            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+              <Link className="text-primary" size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-800">
+              <h2 className="text-xl font-bold text-foreground">
                 Nhập URL Widget
               </h2>
-              <p className="text-sm text-gray-500">
-                Dán link widget để bắt đầu
+              <p className="text-sm text-muted-foreground">
+                Paste link widget to start
               </p>
             </div>
           </div>
@@ -151,7 +151,7 @@ export default function WidgetPreviewPage() {
               onChange={(e) => setInputUrl(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="http://localhost:5173"
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors text-gray-700"
+              className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-primary focus:outline-none transition-colors text-foreground"
               disabled={validating}
             />
 
@@ -168,25 +168,17 @@ export default function WidgetPreviewPage() {
             <button
               onClick={handleLoadWidget}
               disabled={validating}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 px-6 rounded-xl transition-colors disabled:bg-muted disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {validating ? (
                 <>
                   <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                  Đang kiểm tra widget...
+                  Checking widget...
                 </>
               ) : (
                 "Tải Widget"
               )}
             </button>
-          </div>
-
-          <div className="mt-6 pt-6 border-t border-gray-100">
-            <p className="text-xs text-gray-400 leading-relaxed">
-              <span className="font-semibold">Lưu ý:</span> Widget phải là file
-              HTML tự chứa (self-contained) và tuân theo Widget Protocol của
-              Widget Studio.
-            </p>
           </div>
         </div>
       </div>
@@ -408,22 +400,22 @@ function WidgetHost({
   }, [widgetDef, iframeReady]);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 flex">
+    <div className="min-h-screen bg-background flex">
       <div className="flex-1 px-12 py-2">
         <div className="max-w-3xl mx-auto">
           <button
             onClick={onExit}
             className="inline-flex items-center gap-2 mb-3 px-4 py-2 rounded-full 
-                 text-sm font-medium text-slate-600 
-                 bg-white shadow hover:text-slate-900 hover:shadow-md transition"
+                 text-sm font-medium text-muted-foreground 
+                 bg-card shadow hover:text-foreground hover:shadow-md transition"
           >
             <ArrowLeft size={18} />
-            Quay lại
+            Back
           </button>
 
           {/* Widget Card */}
-          <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
-            <div className="h-[620px]">
+          <div className="bg-card rounded-3xl shadow-xl border border-border overflow-hidden">
+            <div className="h-155">
               <iframe
                 ref={iframeRef}
                 className="w-full h-full border-0"
@@ -435,9 +427,9 @@ function WidgetHost({
         </div>
 
         {loading && !error && (
-          <div className="mt-6 flex items-center justify-center gap-3 text-slate-500">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
-            <span className="text-sm">Đang tải widget...</span>
+          <div className="mt-6 flex items-center justify-center gap-3 text-muted-foreground">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-foreground" />
+            <span className="text-sm">Widget Loading...</span>
           </div>
         )}
 
@@ -445,7 +437,7 @@ function WidgetHost({
           <div className="mt-6 max-w-3xl mx-auto bg-red-50 border border-red-200 rounded-2xl p-4 flex gap-3">
             <AlertCircle className="text-red-500 mt-0.5" size={20} />
             <div>
-              <div className="font-semibold text-red-700">Có lỗi xảy ra</div>
+              <div className="font-semibold text-red-700">Error</div>
               <div className="text-sm text-red-600 mt-1">{error}</div>
             </div>
           </div>
@@ -453,23 +445,23 @@ function WidgetHost({
       </div>
 
       {/* RIGHT SIDEBAR */}
-      <div className="w-80 bg-white border-l border-slate-200 flex flex-col">
-        <div className="px-4 py-3 border-b border-slate-200">
-          <h3 className="text-sm font-semibold text-slate-700">
-            Cấu hình & Kết quả
+      <div className="w-80 bg-card border-l border-border flex flex-col">
+        <div className="px-4 py-3 border-b border-border">
+          <h3 className="text-sm font-semibold text-foreground">
+            Config & Result
           </h3>
         </div>
 
         <div
           ref={paneRef}
-          className="flex-1 overflow-y-auto p-4 text-sm text-slate-600"
+          className="flex-1 overflow-y-auto p-4 text-sm text-muted-foreground"
         />
 
         {/* NEW: Submission Info */}
         {submission && (
-          <div className="border-t border-slate-200 p-4 space-y-3">
-            <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-              📊 Kết quả nộp bài
+          <div className="border-t border-border p-4 space-y-3">
+            <div className="text-xs font-semibold text-foreground uppercase tracking-wide">
+              📊 Result
             </div>
 
             <div
@@ -497,8 +489,8 @@ function WidgetHost({
               </div>
 
               <div className="text-sm space-y-1">
-                <div className="text-slate-700">
-                  Điểm:{" "}
+                <div className="text-foreground">
+                  Score:{" "}
                   <strong>
                     {submission.evaluation.score}/
                     {submission.evaluation.maxScore}
@@ -513,14 +505,14 @@ function WidgetHost({
                 onClick={enterReviewMode}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition"
               >
-                🔍 Xem lại bài làm
+                🔍 Review your answers
               </button>
             ) : (
               <button
                 onClick={exitReviewMode}
-                className="w-full bg-slate-600 hover:bg-slate-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition"
+                className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground text-sm font-medium py-2 px-4 rounded-lg transition"
               >
-                ← Quay lại chế độ làm bài
+                ← Return to test mode
               </button>
             )}
           </div>

@@ -305,7 +305,7 @@ export default function StudentAssignmentView({
       <div className="flex flex-col items-center justify-center h-full gap-3 p-8">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         <span className="text-lg text-muted-foreground">
-          Đang tải bài tập...
+          Loading assignment...
         </span>
       </div>
     );
@@ -333,10 +333,10 @@ export default function StudentAssignmentView({
   }
 
   return (
-    <div className="bg-white h-full min-h-0 flex flex-col">
+    <div className="bg-background h-full min-h-0 flex flex-col">
       {/* Header với thông tin submission */}
       {assignmentData.hasSubmitted && assignmentData.submissionData && (
-        <div className="shrink-0 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-3">
+        <div className="shrink-0 border-b border-border bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 px-6 py-3">
           <div className="flex items-center justify-between max-w-6xl mx-auto">
             <div className="flex items-center gap-3">
               {assignmentData.submissionData.evaluation.isCorrect ? (
@@ -345,11 +345,11 @@ export default function StudentAssignmentView({
                 <XCircle className="text-red-600" size={24} />
               )}
               <div>
-                <div className="font-semibold text-slate-700">
-                  Bạn đã hoàn thành bài tập này
+                <div className="font-semibold text-foreground">
+                  You have completed this assignment
                 </div>
-                <div className="text-sm text-slate-600">
-                  Điểm:{" "}
+                <div className="text-sm text-muted-foreground">
+                  Score:{" "}
                   <strong>
                     {assignmentData.submissionData.evaluation.score}/
                     {assignmentData.submissionData.evaluation.maxScore}
@@ -378,10 +378,10 @@ export default function StudentAssignmentView({
 
       {/* Widget iframe */}
       <div className="flex-1 p-4 min-h-0 relative">
-        <div className="h-full max-w-6xl mx-auto bg-white rounded-4xl shadow-2xl overflow-hidden border border-gray-100">
+        <div className="h-full max-w-6xl mx-auto bg-card rounded-4xl shadow-2xl overflow-hidden border border-border/50">
           <iframe
             ref={iframeRef}
-            className="w-full h-full min-h-[400px] min-w-[320px] border-0"
+            className="w-full h-full min-h-100 min-w-[320px] border-0"
             title="Widget"
             sandbox="allow-scripts allow-same-origin"
           />
@@ -389,11 +389,11 @@ export default function StudentAssignmentView({
 
         {/* Submitting overlay */}
         {submitting && (
-          <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-            <div className="bg-white rounded-2xl shadow-2xl p-6 flex flex-col items-center gap-3">
+          <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
+            <div className="bg-card rounded-2xl shadow-2xl p-6 flex flex-col items-center gap-3">
               <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-              <span className="text-lg font-semibold text-slate-700">
-                Đang lưu bài làm...
+              <span className="text-lg font-semibold text-foreground">
+                Saving...
               </span>
             </div>
           </div>

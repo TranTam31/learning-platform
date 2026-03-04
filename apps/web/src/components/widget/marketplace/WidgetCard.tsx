@@ -123,9 +123,9 @@ export function WidgetCard({ widget }: WidgetCardProps) {
   };
 
   return (
-    <div className="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+    <div className="block p-6 bg-card border border-border rounded-lg shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 truncate flex-1">
+        <h3 className="text-lg font-semibold text-foreground truncate flex-1">
           {widget.name}
         </h3>
       </div>
@@ -135,7 +135,7 @@ export function WidgetCard({ widget }: WidgetCardProps) {
           <SheetTrigger asChild>
             <button
               onClick={loadUserWidgets}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors w-full"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full"
             >
               <Avatar className="h-6 w-6">
                 <AvatarImage src={widget.user.image || undefined} />
@@ -158,7 +158,7 @@ export function WidgetCard({ widget }: WidgetCardProps) {
                 </Avatar>
                 <div>
                   <div className="font-semibold">{widget.user.name}</div>
-                  <div className="text-sm text-gray-500 font-normal">
+                  <div className="text-sm text-muted-foreground font-normal">
                     Widgets by this creator
                   </div>
                 </div>
@@ -168,20 +168,20 @@ export function WidgetCard({ widget }: WidgetCardProps) {
             {/* GRID 2 CỘT */}
             <div className="mx-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
               {isLoadingWidgets ? (
-                <div className="col-span-full text-center py-8 text-gray-500">
+                <div className="col-span-full text-center py-8 text-muted-foreground">
                   Loading widgets...
                 </div>
               ) : userWidgets && userWidgets.length > 0 ? (
                 userWidgets.map((w) => (
                   <div
                     key={w.id}
-                    className="p-4 bg-gray-50 border border-gray-200 rounded-lg flex flex-col shadow-sm hover:shadow-md transition-shadow"
+                    className="p-4 bg-muted/50 border border-border rounded-lg flex flex-col shadow-sm hover:shadow-md transition-shadow"
                   >
-                    <h4 className="font-semibold text-gray-900 mb-2">
+                    <h4 className="font-semibold text-foreground mb-2">
                       {w.name}
                     </h4>
 
-                    <div className="space-y-1 text-sm text-gray-600 mb-3">
+                    <div className="space-y-1 text-sm text-muted-foreground mb-3">
                       <div className="flex items-center">
                         <svg
                           className="w-4 h-4 mr-2 shrink-0"
@@ -198,7 +198,7 @@ export function WidgetCard({ widget }: WidgetCardProps) {
                         </svg>
                         <span>{w._count.builds} builds</span>
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-muted-foreground">
                         Updated:{" "}
                         {new Date(w.updatedAt).toLocaleDateString("vi-VN")}
                       </div>
@@ -234,7 +234,7 @@ export function WidgetCard({ widget }: WidgetCardProps) {
                               {widgetHtmlCache[w.id] ? (
                                 <WidgetPreview html={widgetHtmlCache[w.id]} />
                               ) : (
-                                <div className="flex items-center justify-center h-full text-gray-500">
+                                <div className="flex items-center justify-center h-full text-muted-foreground">
                                   {loadingHtmlIds.has(w.id)
                                     ? "Loading preview..."
                                     : "No preview available"}
@@ -256,7 +256,7 @@ export function WidgetCard({ widget }: WidgetCardProps) {
                   </div>
                 ))
               ) : (
-                <div className="col-span-full text-center py-8 text-gray-500">
+                <div className="col-span-full text-center py-8 text-muted-foreground">
                   No widgets found
                 </div>
               )}
@@ -264,7 +264,7 @@ export function WidgetCard({ widget }: WidgetCardProps) {
           </SheetContent>
         </Sheet>
 
-        <div className="flex items-center text-sm text-gray-600">
+        <div className="flex items-center text-sm text-muted-foreground">
           <svg
             className="w-4 h-4 mr-2 shrink-0"
             fill="none"
@@ -282,8 +282,8 @@ export function WidgetCard({ widget }: WidgetCardProps) {
         </div>
       </div>
 
-      <div className="pt-4 border-t border-gray-100 space-y-3">
-        <p className="text-xs text-gray-500">
+      <div className="pt-4 border-t border-border/50 space-y-3">
+        <p className="text-xs text-muted-foreground">
           Updated: {new Date(widget.updatedAt).toLocaleDateString("vi-VN")}
         </p>
 
@@ -311,7 +311,7 @@ export function WidgetCard({ widget }: WidgetCardProps) {
                   {widgetHtmlCache[widget.id] ? (
                     <WidgetPreview html={widgetHtmlCache[widget.id]} />
                   ) : (
-                    <div className="flex items-center justify-center h-full text-gray-500">
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
                       {loadingHtmlIds.has(widget.id)
                         ? "Loading preview..."
                         : "No preview available"}

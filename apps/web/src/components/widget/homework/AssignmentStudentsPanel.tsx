@@ -172,9 +172,9 @@ export default function AssignmentStudentsPanel({
   return (
     <div className="flex flex-col h-full">
       {/* Stats header */}
-      <div className="px-4 py-3 border-b border-slate-200">
-        <h3 className="text-sm font-semibold text-slate-700">Giao bài tập</h3>
-        <div className="text-xs text-slate-500 mt-1 space-y-0.5">
+      <div className="px-4 py-3 border-b border-border">
+        <h3 className="text-sm font-semibold text-foreground">Giao bài tập</h3>
+        <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
           <div>
             Đã giao: {stats.assigned}/{stats.total}
           </div>
@@ -185,13 +185,13 @@ export default function AssignmentStudentsPanel({
       </div>
 
       {/* Tab buttons */}
-      <div className="flex border-b border-slate-200">
+      <div className="flex border-b border-border">
         <button
           onClick={() => setActiveTab("groups")}
           className={`flex-1 px-4 py-2.5 text-sm font-medium transition-colors ${
             activeTab === "groups"
-              ? "text-slate-900 border-b-2 border-slate-900"
-              : "text-slate-500 hover:text-slate-700"
+              ? "text-foreground border-b-2 border-foreground"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <Users className="inline-block w-4 h-4 mr-1.5 -mt-0.5" />
@@ -201,8 +201,8 @@ export default function AssignmentStudentsPanel({
           onClick={() => setActiveTab("individual")}
           className={`flex-1 px-4 py-2.5 text-sm font-medium transition-colors ${
             activeTab === "individual"
-              ? "text-slate-900 border-b-2 border-slate-900"
-              : "text-slate-500 hover:text-slate-700"
+              ? "text-foreground border-b-2 border-foreground"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <User className="inline-block w-4 h-4 mr-1.5 -mt-0.5" />
@@ -214,7 +214,7 @@ export default function AssignmentStudentsPanel({
       <ScrollArea className="flex-1">
         {loadingStudents ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
           </div>
         ) : activeTab === "groups" ? (
           /* ===== GROUPS TAB ===== */
@@ -232,10 +232,10 @@ export default function AssignmentStudentsPanel({
                   <Users size={20} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm text-slate-700">
+                  <div className="font-medium text-sm text-foreground">
                     Cả lớp
                   </div>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-muted-foreground">
                     {stats.total} học sinh · {stats.assigned} đã giao
                   </div>
                 </div>
@@ -256,12 +256,13 @@ export default function AssignmentStudentsPanel({
                     {assigningGroup === "__all__" ? (
                       <>
                         <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                        Đang giao...
+                        Assigning...
                       </>
                     ) : (
                       <>
                         <Send className="w-3 h-3 mr-1" />
-                        Giao cả lớp ({stats.total - stats.assigned} chưa giao)
+                        Assign to class ({stats.total - stats.assigned}{" "}
+                        Unassigned)
                       </>
                     )}
                   </Button>
@@ -271,7 +272,7 @@ export default function AssignmentStudentsPanel({
 
             {/* Group list */}
             {groups.length === 0 ? (
-              <div className="text-center py-6 text-sm text-slate-500">
+              <div className="text-center py-6 text-sm text-muted-foreground">
                 Chưa có nhóm nào trong lớp
               </div>
             ) : (
@@ -281,7 +282,7 @@ export default function AssignmentStudentsPanel({
                   className={`p-3 rounded-lg border ${
                     group.allAssigned
                       ? "bg-green-50 border-green-200"
-                      : "bg-slate-50 border-slate-200"
+                      : "bg-muted/50 border-border"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -289,10 +290,10 @@ export default function AssignmentStudentsPanel({
                       {group.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm text-slate-700 truncate">
+                      <div className="font-medium text-sm text-foreground truncate">
                         {group.name}
                       </div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-xs text-muted-foreground">
                         {group.totalMembers} thành viên ·{" "}
                         {group.assignedMembers} đã giao
                       </div>
@@ -305,7 +306,7 @@ export default function AssignmentStudentsPanel({
                         Đã giao tất cả
                       </div>
                     ) : group.totalMembers === 0 ? (
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-muted-foreground">
                         Nhóm chưa có thành viên
                       </div>
                     ) : (
@@ -320,14 +321,14 @@ export default function AssignmentStudentsPanel({
                         {assigningGroup === group.id ? (
                           <>
                             <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                            Đang giao...
+                            Assigning...
                           </>
                         ) : (
                           <>
                             <Send className="w-3 h-3 mr-1" />
-                            Giao nhóm (
-                            {group.totalMembers - group.assignedMembers} chưa
-                            giao)
+                            Assign to group (
+                            {group.totalMembers - group.assignedMembers}{" "}
+                            Unassigned)
                           </>
                         )}
                       </Button>
@@ -341,7 +342,7 @@ export default function AssignmentStudentsPanel({
           /* ===== INDIVIDUAL TAB ===== */
           <div>
             {students.length === 0 ? (
-              <div className="text-center py-8 text-sm text-slate-500">
+              <div className="text-center py-8 text-sm text-muted-foreground">
                 Chưa có học sinh trong lớp
               </div>
             ) : (
@@ -354,7 +355,7 @@ export default function AssignmentStudentsPanel({
                         ? "bg-green-50 border-green-200"
                         : student.isAssigned
                           ? "bg-yellow-50 border-yellow-200"
-                          : "bg-slate-50 border-slate-200"
+                          : "bg-muted/50 border-border"
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -366,10 +367,10 @@ export default function AssignmentStudentsPanel({
                       </Avatar>
 
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm text-slate-700 truncate">
+                        <div className="font-medium text-sm text-foreground truncate">
                           {student.name}
                         </div>
-                        <div className="text-xs text-slate-500 truncate">
+                        <div className="text-xs text-muted-foreground truncate">
                           {student.email}
                         </div>
 
@@ -400,11 +401,11 @@ export default function AssignmentStudentsPanel({
                                   onViewAnswer(student.submission!.answer)
                                 }
                               >
-                                👁️ Xem bài làm
+                                👁️ Review answer
                               </Button>
                             )}
 
-                            <div className="text-xs text-slate-500">
+                            <div className="text-xs text-muted-foreground">
                               {student.submission.submittedAt &&
                                 new Date(
                                   student.submission.submittedAt,
@@ -415,7 +416,7 @@ export default function AssignmentStudentsPanel({
                           /* CASE 2: Đã giao bài nhưng chưa làm */
                           <div className="mt-2">
                             <div className="text-xs text-amber-600 font-medium mb-1">
-                              ⏳ Đã giao - Chưa làm
+                              ⏳ Assigned - Not Done
                             </div>
                             <Button
                               size="sm"
@@ -423,7 +424,7 @@ export default function AssignmentStudentsPanel({
                               className="w-full text-xs"
                               disabled
                             >
-                              Chờ học sinh làm bài...
+                              Awaiting student submissions...
                             </Button>
                           </div>
                         ) : (
@@ -437,12 +438,12 @@ export default function AssignmentStudentsPanel({
                             {assigningTo === student.id ? (
                               <>
                                 <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                                Đang giao...
+                                Assigning...
                               </>
                             ) : (
                               <>
                                 <Send className="w-3 h-3 mr-1" />
-                                Giao bài
+                                Assign
                               </>
                             )}
                           </Button>

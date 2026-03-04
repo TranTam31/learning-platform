@@ -52,7 +52,7 @@ export default function WidgetMarketplace({
       <div className="flex justify-between items-center mb-6 gap-4">
         <div>
           <h1 className="text-3xl font-bold">Widget Marketplace</h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-muted-foreground mt-1">
             Explore widgets from the community
           </p>
         </div>
@@ -61,9 +61,9 @@ export default function WidgetMarketplace({
             {/* Search icon */}
             <div className="absolute left-3 top-1/2 -translate-y-1/2">
               {loading ? (
-                <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
+                <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
               ) : (
-                <Search className="w-4 h-4 text-gray-400" />
+                <Search className="w-4 h-4 text-muted-foreground" />
               )}
             </div>
 
@@ -78,12 +78,12 @@ export default function WidgetMarketplace({
             {/* Right icon: loader | clear */}
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
               {loading ? (
-                <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
+                <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
               ) : (
                 query && (
                   <button
                     onClick={() => setQuery("")}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-muted-foreground hover:text-foreground"
                     aria-label="Clear search"
                   >
                     <X className="w-4 h-4" />
@@ -96,7 +96,9 @@ export default function WidgetMarketplace({
       </div>
 
       {widgets.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">No widgets found</div>
+        <div className="text-center py-12 text-muted-foreground">
+          No widgets found
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {widgets.map((widget) => (

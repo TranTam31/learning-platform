@@ -21,7 +21,7 @@ export default function ClassMembersTable({ members }: MembersTableProps) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[100px]">Username</TableHead>
+          <TableHead className="w-25">Username</TableHead>
           <TableHead>Email</TableHead>
           <TableHead>Role</TableHead>
           <TableHead className="text-right">Actions</TableHead>

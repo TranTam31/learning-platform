@@ -45,10 +45,10 @@ export default function DirectAssignStudentPanel({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-slate-200">
-        <h3 className="text-sm font-semibold text-slate-700">Giao bài tập</h3>
-        <p className="text-xs text-slate-500 mt-1">
-          Giao trực tiếp cho học sinh đang xem
+      <div className="px-4 py-3 border-b border-border">
+        <h3 className="text-sm font-semibold text-foreground">Assign</h3>
+        <p className="text-xs text-muted-foreground mt-1">
+          Assign directly to the current student
         </p>
       </div>
 
@@ -59,7 +59,7 @@ export default function DirectAssignStudentPanel({
               {studentName.charAt(0).toUpperCase()}
             </span>
           </div>
-          <div className="font-medium text-slate-700">{studentName}</div>
+          <div className="font-medium text-foreground">{studentName}</div>
         </div>
 
         {assigned ? (
@@ -76,12 +76,12 @@ export default function DirectAssignStudentPanel({
             {assigning ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Đang giao...
+                Assigning...
               </>
             ) : (
               <>
                 <Send className="w-4 h-4 mr-2" />
-                Giao bài cho {studentName}
+                Assign for {studentName}
               </>
             )}
           </Button>

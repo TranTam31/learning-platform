@@ -42,7 +42,7 @@ export default async function WidgetsPage() {
 
           <Link
             href="/dev/dashboard"
-            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             New Widget
           </Link>
@@ -51,9 +51,9 @@ export default async function WidgetsPage() {
 
       {widgets.length === 0 ? (
         <div className="text-center py-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
             <svg
-              className="w-8 h-8 text-gray-400"
+              className="w-8 h-8 text-muted-foreground"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -66,15 +66,15 @@ export default async function WidgetsPage() {
               />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-700 mb-2">
+          <h2 className="text-xl font-semibold text-foreground mb-2">
             No widgets found
           </h2>
-          <p className="text-gray-500 mb-6">
+          <p className="text-muted-foreground mb-6">
             Start by creating your first widget
           </p>
           <Link
             href="/dev/dashboard"
-            className="inline-flex px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
             New Widget
           </Link>
@@ -94,10 +94,10 @@ export default async function WidgetsPage() {
               <Link
                 key={widget.id}
                 href={`/dev/deploy/${widget.id}`}
-                className="block p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                className="block p-6 bg-card border border-border rounded-lg shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 truncate flex-1">
+                  <h3 className="text-lg font-semibold text-foreground truncate flex-1">
                     {widget.name}
                   </h3>
                   {latestBuild && (
@@ -105,7 +105,7 @@ export default async function WidgetsPage() {
                       className={`px-2 py-1 text-xs font-medium rounded-full ${
                         statusColors[
                           latestBuild.status as keyof typeof statusColors
-                        ] || "bg-gray-100 text-gray-800"
+                        ] || "bg-muted text-foreground"
                       }`}
                     >
                       {latestBuild.status}
@@ -113,7 +113,7 @@ export default async function WidgetsPage() {
                   )}
                 </div>
 
-                <div className="space-y-2 text-sm text-gray-600 mb-4">
+                <div className="space-y-2 text-sm text-muted-foreground mb-4">
                   <div className="flex items-center">
                     <svg
                       className="w-4 h-4 mr-2 shrink-0"
@@ -160,8 +160,8 @@ export default async function WidgetsPage() {
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-gray-100">
-                  <p className="text-xs text-gray-500">
+                <div className="pt-4 border-t border-border">
+                  <p className="text-xs text-muted-foreground">
                     Update{" "}
                     {new Date(widget.updatedAt).toLocaleDateString("vi-VN")}
                   </p>

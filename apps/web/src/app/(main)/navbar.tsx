@@ -1,4 +1,3 @@
-import codingInFlowLogo from "@/assets/coding_in_flow_logo.jpg";
 // import { ModeToggle } from "@/components/mode-toggle";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,6 +6,7 @@ import { UserDropdown } from "@/components/user-dropdown";
 import { auth } from "@/lib/auth-server";
 import { headers } from "next/headers";
 import { ModeToggle } from "@/components/mode-toggle";
+import { Sparkles } from "lucide-react";
 
 export async function Navbar() {
   const session = await auth.api.getSession({
@@ -23,14 +23,10 @@ export async function Navbar() {
           href="/dashboard"
           className="flex items-center gap-2 font-semibold"
         >
-          <Image
-            src={codingInFlowLogo}
-            alt="Coding in Flow logo"
-            width={32}
-            height={32}
-            className="border-muted rounded-full border"
-          />
-          Joy Math
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+            <Sparkles className="h-4.5 w-4.5 text-primary-foreground" />
+          </div>
+          Moly
         </Link>
         <div className="flex items-center gap-2">
           <ModeToggle />

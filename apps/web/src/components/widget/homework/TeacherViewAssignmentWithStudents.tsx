@@ -113,11 +113,11 @@ export default function TeacherViewAssignmentWithStudents({
   return (
     <div className="flex h-full min-h-0">
       {/* LEFT: Widget iframe */}
-      <div className="flex-1 p-4 min-h-0 bg-slate-50">
+      <div className="flex-1 p-4 min-h-0 bg-muted/50">
         {viewingAnswer && (
           <div className="mb-3 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
             <div className="text-sm text-blue-700">
-              <strong>Đang xem bài làm của học sinh</strong>
+              <strong>Reviewing student submission</strong>
             </div>
             <Button
               size="sm"
@@ -130,7 +130,7 @@ export default function TeacherViewAssignmentWithStudents({
           </div>
         )}
 
-        <div className="h-full bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+        <div className="h-full bg-card rounded-2xl shadow-lg overflow-hidden border border-border">
           <iframe
             ref={iframeRef}
             className="w-full h-full border-0"
@@ -151,7 +151,7 @@ export default function TeacherViewAssignmentWithStudents({
       </div>
 
       {/* RIGHT: Assignment Students Panel */}
-      <div className="w-96 bg-white border-l border-slate-200 flex flex-col">
+      <div className="w-96 bg-card border-l border-border flex flex-col">
         {targetStudentId && targetStudentName ? (
           <DirectAssignStudentPanel
             assignmentId={assignmentId}

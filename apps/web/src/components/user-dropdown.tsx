@@ -50,11 +50,11 @@ export function UserDropdown({ user }: UserDropdownProps) {
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
+        {/* <DropdownMenuItem asChild>
           <Link href="/profile">
             <UserIcon className="size-4" /> <span>Profile</span>
           </Link>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
         <DropdownMenuItem asChild>
           <Link href="/dashboard/classes">
             <Notebook className="size-4" /> <span>Classes</span>

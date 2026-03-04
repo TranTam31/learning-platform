@@ -130,18 +130,16 @@ export default function StudentDoAllHomeworkDialog() {
           disabled={pendingAssignments.length === 0}
         >
           <Play className="w-4 h-4 mr-2" />
-          Làm bài tập ({pendingAssignments.length})
+          Do assignment ({pendingAssignments.length})
         </Button>
       </DialogTrigger>
 
       <DialogContent className="w-[95vw]! h-[95vh]! max-w-none! p-0! flex! flex-col! min-h-0!">
         <DialogHeader className="px-6 py-4 border-b shrink-0 flex flex-row items-center justify-between">
-          <DialogTitle>Làm bài tập</DialogTitle>
-          <div className="text-sm text-slate-600">
+          <DialogTitle>Do homework</DialogTitle>
+          <div className="text-sm text-muted-foreground">
             {allCompleted ? (
-              <span className="text-green-600 font-semibold">
-                ✅ Đã hoàn thành tất cả!
-              </span>
+              <span className="text-green-600 font-semibold">✅ Done!</span>
             ) : currentAssignment ? (
               <span>
                 {displayedAssignments.findIndex(
@@ -159,27 +157,27 @@ export default function StudentDoAllHomeworkDialog() {
         {allCompleted ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8">
             <div className="text-6xl">🎉</div>
-            <h2 className="text-3xl font-bold text-slate-800">Hoàn thành!</h2>
-            <p className="text-lg text-slate-600 text-center">
-              Bạn đã hoàn thành tất cả {displayedAssignments.length} bài tập
+            <h2 className="text-3xl font-bold text-foreground">Done!</h2>
+            <p className="text-lg text-muted-foreground text-center">
+              You have done {displayedAssignments.length} assignment
             </p>
             <Button
               onClick={() => setOpen(false)}
               className="mt-4 bg-blue-600 hover:bg-blue-700"
             >
-              Đóng
+              Close
             </Button>
           </div>
         ) : currentAssignment ? (
           <div className="flex-1 min-h-0 flex gap-4 p-4 overflow-hidden">
             {/* LEFT: Assignment list */}
-            <div className="w-80 bg-white border border-slate-200 rounded-lg flex flex-col shrink-0">
-              <div className="px-4 py-3 border-b border-slate-200">
-                <h3 className="font-semibold text-slate-700">
-                  📋 Danh sách bài tập
+            <div className="w-80 bg-card border border-border rounded-lg flex flex-col shrink-0">
+              <div className="px-4 py-3 border-b border-border">
+                <h3 className="font-semibold text-foreground">
+                  📋 Assignment list
                 </h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  {displayedAssignments.length} bài
+                <p className="text-xs text-muted-foreground mt-1">
+                  {displayedAssignments.length} assignment
                 </p>
               </div>
 
@@ -209,21 +207,21 @@ export default function StudentDoAllHomeworkDialog() {
                                 ? "border-red-200 bg-red-50"
                                 : isCorrect === true
                                   ? "border-green-200 bg-green-50"
-                                  : "border-slate-200 bg-white"
-                              : "border-slate-200 bg-white hover:border-slate-300"
+                                  : "border-border bg-card"
+                              : "border-border bg-card hover:border-border/80"
                         }`}
                       >
                         <div className="flex items-center gap-2">
                           {assignment.isCompleted ? (
                             isCorrect === undefined ? (
-                              <Loader2 className="w-5 h-5 text-slate-400 animate-spin shrink-0" />
+                              <Loader2 className="w-5 h-5 text-muted-foreground animate-spin shrink-0" />
                             ) : isCorrect === false ? (
                               <XCircle className="w-5 h-5 text-red-600 shrink-0" />
                             ) : (
                               <CheckCircle className="w-5 h-5 text-green-600 shrink-0" />
                             )
                           ) : (
-                            <Circle className="w-5 h-5 text-slate-300 shrink-0" />
+                            <Circle className="w-5 h-5 text-muted-foreground/50 shrink-0" />
                           )}
                           <div className="flex-1 min-w-0">
                             <div
@@ -235,11 +233,11 @@ export default function StudentDoAllHomeworkDialog() {
                                       ? "text-red-700 line-through"
                                       : isCorrect === true
                                         ? "text-green-700 line-through"
-                                        : "text-slate-700"
-                                    : "text-slate-700"
+                                        : "text-foreground"
+                                    : "text-foreground"
                               }`}
                             >
-                              Bài {assignment.index}
+                              Assignment {assignment.index}
                             </div>
                           </div>
                         </div>
@@ -251,7 +249,7 @@ export default function StudentDoAllHomeworkDialog() {
             </div>
 
             {/* RIGHT: Assignment view */}
-            <div className="flex-1 min-h-0 bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div className="flex-1 min-h-0 bg-card rounded-lg border border-border overflow-hidden">
               <StudentAssignmentView
                 key={currentAssignmentId}
                 assignmentId={currentAssignmentId!}
@@ -264,7 +262,7 @@ export default function StudentDoAllHomeworkDialog() {
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </div>
         )}
       </DialogContent>

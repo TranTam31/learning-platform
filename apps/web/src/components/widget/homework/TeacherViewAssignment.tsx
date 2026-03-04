@@ -146,21 +146,21 @@ export default function TeacherViewAssignment({
   }, [iframeReady, widgetDef, config]);
 
   return (
-    <div className="bg-white h-full min-h-0 p-4">
+    <div className="bg-background h-full min-h-0 p-4">
       {/* FULL WIDTH iframe - không có sidebar */}
-      <div className="h-full max-w-6xl mx-auto bg-white rounded-4xl shadow-2xl overflow-hidden border border-gray-100">
+      <div className="h-full max-w-6xl mx-auto bg-card rounded-4xl shadow-2xl overflow-hidden border border-border/50">
         <iframe
           ref={iframeRef}
-          className="w-full h-full min-h-[400px] min-w-[320px] border-0"
+          className="w-full h-full min-h-100 min-w-[320px] border-0"
           title="Widget"
           sandbox="allow-scripts allow-same-origin"
         />
       </div>
 
       {loading && !error && (
-        <div className="text-center mt-8 text-gray-400 flex items-center justify-center gap-2">
-          <div className="animate-spin h-5 w-5 border-2 border-gray-300 border-t-gray-600 rounded-full" />
-          Đang tải widget...
+        <div className="text-center mt-8 text-muted-foreground flex items-center justify-center gap-2">
+          <div className="animate-spin h-5 w-5 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full" />
+          Loading widget...
         </div>
       )}
 

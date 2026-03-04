@@ -172,7 +172,7 @@ export default function TeacherAssignmentDialog({ hwId }: { hwId: string }) {
             <Button
               onClick={handleSaveConfig}
               disabled={saving}
-              className="bg-green-600 hover:bg-green-700 text-white mr-4"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground mr-4"
             >
               {saving ? (
                 <>

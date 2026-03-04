@@ -46,14 +46,14 @@ export function ClassCard({ classData, pendingAssignments }: ClassCardProps) {
 
   return (
     <Link href={`/dashboard/class/${classData.id}`}>
-      <div className="border rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer bg-white relative">
+      <div className="border border-border rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer bg-card relative">
         {/* Badge chưa làm bài (chỉ hiển thị cho student) */}
         {classData.role === "student" &&
           pendingAssignments &&
           pendingAssignments.pending > 0 && (
             <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
               <AlertCircle size={12} />
-              {pendingAssignments.pending} chưa làm
+              {pendingAssignments.pending} pending
             </div>
           )}
 
@@ -64,9 +64,11 @@ export function ClassCard({ classData, pendingAssignments }: ClassCardProps) {
           {getRoleBadge(classData.role)}
         </div>
 
-        <p className="text-gray-600 text-sm mb-4">{classData.course.name}</p>
+        <p className="text-muted-foreground text-sm mb-4">
+          {classData.course.name}
+        </p>
 
-        <div className="flex items-center justify-between text-sm text-gray-500">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span className="flex items-center gap-1">
             <svg
               className="w-4 h-4"
@@ -81,7 +83,7 @@ export function ClassCard({ classData, pendingAssignments }: ClassCardProps) {
                 d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
               />
             </svg>
-            {classData._count.members} thành viên
+            {classData._count.members} members
           </span>
           <span>
             {new Date(classData.joinedAt).toLocaleDateString("vi-VN")}
@@ -90,14 +92,14 @@ export function ClassCard({ classData, pendingAssignments }: ClassCardProps) {
 
         {/* Thông tin bài tập (chỉ cho student) */}
         {classData.role === "student" && pendingAssignments && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-border">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">Bài tập:</span>
+              <span className="text-muted-foreground">Assignment:</span>
               <div className="flex items-center gap-2">
                 {pendingAssignments.pending > 0 ? (
                   <span className="text-red-600 font-semibold">
-                    {pendingAssignments.pending}/{pendingAssignments.total} chưa
-                    làm
+                    {pendingAssignments.pending}/{pendingAssignments.total}{" "}
+                    pending
                   </span>
                 ) : pendingAssignments.total > 0 ? (
                   <span className="text-green-600 font-semibold flex items-center gap-1">
@@ -112,10 +114,12 @@ export function ClassCard({ classData, pendingAssignments }: ClassCardProps) {
                         clipRule="evenodd"
                       />
                     </svg>
-                    Hoàn thành
+                    Done
                   </span>
                 ) : (
-                  <span className="text-gray-400 text-xs">Chưa có bài tập</span>
+                  <span className="text-muted-foreground text-xs">
+                    No assignments yet.
+                  </span>
                 )}
               </div>
             </div>

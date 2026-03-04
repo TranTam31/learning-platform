@@ -94,9 +94,6 @@ export function CreateCourseForm({
 
   return (
     <Card className="w-full sm:max-w-md">
-      <CardHeader>
-        <CardTitle>Create Course</CardTitle>
-      </CardHeader>
       <CardContent>
         <form id="create-course-form" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>

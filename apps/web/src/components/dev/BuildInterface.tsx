@@ -59,31 +59,35 @@ export default function BuildInterface({ widget, builds }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Widget Info */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        <div className="bg-card rounded-lg shadow p-6 mb-6">
+          <h2 className="text-2xl font-bold text-foreground mb-4">
             {widget.name}
           </h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-gray-600">Repository:</span>
-              <p className="font-medium text-gray-900">{widget.repoFullName}</p>
+              <span className="text-muted-foreground">Repository:</span>
+              <p className="font-medium text-foreground">
+                {widget.repoFullName}
+              </p>
             </div>
             <div>
-              <span className="text-gray-600">Branch:</span>
-              <p className="font-medium text-gray-900">{widget.branch}</p>
+              <span className="text-muted-foreground">Branch:</span>
+              <p className="font-medium text-foreground">{widget.branch}</p>
             </div>
           </div>
         </div>
 
         {/* Build Controls */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="bg-card rounded-lg shadow p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">New Build</h3>
-              <p className="text-sm text-gray-600 mt-1">
+              <h3 className="text-lg font-semibold text-foreground">
+                New Build
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
                 Next version:{" "}
                 <span className="font-mono font-semibold">v{nextVersion}</span>
               </p>
@@ -91,7 +95,7 @@ export default function BuildInterface({ widget, builds }: Props) {
             <button
               onClick={startBuild}
               disabled={building}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
+              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors font-medium"
             >
               {building ? "Starting..." : "Start Build"}
             </button>
@@ -99,13 +103,13 @@ export default function BuildInterface({ widget, builds }: Props) {
         </div>
 
         {/* Build History */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-card rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-foreground mb-4">
             Build History
           </h3>
 
           {builds.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">
+            <p className="text-muted-foreground text-center py-8">
               No builds yet. Click "Start Build" to create your first build.
             </p>
           ) : (
@@ -113,23 +117,23 @@ export default function BuildInterface({ widget, builds }: Props) {
               {builds.map((build) => (
                 <div
                   key={build.id}
-                  className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors"
+                  className="border border-border rounded-lg p-4 hover:border-border/80 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <span className="font-mono text-lg font-semibold text-gray-900">
+                      <span className="font-mono text-lg font-semibold text-foreground">
                         v{build.version}
                       </span>
                       <StatusBadge status={build.status} />
                       {build.duration && (
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-muted-foreground">
                           {build.duration}s
                         </span>
                       )}
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <div className="text-right text-sm text-gray-500">
+                      <div className="text-right text-sm text-muted-foreground">
                         {build.completedAt ? (
                           <span>
                             {new Date(build.completedAt).toLocaleDateString(
@@ -152,7 +156,7 @@ export default function BuildInterface({ widget, builds }: Props) {
                         build.status === "failed") && (
                         <a
                           href={`/dev/deploy/${widget.id}/details/${build.id}`}
-                          className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                          className="px-3 py-1 text-sm bg-muted text-muted-foreground rounded hover:bg-muted/80 transition-colors"
                         >
                           View Details
                         </a>
@@ -171,7 +175,7 @@ export default function BuildInterface({ widget, builds }: Props) {
 
 function StatusBadge({ status }: { status: string }) {
   const colors = {
-    pending: "bg-gray-100 text-gray-700",
+    pending: "bg-muted text-muted-foreground",
     building: "bg-blue-100 text-blue-700 animate-pulse",
     success: "bg-green-100 text-green-700",
     failed: "bg-red-100 text-red-700",

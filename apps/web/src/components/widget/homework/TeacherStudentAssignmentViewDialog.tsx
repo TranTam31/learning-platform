@@ -170,13 +170,13 @@ export default function TeacherStudentAssignmentViewDialog({
 
       <DialogContent className="w-[90vw]! h-[95vh]! max-w-none! p-1! flex! flex-col! min-h-0!">
         <DialogHeader className="px-6 py-4 border-b shrink-0">
-          <DialogTitle>Bài làm của {studentName}</DialogTitle>
+          <DialogTitle>Submission of {studentName}</DialogTitle>
         </DialogHeader>
 
         {loading ? (
           <div className="flex justify-center items-center w-full h-full gap-3">
             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-            <span className="text-lg">Đang tải...</span>
+            <span className="text-lg">Loading...</span>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center h-full gap-4 p-8">
@@ -186,7 +186,7 @@ export default function TeacherStudentAssignmentViewDialog({
           <div className="flex-1 flex flex-col min-h-0">
             {/* Submission header */}
             {assignmentData.hasSubmitted && assignmentData.submissionData && (
-              <div className="shrink-0 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-3">
+              <div className="shrink-0 border-b border-border bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 px-6 py-3">
                 <div className="flex items-center justify-between max-w-6xl mx-auto">
                   <div className="flex items-center gap-3">
                     {assignmentData.submissionData.evaluation.isCorrect ? (
@@ -195,10 +195,10 @@ export default function TeacherStudentAssignmentViewDialog({
                       <XCircle className="text-red-600" size={24} />
                     )}
                     <div>
-                      <div className="font-semibold text-slate-700">
+                      <div className="font-semibold text-foreground">
                         {studentName} đã hoàn thành bài tập
                       </div>
-                      <div className="text-sm text-slate-600">
+                      <div className="text-sm text-muted-foreground">
                         Điểm:{" "}
                         <strong>
                           {assignmentData.submissionData.evaluation.score}/
@@ -231,16 +231,16 @@ export default function TeacherStudentAssignmentViewDialog({
             )}
 
             {!assignmentData.hasSubmitted && (
-              <div className="shrink-0 border-b border-slate-200 bg-yellow-50 px-6 py-3">
+              <div className="shrink-0 border-b border-border bg-yellow-50 dark:bg-yellow-950/30 px-6 py-3">
                 <div className="text-sm text-yellow-700 font-medium">
-                  ⏳ {studentName} chưa làm bài tập này
+                  ⏳ {studentName} not done
                 </div>
               </div>
             )}
 
             {/* Widget iframe (read-only) */}
             <div className="flex-1 p-4 min-h-0">
-              <div className="h-full max-w-6xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+              <div className="h-full max-w-6xl mx-auto bg-card rounded-2xl shadow-lg overflow-hidden border border-border">
                 <iframe
                   ref={iframeRef}
                   className="w-full h-full border-0"

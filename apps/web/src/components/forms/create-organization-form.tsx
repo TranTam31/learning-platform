@@ -67,9 +67,6 @@ export function CreateOrganizationForm() {
 
   return (
     <Card className="w-full sm:max-w-md">
-      <CardHeader>
-        <CardTitle>Create Organization</CardTitle>
-      </CardHeader>
       <CardContent>
         <form id="create-org-form" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>

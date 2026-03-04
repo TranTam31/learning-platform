@@ -44,8 +44,8 @@ import StudentViewAssignmentDialog from "../widget/homework/StudentViewAssignmen
 import TeacherStudentAssignmentViewDialog from "../widget/homework/TeacherStudentAssignmentViewDialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import StudentDoAllHomeworkDialog from "./StudentDoAllHomeworkDialog";
-import CourseStructureSettings from "./CourseStructureSettings";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 
 // ===== PROPS =====
 interface CourseStructureManagerProps {
@@ -124,7 +124,7 @@ const EditableTitle: React.FC<EditableTitleProps> = ({
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         disabled={isUpdating}
-        className={`bg-white border border-blue-500 rounded px-2 py-1 ${className}`}
+        className={`bg-card border border-blue-500 rounded px-2 py-1 ${className}`}
       />
     );
   }
@@ -132,7 +132,7 @@ const EditableTitle: React.FC<EditableTitleProps> = ({
   return (
     <span
       onClick={() => setIsEditing(true)}
-      className={`cursor-pointer hover:bg-gray-100 px-2 py-1 rounded ${className}`}
+      className={`cursor-pointer hover:bg-muted px-2 py-1 rounded ${className}`}
       title="Click to edit"
     >
       {title}
@@ -144,6 +144,7 @@ const EditableTitle: React.FC<EditableTitleProps> = ({
 const CourseStructureContent: React.FC = () => {
   const {
     // Config
+    classId,
     isAdmin,
     isMember,
     isTeacher,
@@ -258,7 +259,7 @@ const CourseStructureContent: React.FC = () => {
     return (
       <div key={node.id} className="group">
         <div
-          className={`flex items-center gap-1 py-1 px-2 hover:bg-gray-100 cursor-pointer ${
+          className={`flex items-center gap-1 py-1 px-2 hover:bg-muted cursor-pointer ${
             isSelected ? "bg-blue-100 border-l-2 border-blue-500" : ""
           } ${isDeleting ? "opacity-50" : ""}`}
           style={{ paddingLeft: `${level * 20 + 8}px` }}
@@ -272,7 +273,7 @@ const CourseStructureContent: React.FC = () => {
                   e.stopPropagation();
                   toggleNodeExpanded(node); // Không async
                 }}
-                className="p-0.5 hover:bg-gray-200 rounded"
+                className="p-0.5 hover:bg-muted/80 rounded"
                 disabled={isDeleting}
               >
                 {isExpanded ? (
@@ -315,7 +316,7 @@ const CourseStructureContent: React.FC = () => {
                       ? "bg-red-500 text-white"
                       : "bg-green-100 text-green-700"
                   }`}
-                  title={`${homeworkCounts.pending} chưa làm / ${homeworkCounts.totalAssigned} tổng`}
+                  title={`${homeworkCounts.pending} pending / ${homeworkCounts.totalAssigned} total`}
                 >
                   {hasPendingHomework ? `${homeworkCounts.pending}` : "✓"}
                 </span>
@@ -385,20 +386,28 @@ const CourseStructureContent: React.FC = () => {
 
   // ===== JSX =====
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-muted/50">
       {/* ===== TREE SIDEBAR ===== */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200">
+      <div className="w-80 bg-card border-r border-border flex flex-col">
+        <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-lg font-semibold text-foreground">
               Course Structure
             </h2>
-            <CourseStructureSettings />
           </div>
           <div className="flex items-center gap-2 mb-2">
             <BookOpen className="w-5 h-5 text-purple-500" />
-            <span className="font-medium text-gray-700">{course.name}</span>
+            <span className="font-medium text-foreground">{course.name}</span>
           </div>
+          {isTeacher && classId && (
+            <Link
+              href={`/dashboard/class/${classId}/members`}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md bg-muted hover:bg-muted/80 text-foreground transition-colors mb-2"
+            >
+              <Users className="w-4 h-4" />
+              Manage Members
+            </Link>
+          )}
           {(isAdmin || isMember) && (
             <div className="flex gap-2 w-full flex-col">
               <div>
@@ -427,7 +436,7 @@ const CourseStructureContent: React.FC = () => {
                   <button
                     onClick={() => handleAddNode(LessonNodeType.module)}
                     disabled={!canAddToSelected || isPending}
-                    className="flex-1 flex items-center justify-center p-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    className="flex-1 flex items-center justify-center p-1.5 bg-primary text-primary-foreground text-sm rounded hover:bg-primary/90 disabled:bg-muted disabled:cursor-not-allowed"
                     title="Add Module"
                   >
                     {isAddingModule ? (
@@ -443,7 +452,7 @@ const CourseStructureContent: React.FC = () => {
                   <button
                     onClick={() => handleAddNode(LessonNodeType.lesson)}
                     disabled={!canAddToSelected || isPending}
-                    className="flex-1 flex items-center justify-center p-1.5 bg-green-500 text-white text-sm rounded hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    className="flex-1 flex items-center justify-center p-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 disabled:bg-muted disabled:cursor-not-allowed"
                     title="Add Lesson"
                   >
                     {isAddingLesson ? (
@@ -469,7 +478,7 @@ const CourseStructureContent: React.FC = () => {
                 className={`w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                   showStats
                     ? "bg-indigo-100 text-indigo-700 border border-indigo-300"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
                 }`}
               >
                 <BarChart3 className="w-4 h-4" />
@@ -492,13 +501,13 @@ const CourseStructureContent: React.FC = () => {
                 className={`w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                   isTeacherStudentView
                     ? "bg-indigo-100 text-indigo-700 border border-indigo-300"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
                 }`}
               >
                 <BarChart3 className="w-4 h-4" />
                 {isTeacherStudentView
-                  ? "Tắt xem thống kê"
-                  : "Xem thống kê học sinh"}
+                  ? "Hide statistics"
+                  : "View student statistics"}
               </button>
 
               {/* Student pick dialog */}
@@ -508,7 +517,7 @@ const CourseStructureContent: React.FC = () => {
               >
                 <DialogContent className="max-w-md">
                   <DialogHeader>
-                    <DialogTitle>Chọn học sinh</DialogTitle>
+                    <DialogTitle>Select Student</DialogTitle>
                   </DialogHeader>
                   <ScrollArea className="max-h-80">
                     <div className="py-1">
@@ -525,7 +534,7 @@ const CourseStructureContent: React.FC = () => {
                             className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors rounded-md ${
                               isSelected
                                 ? "bg-indigo-50 border-l-2 border-indigo-500"
-                                : "hover:bg-gray-50"
+                                : "hover:bg-muted/50"
                             }`}
                           >
                             {s.image ? (
@@ -535,11 +544,11 @@ const CourseStructureContent: React.FC = () => {
                                 className="w-8 h-8 rounded-full object-cover shrink-0"
                               />
                             ) : (
-                              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-                                <User className="w-4 h-4 text-gray-500" />
+                              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                                <User className="w-4 h-4 text-muted-foreground" />
                               </div>
                             )}
-                            <span className="flex-1 text-left truncate font-medium text-gray-700">
+                            <span className="flex-1 text-left truncate font-medium text-foreground">
                               {s.name}
                             </span>
                             {stats && stats.totalAssigned > 0 ? (
@@ -551,12 +560,12 @@ const CourseStructureContent: React.FC = () => {
                                       ? "bg-yellow-100 text-yellow-700"
                                       : "bg-red-100 text-red-700"
                                 }`}
-                                title={`${stats.correct} đúng / ${stats.totalAssigned} tổng (${Math.round((stats.correct / stats.totalAssigned) * 100)}%)`}
+                                title={`${stats.correct} correct / ${stats.totalAssigned} total (${Math.round((stats.correct / stats.totalAssigned) * 100)}%)`}
                               >
                                 {stats.correct}/{stats.totalAssigned}
                               </span>
                             ) : (
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 shrink-0">
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground shrink-0">
                                 0/0
                               </span>
                             )}
@@ -581,14 +590,14 @@ const CourseStructureContent: React.FC = () => {
                       title="Đổi học sinh"
                     >
                       <ArrowRightLeft className="w-3 h-3" />
-                      Đổi
+                      Switch
                     </button>
                   </div>
                   {isLoadingStudentView ? (
                     <div className="flex items-center gap-2 mt-1">
                       <Loader2 className="w-3 h-3 animate-spin text-indigo-500" />
                       <span className="text-xs text-indigo-500">
-                        Đang tải...
+                        Loading...
                       </span>
                     </div>
                   ) : (
@@ -598,8 +607,8 @@ const CourseStructureContent: React.FC = () => {
                       );
                       return (
                         <div className="text-xs text-indigo-600 mt-1">
-                          {rootCounts.correct}/{rootCounts.totalAssigned} đúng •{" "}
-                          {rootCounts.pending} chưa làm
+                          {rootCounts.correct}/{rootCounts.totalAssigned}{" "}
+                          correct • {rootCounts.pending} pending
                         </div>
                       );
                     })()
@@ -612,15 +621,17 @@ const CourseStructureContent: React.FC = () => {
         <div className="flex-1 overflow-y-auto">
           {isInitialLoading ? (
             <div className="flex items-center justify-center p-8">
-              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-              <span className="ml-2 text-sm text-gray-500">
-                Đang tải course...
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-sm text-muted-foreground">
+                Loading course...
               </span>
             </div>
           ) : course.rootLessonNode ? (
             renderNode(course.rootLessonNode)
           ) : (
-            <div className="p-4 text-sm text-gray-500">Không có dữ liệu</div>
+            <div className="p-4 text-sm text-muted-foreground">
+              Nothing here
+            </div>
           )}
         </div>
       </div>
@@ -629,10 +640,10 @@ const CourseStructureContent: React.FC = () => {
       <div className="flex-1 p-6 overflow-y-auto">
         {selectedNode ? (
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="bg-card rounded-lg shadow-sm p-6">
               {/* Node Header */}
               <div className="mb-4">
-                <div className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full mb-2">
+                <div className="inline-block px-3 py-1 bg-muted text-foreground text-xs font-medium rounded-full mb-2">
                   {selectedNode.type}
                 </div>
                 {isAdmin ? (
@@ -642,10 +653,10 @@ const CourseStructureContent: React.FC = () => {
                       handleUpdateNode(selectedNode.id, { title: newTitle })
                     }
                     isUpdating={isUpdatingNode === selectedNode.id}
-                    className="text-2xl font-bold text-gray-900 block"
+                    className="text-2xl font-bold text-foreground block"
                   />
                 ) : (
-                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                  <h1 className="text-2xl font-bold text-foreground mb-2">
                     {selectedNode.title}
                   </h1>
                 )}
@@ -665,9 +676,9 @@ const CourseStructureContent: React.FC = () => {
 
               {/* Homework Section (Lesson only) */}
               {selectedNode.type === LessonNodeType.lesson && (
-                <div className="border-t border-gray-200 mt-4 pt-4">
+                <div className="border-t border-border mt-4 pt-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-semibold text-gray-700">
+                    <h3 className="text-sm font-semibold text-foreground">
                       Homework
                     </h3>
                     {isAdmin && (
@@ -691,7 +702,9 @@ const CourseStructureContent: React.FC = () => {
                   </div>
 
                   {homeworkNodes.length === 0 ? (
-                    <div className="text-sm text-gray-500">Chưa có bài tập</div>
+                    <div className="text-sm text-muted-foreground">
+                      No assignments yet.
+                    </div>
                   ) : (
                     <div className="space-y-2">
                       {homeworkNodes.map((hw) => {
@@ -747,8 +760,8 @@ const CourseStructureContent: React.FC = () => {
                                 {/* Total assignments count */}
                                 {(isTeacher || isStudent) &&
                                   hwImplCount > 0 && (
-                                    <span className="text-xs text-gray-600 bg-orange-100 px-2 py-0.5 rounded">
-                                      {hwImplCount} bài
+                                    <span className="text-xs text-muted-foreground bg-orange-100 px-2 py-0.5 rounded">
+                                      {hwImplCount}
                                     </span>
                                   )}
 
@@ -765,7 +778,7 @@ const CourseStructureContent: React.FC = () => {
                                       return stats ? (
                                         <span
                                           className={`ml-2 text-xs px-2 py-0.5 rounded-full font-semibold ${stats.colorClass}`}
-                                          title={`${homeworkCounts.correct} đúng / ${homeworkCounts.totalAssigned} tổng (${Math.round(stats.ratio * 100)}%)`}
+                                          title={`${homeworkCounts.correct} correct / ${homeworkCounts.totalAssigned} total (${Math.round(stats.ratio * 100)}%)`}
                                         >
                                           {stats.label}
                                         </span>
@@ -778,7 +791,7 @@ const CourseStructureContent: React.FC = () => {
                                           ? "bg-red-500 text-white"
                                           : "bg-green-100 text-green-700"
                                       }`}
-                                      title={`${homeworkCounts.pending} chưa làm / ${homeworkCounts.totalAssigned} tổng`}
+                                      title={`${homeworkCounts.pending} not done / ${homeworkCounts.totalAssigned} tổng`}
                                     >
                                       {hasPendingHomework
                                         ? `${homeworkCounts.pending}`
@@ -828,8 +841,8 @@ const CourseStructureContent: React.FC = () => {
 
                                 {/* List assignments */}
                                 {hwClassLessonNodes.length === 0 ? (
-                                  <div className="text-xs text-gray-400 italic py-2">
-                                    Chưa có bài tập nào
+                                  <div className="text-xs text-muted-foreground italic py-2">
+                                    No assignments yet.
                                   </div>
                                 ) : isTeacherStudentView ? (
                                   /* ===== TEACHER STUDENT VIEW: Split assigned/unassigned ===== */
@@ -850,8 +863,8 @@ const CourseStructureContent: React.FC = () => {
                                         {assignedNodes.length > 0 && (
                                           <>
                                             <div className="text-xs font-semibold text-green-700 py-1 border-b border-green-200">
-                                              Đã giao cho {selectedStudentName}{" "}
-                                              ({assignedNodes.length})
+                                              Assigned {selectedStudentName} (
+                                              {assignedNodes.length})
                                             </div>
                                             {assignedNodes.map(
                                               (classLessonNode, index) => {
@@ -873,7 +886,7 @@ const CourseStructureContent: React.FC = () => {
                                                     }`}
                                                   >
                                                     <span className="font-semibold text-orange-700 min-w-fit">
-                                                      Bài{" "}
+                                                      Assignment{" "}
                                                       {hwImplCount -
                                                         hwClassLessonNodes.indexOf(
                                                           classLessonNode,
@@ -890,7 +903,7 @@ const CourseStructureContent: React.FC = () => {
                                                       return (
                                                         <span
                                                           className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700"
-                                                          title={`Đã giao ${aStats.assigned}/${aStats.total} · Đã nộp ${aStats.submitted}/${aStats.assigned}`}
+                                                          title={`Assigned ${aStats.assigned}/${aStats.total} · Submited ${aStats.submitted}/${aStats.assigned}`}
                                                         >
                                                           <Users className="w-3 h-3 inline -mt-0.5 mr-0.5" />
                                                           {aStats.assigned}/
@@ -909,8 +922,8 @@ const CourseStructureContent: React.FC = () => {
                                                         }`}
                                                       >
                                                         {isPendingForStudent
-                                                          ? "Chưa làm"
-                                                          : "Đã làm"}
+                                                          ? "Not done"
+                                                          : "Done"}
                                                       </span>
 
                                                       {!isPendingForStudent &&
@@ -923,7 +936,7 @@ const CourseStructureContent: React.FC = () => {
                                                             ) : (
                                                               <XCircle className="w-4 h-4 text-red-600" />
                                                             )}
-                                                            <span className="font-semibold text-gray-700">
+                                                            <span className="font-semibold text-foreground">
                                                               {
                                                                 submissionStatus
                                                                   .evaluation
@@ -980,16 +993,15 @@ const CourseStructureContent: React.FC = () => {
                                         {/* Unassigned section */}
                                         {unassignedNodes.length > 0 && (
                                           <>
-                                            <div className="text-xs font-semibold text-gray-500 py-1 border-b border-gray-200 mt-2">
-                                              Chưa giao cho{" "}
-                                              {selectedStudentName} (
+                                            <div className="text-xs font-semibold text-muted-foreground py-1 border-b border-border mt-2">
+                                              Unassigned {selectedStudentName} (
                                               {unassignedNodes.length})
                                             </div>
                                             {unassignedNodes.map(
                                               (classLessonNode, index) => (
                                                 <div
                                                   key={classLessonNode.id}
-                                                  className="flex items-center gap-2 p-2 rounded text-xs group transition-colors bg-gray-50 border border-gray-200"
+                                                  className="flex items-center gap-2 p-2 rounded text-xs group transition-colors bg-muted/50 border border-border"
                                                 >
                                                   <span className="font-semibold text-orange-700 min-w-fit">
                                                     Bài{" "}
@@ -1018,8 +1030,8 @@ const CourseStructureContent: React.FC = () => {
                                                     );
                                                   })()}
 
-                                                  <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-gray-400 text-white">
-                                                    Chưa giao
+                                                  <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-muted-foreground text-background">
+                                                    Unassigned
                                                   </span>
 
                                                   <div className="flex-1" />
@@ -1085,7 +1097,7 @@ const CourseStructureContent: React.FC = () => {
                                         >
                                           {/* Assignment number */}
                                           <span className="font-semibold text-orange-700 min-w-fit">
-                                            Bài {hwImplCount - index}
+                                            Assignment {hwImplCount - index}
                                           </span>
 
                                           {/* Assignment stats (teacher) */}
@@ -1135,8 +1147,8 @@ const CourseStructureContent: React.FC = () => {
                                                 }`}
                                               >
                                                 {isPending
-                                                  ? "Chưa làm"
-                                                  : "Đã làm"}
+                                                  ? "Not done"
+                                                  : "Done"}
                                               </span>
 
                                               {/* Evaluation result (if submitted) */}
@@ -1149,7 +1161,7 @@ const CourseStructureContent: React.FC = () => {
                                                     ) : (
                                                       <XCircle className="w-4 h-4 text-red-600" />
                                                     )}
-                                                    <span className="font-semibold text-gray-700">
+                                                    <span className="font-semibold text-foreground">
                                                       {
                                                         submissionStatus
                                                           .evaluation.score
@@ -1210,13 +1222,13 @@ const CourseStructureContent: React.FC = () => {
 
                   {/* Lesson Notes (Class view only) */}
                   {(isTeacher || isStudent) && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="mt-4 pt-4 border-t border-border">
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-sm font-semibold text-gray-700">
+                        <h3 className="text-sm font-semibold text-foreground">
                           Notes
                           {(classLessonNodeCounts.get(selectedNode.id)
                             ?.lesson_note || 0) > 0 && (
-                            <span className="ml-2 text-xs text-gray-500 bg-blue-100 px-2 py-0.5 rounded">
+                            <span className="ml-2 text-xs text-muted-foreground bg-blue-100 px-2 py-0.5 rounded">
                               {
                                 classLessonNodeCounts.get(selectedNode.id)
                                   ?.lesson_note
@@ -1234,7 +1246,7 @@ const CourseStructureContent: React.FC = () => {
                                 )
                               }
                               disabled={isPending}
-                              className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 disabled:bg-gray-300"
+                              className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded hover:bg-primary/90 disabled:bg-muted"
                             >
                               + Add Note
                             </button>
@@ -1243,7 +1255,7 @@ const CourseStructureContent: React.FC = () => {
                             onClick={() =>
                               handleToggleClassLessonNodes(selectedNode.id)
                             }
-                            className="p-1 hover:bg-gray-200 rounded"
+                            className="p-1 hover:bg-muted/80 rounded"
                           >
                             {loadingClassLessonNodeIds.has(selectedNode.id) ? (
                               <Loader2 className="w-3 h-3 animate-spin" />
@@ -1297,7 +1309,9 @@ const CourseStructureContent: React.FC = () => {
           </div>
         ) : (
           <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500">Chọn một node để xem chi tiết</p>
+            <p className="text-muted-foreground">
+              Select a node to view details.
+            </p>
           </div>
         )}
       </div>

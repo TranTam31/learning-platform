@@ -74,7 +74,7 @@ export default function RepoList() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
       </div>
     );
   }
@@ -103,26 +103,28 @@ export default function RepoList() {
       {repos.map((repo) => (
         <div
           key={repo.id}
-          className="bg-white border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors"
+          className="bg-card border border-border rounded-lg p-6 hover:border-border/80 transition-colors"
         >
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-foreground">
                   {repo.name}
                 </h3>
                 {repo.private && (
-                  <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-700 rounded">
+                  <span className="px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground rounded">
                     Private
                   </span>
                 )}
               </div>
 
               {repo.description && (
-                <p className="text-gray-600 text-sm mb-3">{repo.description}</p>
+                <p className="text-muted-foreground text-sm mb-3">
+                  {repo.description}
+                </p>
               )}
 
-              <div className="flex items-center gap-4 text-sm text-gray-500">
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span>Branch: {repo.defaultBranch}</span>
                 <span>•</span>
                 <span>
@@ -134,7 +136,7 @@ export default function RepoList() {
             <button
               onClick={() => handleImport(repo)}
               disabled={importing === repo.id}
-              className="ml-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors font-medium text-sm"
+              className="ml-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:bg-primary/50 disabled:cursor-not-allowed transition-colors font-medium text-sm"
             >
               {importing === repo.id ? "Importing..." : "Import"}
             </button>
