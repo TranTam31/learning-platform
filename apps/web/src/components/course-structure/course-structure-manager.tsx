@@ -30,8 +30,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { CreateClassForm } from "@/components/forms/create-class-form";
+import { api } from "@/lib/api-client";
 import { LessonNodeType, LessonNodeUI, CourseUI } from "@/types/course";
 import {
   CourseStructureProvider,
@@ -44,6 +46,8 @@ import StudentViewAssignmentDialog from "../widget/homework/StudentViewAssignmen
 import TeacherStudentAssignmentViewDialog from "../widget/homework/TeacherStudentAssignmentViewDialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import StudentDoAllHomeworkDialog from "./StudentDoAllHomeworkDialog";
+import ClassMembersTable from "../class/ClassMembersTable";
+import ClassSearchUser from "../class/ClassSearchUser";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 
@@ -65,6 +69,12 @@ interface EditableTitleProps {
   isUpdating: boolean;
   className?: string;
 }
+
+type OwnerClassItem = {
+  id: string;
+  name: string;
+  courseId: string;
+};
 
 const EditableTitle: React.FC<EditableTitleProps> = ({
   initialTitle,
@@ -149,6 +159,7 @@ const CourseStructureContent: React.FC = () => {
     isMember,
     isTeacher,
     isStudent,
+    isOwner,
 
     // Data
     course,
@@ -199,6 +210,40 @@ const CourseStructureContent: React.FC = () => {
   const [showStats, setShowStats] = useState(false);
   // Teacher student select dialog
   const [showStudentDialog, setShowStudentDialog] = useState(false);
+  // Class manager dialog (for owner+member/admin)
+  const [classManagerOpen, setClassManagerOpen] = useState(false);
+  // Members manager dialog (for owner)
+  const [memberManagerOpen, setMemberManagerOpen] = useState(false);
+
+  const {
+    data: ownedClasses = [],
+    isLoading: isLoadingOwnedClasses,
+    refetch: refetchOwnedClasses,
+  } = useQuery({
+    queryKey: ["class-manager-owned-classes", course.id],
+    enabled: classManagerOpen,
+    queryFn: async () => {
+      const res = await api.classes.getUserClasses();
+      if (res.status !== 200) return [] as OwnerClassItem[];
+
+      const ownerClasses = (res.body.owner ?? []) as OwnerClassItem[];
+      return ownerClasses.filter(
+        (classItem) => classItem.courseId === course.id,
+      );
+    },
+  });
+
+  // Fetch class members for the dialog
+  const { data: classData, isLoading: isLoadingClassData } = useQuery({
+    queryKey: ["class-members-data", classId],
+    enabled: memberManagerOpen && !!classId,
+    queryFn: async () => {
+      if (!classId) return null;
+      const res = await api.classes.getClassWithCourse({ params: { classId } });
+      if (res.status !== 200) return null;
+      return res.body.data?.classData || null;
+    },
+  });
 
   // Derived: selected student name
   const selectedStudentName = useMemo(() => {
@@ -408,25 +453,100 @@ const CourseStructureContent: React.FC = () => {
               Manage Members
             </Link>
           )}
+          {isOwner && classId && (
+            <Dialog
+              open={memberManagerOpen}
+              onOpenChange={setMemberManagerOpen}
+            >
+              <DialogTrigger asChild>
+                <Button className="w-full justify-start bg-muted hover:bg-muted/80 text-foreground mb-2">
+                  <Users className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Manage Members</span>
+                  <span className="sm:hidden">Members</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Manage Members</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium mb-2">Class Members</h3>
+                    {isLoadingClassData ? (
+                      <div className="flex justify-center py-4">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      </div>
+                    ) : (
+                      <ClassMembersTable members={classData?.members || []} />
+                    )}
+                  </div>
+                  <div className="border-t pt-4">
+                    <h3 className="text-sm font-medium mb-2">Add Members</h3>
+                    <ClassSearchUser />
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
           {(isAdmin || isMember) && (
             <div className="flex gap-2 w-full flex-col">
               <div>
-                <Dialog>
+                <Dialog
+                  open={classManagerOpen}
+                  onOpenChange={setClassManagerOpen}
+                >
                   <DialogTrigger asChild>
                     <Button className="w-full bg-primary hover:bg-primary/90">
                       <Plus className="w-4 h-4" />
-                      <span className="hidden sm:inline">Add Class</span>
+                      <span className="hidden sm:inline">Class Manager</span>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
-                      <DialogTitle>Create New Class</DialogTitle>
+                      <DialogTitle>Class Manager</DialogTitle>
                     </DialogHeader>
-                    <CreateClassForm
-                      courseId={course.id}
-                      organizationId={course.organizationId}
-                      onSuccess={() => {}}
-                    />
+                    <div className="space-y-4">
+                      <CreateClassForm
+                        courseId={course.id}
+                        organizationId={course.organizationId}
+                        onSuccess={() => {
+                          void refetchOwnedClasses();
+                        }}
+                      />
+
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-foreground">
+                          Classes you own in this course
+                        </p>
+
+                        {isLoadingOwnedClasses ? (
+                          <p className="text-sm text-muted-foreground">
+                            Loading classes...
+                          </p>
+                        ) : ownedClasses.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">
+                            You have not created any class in this course yet.
+                          </p>
+                        ) : (
+                          <div className="max-h-56 space-y-2 overflow-y-auto pr-1">
+                            {ownedClasses.map((ownedClass) => (
+                              <Link
+                                key={ownedClass.id}
+                                href={`/dashboard/class/${ownedClass.id}`}
+                                className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-sm transition-colors hover:bg-muted/50"
+                              >
+                                <span className="truncate font-medium">
+                                  {ownedClass.name}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  Open
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </DialogContent>
                 </Dialog>
               </div>
@@ -482,7 +602,7 @@ const CourseStructureContent: React.FC = () => {
                 }`}
               >
                 <BarChart3 className="w-4 h-4" />
-                {showStats ? "Ẩn thống kê" : "Xem thống kê"}
+                {showStats ? "Hide Statistics" : "View Statistics"}
               </button>
             </div>
           )}

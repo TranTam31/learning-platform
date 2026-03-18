@@ -1,19 +1,14 @@
 "use client";
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
   Field,
   FieldError,
@@ -30,7 +25,7 @@ const formSchema = z.object({
     .min(2, "Slug must be at least 2 characters")
     .max(50)
     .regex(
-      /^[a-z0-0-]+$/,
+      /^[a-z0-9-]+$/,
       "Slug only contains lowercase letters, numbers, and hyphens",
     ),
   description: z.string().max(200).optional(),
@@ -38,12 +33,17 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+type CreateCourseFormProps = {
+  organizationId?: string;
+  onSuccess?: () => void;
+};
+
 export function CreateCourseForm({
   organizationId,
-}: {
-  organizationId: string;
-}) {
+  onSuccess,
+}: CreateCourseFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const form = useForm<FormValues>({
     mode: "onChange",
@@ -72,6 +72,13 @@ export function CreateCourseForm({
   const onSubmit: SubmitHandler<FormValues> = async (formData) => {
     setSubmitError(null);
     try {
+      if (!organizationId) {
+        const message = "Organization not found";
+        setSubmitError(message);
+        toast.error(message);
+        return;
+      }
+
       const res = await api.courses.createCourse({
         body: {
           name: formData.name,
@@ -85,6 +92,10 @@ export function CreateCourseForm({
       }
       toast.success("Course created successfully");
       form.reset();
+      onSuccess?.();
+      await queryClient.invalidateQueries({
+        queryKey: ["courses", organizationId],
+      });
     } catch (err: any) {
       const errorMessage = err.message || "An unexpected error occurred";
       setSubmitError(errorMessage);

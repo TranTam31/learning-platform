@@ -42,6 +42,7 @@ interface CourseStructureContextValue {
   isMember: boolean;
   isTeacher: boolean;
   isStudent: boolean;
+  isOwner: boolean;
 
   // Course data
   course: CourseUI;
@@ -161,6 +162,7 @@ export const CourseStructureProvider: React.FC<
     isMember: userRole === "org_member",
     isTeacher: userRole === "class_teacher",
     isStudent: userRole === "class_student",
+    isOwner: userRole === "class_owner",
   };
 
   // ===== COURSE DATA =====

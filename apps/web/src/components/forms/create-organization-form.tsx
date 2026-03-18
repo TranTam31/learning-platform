@@ -2,18 +2,13 @@
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { Loader } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
   Field,
   FieldError,
@@ -30,8 +25,15 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function CreateOrganizationForm() {
+type CreateOrganizationFormProps = {
+  onSuccess?: () => void;
+};
+
+export function CreateOrganizationForm({
+  onSuccess,
+}: CreateOrganizationFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const router = useRouter();
 
   const form = useForm<FormValues>({
     mode: "onChange",
@@ -58,9 +60,12 @@ export function CreateOrganizationForm() {
       } else {
         toast.success("Organization created successfully");
         form.reset();
+        onSuccess?.();
+        router.refresh();
       }
     } catch (err) {
       setSubmitError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
       console.error(err);
     }
   };

@@ -1,18 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { CreateOrganizationForm } from "@/components/forms/create-organization-form";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { CreateOrganizationDialog } from "@/components/forms/create-organization-dialog";
 import { auth } from "@/lib/auth-server";
 import { headers } from "next/headers";
-import { Building2, ArrowRight, Plus, Calendar } from "lucide-react";
+import { Building2, ArrowRight, Calendar } from "lucide-react";
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("en-US", {
@@ -37,23 +28,7 @@ export default async function Dashboard() {
             Manage your organizations and courses
           </p>
         </div>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Organization
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create Organization</DialogTitle>
-              <DialogDescription>
-                Create a new organization to get started.
-              </DialogDescription>
-            </DialogHeader>
-            <CreateOrganizationForm />
-          </DialogContent>
-        </Dialog>
+        <CreateOrganizationDialog />
       </div>
 
       {/* Org cards */}

@@ -64,6 +64,8 @@ export async function createClass(
         role: ClassRole.owner,
       },
     });
+
+    return newClass;
   });
 }
 

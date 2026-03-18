@@ -151,6 +151,8 @@ export class ClassesService {
           role: ClassRole.owner,
         },
       });
+
+      return newClass;
     });
   }
 
